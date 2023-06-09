@@ -10,15 +10,17 @@ game_mode='in_game'
 game_settings={'fullscreen':False}
 
 class player(pygame.sprite.Sprite):
-    def __init__(player):
+    def __init__(player,spawn_x,spawn_y):
         super().__init__()
         player.image=pygame.image.load('temp.png').convert()
         player.rect=player.image.get_rect()
+        player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=70
         player.state='idle'
+        player.hand=''
     def update(player,delta_time):
         if player.state=='run_right':
             player.acceleration.x=30
@@ -32,13 +34,25 @@ class player(pygame.sprite.Sprite):
         player.pos+=player.velocity*delta_time
         player.rect.center=player.pos
 
+class apple(pygame.sprite.Sprite):
+    def __init__(apple,pos_x,pos_y):
+        apple.image=pygame.image.load('Data/tree/apple.png').convert()
+        apple.rect=apple.image.get_rect()
+        apple.rect.center=pos_x,pos_y
+    def update(apple):
+        for player in pygame.sprite.spritecollide(apple,player_sprite_group,dokill=False):
+            if player.hand and player.state=='pick'or'jump':    
+                player.hand='apple'
+                apple.kill()
+
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 block_sprite_group=pygame.sprite.Group()
+
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player())
+player_sprite_group.add(player(800,300))
 while game_mode=='in_game':
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
@@ -78,7 +92,7 @@ while game_mode=='in_game':
             player.state='throw'
         if keys_pressed[pygame.K_s]:
             player.state='pick'
-    game_window.blit(pygame.image.load('rough.png').convert(),(0,450))#testin
+    game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
