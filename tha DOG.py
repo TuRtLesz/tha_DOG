@@ -18,14 +18,32 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,0)
-        player.max_velocity=70
+        player.max_velocity=200
         player.state='idle'
         player.hand=''
+        player.image_frame=0
+        player.run_image_list_right=[]
+        player.run_image_list_left=[]
+        player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
+        for image_x in range(0,2625,125):
+            player.import_image=pygame.Surface((125,247),pygame.SRCALPHA)
+            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,125,247))
+            player.run_image_list_right.append(player.import_image)
+            player.import_image=pygame.transform.flip(player.import_image,True,False)
+            player.run_image_list_left.append(player.import_image)
     def update(player,delta_time):
         if player.state=='run_right':
-            player.acceleration.x=30
+            player.acceleration.x=100
+            player.image_frame+=round(player.velocity.x//10)*delta_time
+            if round(player.image_frame)>=len(player.run_image_list_right):
+                player.image_frame=5
+            player.image=player.run_image_list_right[round(player.image_frame)]
         if player.state=='run_left':
-            player.acceleration.x=-30
+            player.acceleration.x==100
+            player.image_frame+=round(player.velocity.x//10)*delta_time
+            if round(player.image_frame)>=len(player.run_image_list_left):
+                player.image_frame=5
+            player.image=player.run_image_list_left[round(player.image_frame)]
         if player.velocity.x>player.max_velocity:
             player.velocity.x=player.max_velocity
         if player.velocity.x<-player.max_velocity:
@@ -52,7 +70,7 @@ block_sprite_group=pygame.sprite.Group()
 
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player(800,300))
+player_sprite_group.add(player(0,300))
 while game_mode=='in_game':
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
@@ -92,7 +110,7 @@ while game_mode=='in_game':
             player.state='throw'
         if keys_pressed[pygame.K_s]:
             player.state='pick'
-    game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
+    #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
