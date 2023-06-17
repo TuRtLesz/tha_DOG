@@ -34,19 +34,19 @@ class player(pygame.sprite.Sprite):
     def update(player,delta_time):
         if player.state=='run_right':
             player.acceleration.x=100
-            player.image_frame+=round(player.velocity.x//10)*delta_time
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_right):
                 player.image_frame=5
             player.image=player.run_image_list_right[round(player.image_frame)]
         if player.state=='run_left':
-            player.acceleration.x==100
-            player.image_frame+=round(player.velocity.x//10)*delta_time
+            player.acceleration.x=-100
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_left):
                 player.image_frame=5
             player.image=player.run_image_list_left[round(player.image_frame)]
-        if player.velocity.x>player.max_velocity:
+        if player.velocity.x>=player.max_velocity:
             player.velocity.x=player.max_velocity
-        if player.velocity.x<-player.max_velocity:
+        if player.velocity.x<=(-player.max_velocity):
             player.velocity.x=-(player.max_velocity)
         player.velocity+=player.acceleration*delta_time
         player.pos+=player.velocity*delta_time
@@ -63,21 +63,37 @@ class apple(pygame.sprite.Sprite):
                 player.hand='apple'
                 apple.kill()
 
+class camera():
+    def __init__(cam):
+        cam.offset=pygame.math.Vector2()
+    def draw(cam,player_sprite_group,sprite_group_list):
+        for player_sprite in player_sprite_group:
+            cam.offset.x=player_sprite.rect.centerx-(game_window.get_width()//2)
+            game_window.blit(player_sprite.image,(game_window.get_width()//2,game_window.get_height()//2))
+        for sprite_group in sprite_group_list:
+            for sprite in sprite_group:
+                game_window.blit(sprite.image,(sprite.rect.x+cam.offset.x,sprite.rect.y+cam.offset.y))
+
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 block_sprite_group=pygame.sprite.Group()
 
+camera=camera()
+
 prevoius_time=time.perf_counter()
 
 player_sprite_group.add(player(0,300))
 while game_mode=='in_game':
+    pygame.mouse.set_visible(False)
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     display_window.fill((255,255,255))
     game_window.fill((255,255,255))
     player_sprite_group.update(delta_time)
-    player_sprite_group.draw(game_window)
+    camera.draw(player_sprite_group,[block_sprite_group,dog_sprite_group,big_fat_guy_sprite_group])
+    for player in player_sprite_group:
+        print(player.pos,player.acceleration,player.velocity)
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:

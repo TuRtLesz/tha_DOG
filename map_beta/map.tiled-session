@@ -1,0 +1,60 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "reactive_blocks.tsx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "blocks.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "lvl_0.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 5648,
+                "y": 2304
+            }
+        },
+        "reactive_blocks.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tree.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "F:/g/turtle_games/tha_DOG/map_beta",
+    "map.height": 100,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 48,
+    "map.tileWidth": 48,
+    "map.width": 100,
+    "openFiles": [
+        "lvl_0.tmx",
+        "blocks.tsx",
+        "tree.tsx",
+        "reactive_blocks.tsx"
+    ],
+    "project": "map.tiled-project",
+    "recentFiles": [
+        "lvl_0.tmx",
+        "blocks.tsx",
+        "tree.tsx",
+        "reactive_blocks.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 48,
+        "width": 48
+    },
+    "tileset.type": 0
+}
