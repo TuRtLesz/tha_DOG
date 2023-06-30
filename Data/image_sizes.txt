@@ -1,1 +1,5 @@
 rat_run,dead- 66 37
+
+switch-58,40
+
+bomb -134 160

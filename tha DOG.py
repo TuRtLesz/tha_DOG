@@ -69,7 +69,7 @@ class camera():
     def draw(cam,player_sprite_group,sprite_group_list):
         for player_sprite in player_sprite_group:
             cam.offset.x=player_sprite.rect.centerx-(game_window.get_width()//2)
-            game_window.blit(player_sprite.image,(game_window.get_width()//2,game_window.get_height()//2))
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,game_window.get_height()//2))
         for sprite_group in sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x+cam.offset.x,sprite.rect.y+cam.offset.y))
