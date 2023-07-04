@@ -3,26 +3,40 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "reactive_blocks.tsx",
+    "activeFile": "lvl_0.tmx",
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "blocks.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
-        "lvl_0.tmx": {
-            "scale": 0.25,
+        "boss_fight.tmx": {
+            "scale": 0.1235,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 5648,
-                "y": 2304
+                "x": 2396.7611336032387,
+                "y": 2392.7125506072875
+            }
+        },
+        "lvl_0.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 4800,
+                "y": 2399.5
             }
         },
         "reactive_blocks.tsx": {
             "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "switch.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
@@ -32,8 +46,10 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "F:/g/turtle_games/tha_DOG/map_beta",
+    "last.exportedFilePath": "F:/g/turtle_games/tha_DOG/levels",
+    "last.imagePath": "F:/g/turtle_games/tha_DOG/Data/blocks/switch",
     "map.height": 100,
+    "map.lastUsedExportFilter": "CSV files (*.csv)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 48,
     "map.tileWidth": 48,
@@ -42,19 +58,23 @@
         "lvl_0.tmx",
         "blocks.tsx",
         "tree.tsx",
-        "reactive_blocks.tsx"
+        "reactive_blocks.tsx",
+        "switch.tsx",
+        "boss_fight.tmx"
     ],
     "project": "map.tiled-project",
     "recentFiles": [
-        "lvl_0.tmx",
-        "blocks.tsx",
+        "boss_fight.tmx",
+        "switch.tsx",
+        "reactive_blocks.tsx",
         "tree.tsx",
-        "reactive_blocks.tsx"
+        "blocks.tsx",
+        "lvl_0.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 48,
         "width": 48
     },
-    "tileset.type": 0
+    "tileset.type": 1
 }
