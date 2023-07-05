@@ -1,4 +1,4 @@
-import pygame,sys,time,random
+import pygame,sys,time,csv
 pygame.init()
 display_size=[pygame.display.Info().current_w,pygame.display.Info().current_h]
 game_window=pygame.Surface((display_size[0],display_size[1]))
@@ -7,7 +7,11 @@ pygame.display.set_caption('tha_DOG')
 pygame.display.set_icon(pygame.image.load('Data/icon/DOG.png').convert())
 clock=pygame.time.Clock()
 game_mode='in_game'
+
+save_data={'level':0}
+
 game_settings={'fullscreen':False}
+game_varibles={'current_level':save_data['level']}
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -52,48 +56,101 @@ class player(pygame.sprite.Sprite):
         player.pos+=player.velocity*delta_time
         player.rect.center=player.pos
 
-class apple(pygame.sprite.Sprite):
-    def __init__(apple,pos_x,pos_y):
-        apple.image=pygame.image.load('Data/tree/apple.png').convert()
-        apple.rect=apple.image.get_rect()
-        apple.rect.center=pos_x,pos_y
-    def update(apple):
-        for player in pygame.sprite.spritecollide(apple,player_sprite_group,dokill=False):
-            if player.hand and player.state=='pick'or'jump':    
-                player.hand='apple'
-                apple.kill()
+class tree(pygame.sprite.Sprite):
+    tree_image=pygame.image.load('Data/tree/tree.png').convert_alpha()
+    
+
+class block(pygame.sprite.Sprite):
+    sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert_alpha()
+    block_list=[]
+    for block_y in range(0,sprite_sheet.get_height()//48):
+        for block_x in range(0,sprite_sheet.get_width()//48):
+            image=pygame.Surface((48,48),pygame.SRCALPHA)
+            image.blit(sprite_sheet,(0,0),(block_x*48,block_y*48,48,48))
+            block_list.append(image)
+    def __init__(block_instance,block_id,x,y):
+        super().__init__()
+        block_instance.image=block.block_list[int(block_id)]
+        block_instance.rect=block_instance.image.get_rect(topleft=(x*48,y*48))
+        block_instance.mask=pygame.mask.from_surface(block_instance.image)
+class reactive_block(pygame.sprite.Sprite):
+    reactive_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks.png').convert_alpha()
+    block_list=[]
+    for block_y in range(0,reactive_sprite_sheet.get_height()//48):
+        for block_x in range(0,reactive_sprite_sheet.get_width()//48):
+            image=pygame.Surface((48,48),pygame.SRCALPHA)
+            image.blit(reactive_sprite_sheet,(0,0),(block_x*48,block_y*48,48,48))
+            block_list.append(image)
+    def __init__(block,block_id,x,y):
+        super().__init__()
+        block.image=reactive_block.block_list[int(block_id)]
+        block.rect=block.image.get_rect(topleft=(x*48,y*48))
+        block.mask=pygame.mask.from_surface(block.image)
 
 class camera():
     def __init__(cam):
         cam.offset=pygame.math.Vector2()
     def draw(cam,player_sprite_group,sprite_group_list):
         for player_sprite in player_sprite_group:
-            cam.offset.x=player_sprite.rect.centerx-(game_window.get_width()//2)
+            cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
             game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,game_window.get_height()//2))
         for sprite_group in sprite_group_list:
             for sprite in sprite_group:
-                game_window.blit(sprite.image,(sprite.rect.x+cam.offset.x,sprite.rect.y+cam.offset.y))
+                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
 
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 block_sprite_group=pygame.sprite.Group()
+reactive_block_sprite_group=pygame.sprite.Group()
+
+level_maps={'reactive_blocks':{0:[]},'blocks':{0:[]}}#importing levels
+for level_name in range(0,1):
+    with open(f'Data/levels/{level_name}/{level_name}_reactive_blocks.csv') as map:
+        level_reader=csv.reader(map,delimiter=',')
+        for row in level_reader:
+            level_maps['reactive_blocks'][level_name].append(row)
+    with open(f'Data/levels/{level_name}/{level_name}_blocks.csv') as map:
+        level_reader=csv.reader(map,delimiter=',')
+        for row in level_reader:
+            level_maps['blocks'][level_name].append(row)
 
 camera=camera()
 
+#loading map
+for row_number,row in enumerate(level_maps['blocks'][game_varibles['current_level']]):
+    for block_number,block_id in enumerate(row):
+        if block_id!='-1':
+            block_sprite_group.add(block(block_id,block_number,row_number))
+for row_number,row in enumerate(level_maps['reactive_blocks'][game_varibles['current_level']]):
+    for block_number,block_id in enumerate(row):    
+        if block_id!='-1': 
+            reactive_block_sprite_group.add(reactive_block(block_id,block_number,row_number))
+
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player(0,300))
+player_sprite_group.add(player(0,0))
 while game_mode=='in_game':
+    if game_varibles['current_level']!=save_data['level']:#loading map for new levels
+        for row_number,row in enumerate(level_maps['blocks'][game_varibles['current_level']]):
+            for block_number,block_id in enumerate(row):
+                block_sprite_group.add(block(block_id,block_number,row_number))
+        for row_number,row in enumerate(level_maps['reactive_blocks'][game_varibles['current_level']]):
+            for block_number,block_id in enumerate(row):
+                reactive_block_sprite_group.add(block(block_id,block_number,row_number))
+        save_data['level']=game_varibles['current_level']
     pygame.mouse.set_visible(False)
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     display_window.fill((255,255,255))
-    game_window.fill((255,255,255))
+    game_window.fill((150,200,0))#change later to white
     player_sprite_group.update(delta_time)
-    camera.draw(player_sprite_group,[block_sprite_group,dog_sprite_group,big_fat_guy_sprite_group])
-    for player in player_sprite_group:
-        print(player.pos,player.acceleration,player.velocity)
+    camera.draw(player_sprite_group,[block_sprite_group,
+                                     reactive_block_sprite_group,
+                                     dog_sprite_group,
+                                     big_fat_guy_sprite_group])
+    #for player in player_sprite_group:
+    #    print(player.pos,player.acceleration,player.velocity)
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
