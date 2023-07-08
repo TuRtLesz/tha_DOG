@@ -8,10 +8,10 @@ pygame.display.set_icon(pygame.image.load('Data/icon/DOG.png').convert())
 clock=pygame.time.Clock()
 game_mode='in_game'
 
-save_data={'level':0}
+save_data={'world':0}
 
 game_settings={'fullscreen':False}
-game_varibles={'current_level':save_data['level']}
+game_varibles={'current_world':save_data['world']}
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -58,7 +58,10 @@ class player(pygame.sprite.Sprite):
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree/tree.png').convert_alpha()
-    
+    def __init__(tree_instance,x,y):
+        super().__init__()
+        tree_instance.image=tree.tree_image
+        tree_instance.rect=tree_instance.image.get_rect(bottomleft=(x*48+48,y*48+48))
 
 class block(pygame.sprite.Sprite):
     sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert_alpha()
@@ -93,59 +96,79 @@ class camera():
     def draw(cam,player_sprite_group,sprite_group_list):
         for player_sprite in player_sprite_group:
             cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
-            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,game_window.get_height()//2))
         for sprite_group in sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+        for player_sprite in player_sprite_group:
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,game_window.get_height()//2))
 
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 block_sprite_group=pygame.sprite.Group()
 reactive_block_sprite_group=pygame.sprite.Group()
+tree_sprite_group=pygame.sprite.Group()
 
-level_maps={'reactive_blocks':{0:[]},'blocks':{0:[]}}#importing levels
-for level_name in range(0,1):
-    with open(f'Data/levels/{level_name}/{level_name}_reactive_blocks.csv') as map:
-        level_reader=csv.reader(map,delimiter=',')
-        for row in level_reader:
-            level_maps['reactive_blocks'][level_name].append(row)
-    with open(f'Data/levels/{level_name}/{level_name}_blocks.csv') as map:
-        level_reader=csv.reader(map,delimiter=',')
-        for row in level_reader:
-            level_maps['blocks'][level_name].append(row)
+world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'trees':{0:[]}}#importing worlds
+for world_name in range(0,1):
+    with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['reactive_blocks'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['blocks'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_trees.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['trees'][world_name].append(row)
 
 camera=camera()
 
 #loading map
-for row_number,row in enumerate(level_maps['blocks'][game_varibles['current_level']]):
+for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
     for block_number,block_id in enumerate(row):
         if block_id!='-1':
             block_sprite_group.add(block(block_id,block_number,row_number))
-for row_number,row in enumerate(level_maps['reactive_blocks'][game_varibles['current_level']]):
+for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
     for block_number,block_id in enumerate(row):    
         if block_id!='-1': 
             reactive_block_sprite_group.add(reactive_block(block_id,block_number,row_number))
+for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
+    for tree_number,tree_id in enumerate(row):    
+        if tree_id!='-1': 
+            tree_sprite_group.add(tree(tree_number,row_number))
 
 prevoius_time=time.perf_counter()
 
 player_sprite_group.add(player(0,0))
 while game_mode=='in_game':
-    if game_varibles['current_level']!=save_data['level']:#loading map for new levels
-        for row_number,row in enumerate(level_maps['blocks'][game_varibles['current_level']]):
+    if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
+        block_sprite_group.clear()
+        reactive_block_sprite_group.clear()
+        tree_sprite_group.clear()
+        for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
             for block_number,block_id in enumerate(row):
-                block_sprite_group.add(block(block_id,block_number,row_number))
-        for row_number,row in enumerate(level_maps['reactive_blocks'][game_varibles['current_level']]):
-            for block_number,block_id in enumerate(row):
-                reactive_block_sprite_group.add(block(block_id,block_number,row_number))
-        save_data['level']=game_varibles['current_level']
+                if block_id!='-1':
+                    block_sprite_group.add(block(block_id,block_number,row_number))
+        for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
+            for block_number,block_id in enumerate(row):    
+                if block_id!='-1': 
+                    reactive_block_sprite_group.add(reactive_block(block_id,block_number,row_number))
+        for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
+            for tree_number,tree_id in enumerate(row):    
+                if tree_id!='-1': 
+                    tree_sprite_group.add(reactive_block(tree_number,row_number))
+        save_data['world']=game_varibles['current_world']
     pygame.mouse.set_visible(False)
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     display_window.fill((255,255,255))
     game_window.fill((150,200,0))#change later to white
     player_sprite_group.update(delta_time)
-    camera.draw(player_sprite_group,[block_sprite_group,
+    camera.draw(player_sprite_group,[tree_sprite_group,
+                                     block_sprite_group,
                                      reactive_block_sprite_group,
                                      dog_sprite_group,
                                      big_fat_guy_sprite_group])

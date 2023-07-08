@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "lvl_0.tmx",
+    "activeFile": "world_0.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -28,11 +28,11 @@
             }
         },
         "lvl_0.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "scale": 0.33,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 4800,
-                "y": 1151.3333333333333
+                "x": 3396.969696969697,
+                "y": 640.909090909091
             }
         },
         "reactive_blocks.tsx": {
@@ -49,9 +49,17 @@
             "dynamicWrapping": true,
             "scaleInDock": 2,
             "scaleInEditor": 1
+        },
+        "world_0.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1000,
+                "y": 546.969696969697
+            }
         }
     },
-    "last.exportedFilePath": "F:/g/turtle_games/tha_DOG/Data/levels/0",
+    "last.exportedFilePath": "F:/g/turtle_games/tha_DOG/Data/worlds/0",
     "last.imagePath": "F:/g/turtle_games/tha_DOG/Data/blocks",
     "map.height": 100,
     "map.lastUsedExportFilter": "CSV files (*.csv)",
@@ -60,19 +68,19 @@
     "map.tileWidth": 48,
     "map.width": 100,
     "openFiles": [
-        "lvl_0.tmx",
-        "boss_fight.tmx",
         "blocks.tsx",
         "reactive_blocks.tsx",
         "switch.tsx",
-        "tree.tsx"
+        "tree.tsx",
+        "world_0.tmx"
     ],
     "project": "map.tiled-project",
     "recentFiles": [
-        "tree.tsx",
-        "switch.tsx",
-        "reactive_blocks.tsx",
         "blocks.tsx",
+        "reactive_blocks.tsx",
+        "switch.tsx",
+        "tree.tsx",
+        "world_0.tmx",
         "boss_fight.tmx",
         "lvl_0.tmx",
         "apple.tsx"
