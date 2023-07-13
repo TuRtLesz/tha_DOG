@@ -142,7 +142,7 @@ for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world
 
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player(0,0))
+player_sprite_group.add(player(100,0))
 while game_mode=='in_game':
     if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
         block_sprite_group.clear()
