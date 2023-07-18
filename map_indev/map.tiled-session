@@ -51,16 +51,16 @@
             "scaleInEditor": 1
         },
         "world_0.tmx": {
-            "scale": 0.33,
+            "scale": 0.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1000,
-                "y": 546.969696969697
+                "x": 8358,
+                "y": 946
             }
         }
     },
     "last.exportedFilePath": "F:/g/turtle_games/tha_DOG/Data/worlds/0",
-    "last.imagePath": "F:/g/turtle_games/tha_DOG/Data/blocks",
+    "last.imagePath": "F:/g/turtle_games/tha_DOG/map_indev",
     "map.height": 100,
     "map.lastUsedExportFilter": "CSV files (*.csv)",
     "map.lastUsedFormat": "tmx",
@@ -70,7 +70,6 @@
     "openFiles": [
         "blocks.tsx",
         "reactive_blocks.tsx",
-        "switch.tsx",
         "tree.tsx",
         "world_0.tmx"
     ],
@@ -78,9 +77,9 @@
     "recentFiles": [
         "blocks.tsx",
         "reactive_blocks.tsx",
-        "switch.tsx",
         "tree.tsx",
         "world_0.tmx",
+        "switch.tsx",
         "boss_fight.tmx",
         "lvl_0.tmx",
         "apple.tsx"
