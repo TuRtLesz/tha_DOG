@@ -21,7 +21,7 @@ class player(pygame.sprite.Sprite):
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
-        player.acceleration=pygame.math.Vector2(0,0)
+        player.acceleration=pygame.math.Vector2(0,100)
         player.max_velocity=200
         player.state='idle'
         player.hand=''
@@ -29,9 +29,9 @@ class player(pygame.sprite.Sprite):
         player.run_image_list_right=[]
         player.run_image_list_left=[]
         player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
-        for image_x in range(0,2625,125):
-            player.import_image=pygame.Surface((125,247),pygame.SRCALPHA)
-            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,125,247))
+        for image_x in range(0,player.run_image_spritesheet.get_width(),107):
+            player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
+            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
             player.run_image_list_right.append(player.import_image)
             player.import_image=pygame.transform.flip(player.import_image,True,False)
             player.run_image_list_left.append(player.import_image)
@@ -48,13 +48,34 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.run_image_list_left):
                 player.image_frame=5
             player.image=player.run_image_list_left[round(player.image_frame)]
+        if player.state=='jump':
+            player.velocity.y=-100
         if player.velocity.x>=player.max_velocity:
             player.velocity.x=player.max_velocity
         if player.velocity.x<=(-player.max_velocity):
             player.velocity.x=-(player.max_velocity)
-        player.velocity+=player.acceleration*delta_time
-        player.pos+=player.velocity*delta_time
-        player.rect.center=player.pos
+        if player.state!='idle':
+            player.velocity+=player.acceleration*delta_time
+            player.pos+=player.velocity*delta_time
+        else:
+            player.velocity.x=0
+            player.velocity.y+=player.acceleration.y*delta_time
+            player.pos.y+=player.velocity.y*delta_time
+        player.rect=player.image.get_rect(center=player.pos.xy)
+        for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
+            #pygame.draw.rect(game_window,(0,0,0),block.rect)
+            if block.id == '0':
+                player.rect.bottom=block.rect.top
+                player.pos.xy=player.rect.center
+            elif block.id == '1':
+                player.rect.bottom=block.rect.top
+                player.pos.xy=player.rect.center
+            elif block.id == '2':
+                player.rect.bottom=block.rect.top
+                player.pos.xy=player.rect.center
+            #pygame.draw.rect(game_window,(0,0,255),player.rect)
+        else:
+            player.rect.center=player.pos
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
@@ -73,6 +94,7 @@ class block(pygame.sprite.Sprite):
             block_list.append(image)
     def __init__(block_instance,block_id,x,y):
         super().__init__()
+        block_instance.id=block_id
         block_instance.image=block.block_list[int(block_id)]
         block_instance.rect=block_instance.image.get_rect(topleft=(x*48,y*48))
         block_instance.mask=pygame.mask.from_surface(block_instance.image)
@@ -84,7 +106,7 @@ class grass(pygame.sprite.Sprite):
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
         for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
-            player.state='sleath'
+            player.state='grass'
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
@@ -172,7 +194,7 @@ class rock(pygame.sprite.Sprite):
 class switch(pygame.sprite.Sprite):
     image_list=[]
     switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
-    for image_x in range(0,switch_sprite_sheet.get_width()//40):
+    for image_x in range(0,switch_sprite_sheet.get_width()//58):
         image=pygame.Surface((58,40),pygame.SRCALPHA)
         image.blit(switch_sprite_sheet,(0,0),(image_x*58,0,58,40))
         image_list.append(image)
@@ -180,7 +202,7 @@ class switch(pygame.sprite.Sprite):
         super().__init__()
         switch_instance.switch_image_list=switch.image_list
         switch_instance.image=switch_instance.switch_image_list[0]
-        switch_instance.rect=switch_instance.image.get_rect(topleft=(x*48,y*48))
+        switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
         switch_instance.frame=0
     def update(switch_instance,delta_time):
         for player in pygame.sprite.spritecollide(switch_instance,player_sprite_group,dokill=False):
@@ -201,12 +223,12 @@ class camera():
     def draw(cam,player_sprite_group,sprite_group_list):
         for player_sprite in player_sprite_group:
             cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
-            cam.offset.y=300
+            cam.offset.y=0
         for sprite_group in sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
         for player_sprite in player_sprite_group:
-            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,game_window.get_height()//2))
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,player_sprite.rect.top))
 
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
@@ -261,7 +283,7 @@ for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world
 
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player(100,0))
+player_sprite_group.add(player(300,550))
 while game_mode=='in_game':
     if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
         block_sprite_group.clear()
@@ -303,8 +325,10 @@ while game_mode=='in_game':
                                      reactive_block_sprite_group,
                                      dog_sprite_group,
                                      big_fat_guy_sprite_group])
-    #for player in player_sprite_group:
-    #    print(player.pos,player.acceleration,player.velocity)
+#    
+#    for player in player_sprite_group:
+#        print(str(player.pos),str(player.acceleration),str(player.velocity)+'\033c',end='')
+#
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -337,6 +361,8 @@ while game_mode=='in_game':
             player.state='intract'
         if keys_pressed[pygame.K_s]:
             player.state='pick'
+        if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE]):
+            player.state='idle'
     #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
