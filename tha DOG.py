@@ -22,7 +22,7 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,100)
-        player.max_velocity=200
+        player.max_velocity=pygame.math.Vector2(200,6000)
         player.state='idle'
         player.hand=''
         player.image_frame=0
@@ -50,10 +50,18 @@ class player(pygame.sprite.Sprite):
             player.image=player.run_image_list_left[round(player.image_frame)]
         if player.state=='jump':
             player.velocity.y=-100
-        if player.velocity.x>=player.max_velocity:
-            player.velocity.x=player.max_velocity
-        if player.velocity.x<=(-player.max_velocity):
-            player.velocity.x=-(player.max_velocity)
+        if player.state=='jump_right':
+            player.velocity.y=-100
+            player.velocity.x=50
+        elif player.state=='jump_left':
+            player.velocity.y=-100
+            player.velocity.x=-50
+        if player.velocity.x>=player.max_velocity.x:
+            player.velocity.x=player.max_velocity.x
+        if player.velocity.x<=(-player.max_velocity.x):
+            player.velocity.x=-(player.max_velocity.x)
+        if player.velocity.y>=player.max_velocity.y:
+            player.velocity.y=player.max_velocity.y
         if player.state!='idle':
             player.velocity+=player.acceleration*delta_time
             player.pos+=player.velocity*delta_time
@@ -73,7 +81,20 @@ class player(pygame.sprite.Sprite):
             elif block.id == '2':
                 player.rect.bottom=block.rect.top
                 player.pos.xy=player.rect.center
-            #pygame.draw.rect(game_window,(0,0,255),player.rect)
+        #    elif block.id == '92':
+        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
+        #        player.pos.xy=player.rect.center
+        #    elif block.id == '93':
+        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
+        #        player.pos.xy=player.rect.center
+        #    elif block.id == '94':
+        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
+        #        player.pos.xy=player.rect.center
+        #    #pygame.draw.rect(game_window,(0,0,255),player.rect)
+        #for block in block_sprite_group:
+        #    if block.id == '92' or '93' or '94':
+        #        for i in range(block.rect.x,block.rect.x+block.rect.width):
+        #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
         else:
             player.rect.center=player.pos
 
@@ -131,6 +152,7 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.rect=bomb_instance.image.get_rect(topleft=(x*48-117,y*48-96))
         bomb_instance.frame=0
         bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
+        bomb_instance.explode=False
     def update(bomb_instance,delta_time):
         for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             player.velocity.xy*-1#swing the player 
@@ -143,7 +165,7 @@ class bomb(pygame.sprite.Sprite):
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
                 bomb_instance.kill()
             else:
-                bomb_instance.image=bomb_instance.bomb_image_list[bomb_instance.frame]
+                bomb_instance.image=bomb_instance.bomb_image_list[int(bomb_instance.frame)]
 class bomb_land(pygame.sprite.Sprite):
     image_list=[]
     bomb_land_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/bomb_land.png').convert_alpha()
@@ -158,6 +180,7 @@ class bomb_land(pygame.sprite.Sprite):
         bomb.rect=bomb.image.get_rect(topleft=((x-2)*48,(y-2)*48))
         bomb.frame=0
         bomb.mask=pygame.mask.from_surface(bomb.image)
+        bomb.explode=False
     def update(bomb,delta_time):
         for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             player.velocity.xy*-1#swing the player 
@@ -170,7 +193,7 @@ class bomb_land(pygame.sprite.Sprite):
             if bomb.frame>len(bomb.bomb_image_list)-1:
                 bomb.kill()
             else:
-                bomb.image=bomb.bomb_image_list[bomb.frame]
+                bomb.image=bomb.bomb_image_list[int(bomb.frame)]
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
     def __init__(chain_instance,x,y):
@@ -190,7 +213,7 @@ class rock(pygame.sprite.Sprite):
         rock_instance.rect=rock_instance.image.get_rect(topleft=((x-1)*48,(y-1)*48))
         rock_instance.angle=0
     def update(rock_instance,delta_time):
-        rock_instance.image=pygame.transform.rotate(rock_instance,rock_instance.angle)#add colision and stuff later
+        rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
 class switch(pygame.sprite.Sprite):
     image_list=[]
     switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
@@ -204,6 +227,7 @@ class switch(pygame.sprite.Sprite):
         switch_instance.image=switch_instance.switch_image_list[0]
         switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
         switch_instance.frame=0
+        switch_instance.on=False
     def update(switch_instance,delta_time):
         for player in pygame.sprite.spritecollide(switch_instance,player_sprite_group,dokill=False):
             if player.state=='intract':
@@ -320,15 +344,16 @@ while game_mode=='in_game':
     display_window.fill((255,255,255))
     game_window.fill((150,200,0))#change later to white
     player_sprite_group.update(delta_time)
+    reactive_block_sprite_group.update(delta_time)
     camera.draw(player_sprite_group,[tree_sprite_group,
                                      block_sprite_group,
                                      reactive_block_sprite_group,
                                      dog_sprite_group,
                                      big_fat_guy_sprite_group])
-#    
-#    for player in player_sprite_group:
-#        print(str(player.pos),str(player.acceleration),str(player.velocity)+'\033c',end='')
-#
+    
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.acceleration),str(player.velocity)+'\033c',end='')
+
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -349,8 +374,12 @@ while game_mode=='in_game':
     for player in player_sprite_group:
         if keys_pressed[pygame.K_d]:
             player.state='run_right'
+            if keys_pressed[pygame.K_w]:
+                player.state='jump_right'
         if keys_pressed[pygame.K_a]:
             player.state='run_left'
+            if keys_pressed[pygame.K_w]:
+                player.state='jump_left'
         if keys_pressed[pygame.K_w]:
             player.state='jump'
             if keys_pressed[pygame.K_d]:
