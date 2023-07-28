@@ -22,7 +22,7 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,100)
-        player.max_velocity=pygame.math.Vector2(200,6000)
+        player.max_velocity=pygame.math.Vector2(200,5000)
         player.state='idle'
         player.hand=''
         player.image_frame=0
@@ -81,22 +81,32 @@ class player(pygame.sprite.Sprite):
             elif block.id == '2':
                 player.rect.bottom=block.rect.top
                 player.pos.xy=player.rect.center
-        #    elif block.id == '92':
-        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
-        #        player.pos.xy=player.rect.center
-        #    elif block.id == '93':
-        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
-        #        player.pos.xy=player.rect.center
-        #    elif block.id == '94':
-        #        player.rect.bottom=0.3488603*(player.rect.centerx-block.rect.x)+ 48.61957+block.rect.y
-        #        player.pos.xy=player.rect.center
-        #    #pygame.draw.rect(game_window,(0,0,255),player.rect)
-        #for block in block_sprite_group:
-        #    if block.id == '92' or '93' or '94':
-        #        for i in range(block.rect.x,block.rect.x+block.rect.width):
-        #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
+            #if pygame.sprite.collide_mask(player,block):
+            if block.id == '3':#ramps
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16#fix later
+                player.pos.xy=player.rect.center
+            elif block.id == '4':
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16
+                player.pos.xy=player.rect.center
+            elif block.id == '5':
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16
+                player.pos.xy=player.rect.center
+            elif block.id == '92':
+                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom#fix later
+                player.pos.xy=player.rect.center
+            elif block.id == '93':
+                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom
+                player.pos.xy=player.rect.center
+            elif block.id == '94':
+                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom
+                player.pos.xy=player.rect.center
+            #pygame.draw.rect(game_window,(0,0,255),player.rect)
         else:
             player.rect.center=player.pos
+        #for block in block_sprite_group:
+        #    if block.id == '92' or '93' or '94' or '3' or '4' or '5':
+        #        for i in range(block.rect.x,block.rect.x+block.rect.width):
+        #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
