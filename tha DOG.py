@@ -254,15 +254,22 @@ class switch(pygame.sprite.Sprite):
 class camera():
     def __init__(cam):
         cam.offset=pygame.math.Vector2()
+        cam.player_offset=pygame.math.Vector2()
     def draw(cam,player_sprite_group,sprite_group_list):
         for player_sprite in player_sprite_group:
-            cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
-            cam.offset.y=0
+            if player_sprite.pos.x<game_window.get_width()//2:
+                cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
+                cam.player_offset.y=0
+                cam.offset.xy=0,0
+            else:
+                cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
+                cam.offset.y=0
+                cam.player_offset.xy=0,0
         for sprite_group in sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
         for player_sprite in player_sprite_group:
-            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2,player_sprite.rect.top))
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
 
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
