@@ -49,12 +49,12 @@ class player(pygame.sprite.Sprite):
                 player.image_frame=5
             player.image=player.run_image_list_left[round(player.image_frame)]
         if player.state=='jump':
-            player.velocity.y=-100
+            player.velocity.y=-200
         if player.state=='jump_right':
-            player.velocity.y=-100
+            player.velocity.y=-200
             player.velocity.x=50
         elif player.state=='jump_left':
-            player.velocity.y=-100
+            player.velocity.y=-200
             player.velocity.x=-50
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
@@ -63,13 +63,16 @@ class player(pygame.sprite.Sprite):
         if player.velocity.y>=player.max_velocity.y:
             player.velocity.y=player.max_velocity.y
         if player.state!='idle':
-            player.velocity+=player.acceleration*delta_time
-            player.pos+=player.velocity*delta_time
+            if player.state!='pick':
+                if player.state!='interact':
+                    player.velocity+=player.acceleration*delta_time
+                    player.pos+=player.velocity*delta_time
         else:
             player.velocity.x=0
             player.velocity.y+=player.acceleration.y*delta_time
             player.pos.y+=player.velocity.y*delta_time
         player.rect=player.image.get_rect(center=player.pos.xy)
+        print(player.state)
         for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
             #pygame.draw.rect(game_window,(0,0,0),block.rect)
             if block.id == '0':
@@ -164,14 +167,30 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
-        for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            player.velocity.xy*-1#swing the player 
+        for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
             bomb_instance.explode=True
+            if player.state=='run_right':#does not work
+                player.velocity.xy=150,100
+                player.state='idle'
+            elif player.state=='run_left':
+                player.velocity.xy=-150,100
+                player.state='idle'
+            elif player.state=='jump_right':
+                player.velocity.xy=150,100
+                player.state='idle'
+            elif player.state=='jump_left':
+                player.velocity.xy=-150,100
+                player.state='idle'
+            elif player.state=='jump':
+                player.velocity.y=150
+                player.state='idle'
+            elif player.state=='idle':
+                player.velocity.y=150
         for bomb_rect in bomb_rect_sprite_group:
             if bomb_rect.explode:
-                bomb.explode=True
+                bomb_instance.explode=True
         if bomb_instance.explode:
-            bomb_instance.frame+=10*delta_time
+            bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
                 bomb_instance.kill()
             else:
@@ -192,14 +211,30 @@ class bomb_land(pygame.sprite.Sprite):
         bomb.mask=pygame.mask.from_surface(bomb.image)
         bomb.explode=False
     def update(bomb,delta_time):
-        for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            player.velocity.xy*-1#swing the player 
+        for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
             bomb.explode=True
+            if player.state=='run_right':
+                player.velocity.xy=150,100
+                player.state='idle'
+            elif player.state=='run_left':
+                player.velocity.xy=-150,100
+                player.state='idle'
+            elif player.state=='jump_right':
+                player.velocity.xy=150,100
+                player.state='idle'
+            elif player.state=='jump_left':
+                player.velocity.xy=-150,100
+                player.state='idle'
+            elif player.state=='jump':
+                player.velocity.y=150
+                player.state='idle'
+            elif player.state=='idle':
+                player.velocity.y=150
         for bomb_rect in bomb_rect_sprite_group:
             if bomb_rect.explode:
                 bomb.explode=True
         if bomb.explode:
-            bomb.frame+=10*delta_time
+            bomb.frame+=4*delta_time
             if bomb.frame>len(bomb.bomb_image_list)-1:
                 bomb.kill()
             else:
@@ -324,7 +359,7 @@ for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world
 
 prevoius_time=time.perf_counter()
 
-player_sprite_group.add(player(300,550))
+player_sprite_group.add(player(550,550))
 while game_mode=='in_game':
     if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
         block_sprite_group.clear()
@@ -404,7 +439,7 @@ while game_mode=='in_game':
             elif keys_pressed[pygame.K_a]:
                 player.state='jump_left'
         if keys_pressed[pygame.K_SPACE]:
-            player.state='intract'
+            player.state='interact'
         if keys_pressed[pygame.K_s]:
             player.state='pick'
         if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE]):
