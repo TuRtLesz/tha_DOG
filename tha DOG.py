@@ -86,22 +86,22 @@ class player(pygame.sprite.Sprite):
                 player.pos.xy=player.rect.center
             #if pygame.sprite.collide_mask(player,block):
             if block.id == '3':#ramps
-                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16#fix later
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-18#fix later
                 player.pos.xy=player.rect.center
             elif block.id == '4':
-                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-18
                 player.pos.xy=player.rect.center
             elif block.id == '5':
-                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-16
+                player.rect.bottom=-0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom-18
                 player.pos.xy=player.rect.center
             elif block.id == '92':
-                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom#fix later
+                player.rect.bottom=32-(0.3488603*(player.pos.x-block.rect.x))+block.rect.bottom#fix later
                 player.pos.xy=player.rect.center
             elif block.id == '93':
-                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom
+                player.rect.bottom=32-(0.3488603*(player.pos.x-block.rect.x))+block.rect.bottom
                 player.pos.xy=player.rect.center
             elif block.id == '94':
-                player.rect.bottom=0.3488603*(player.pos.x-block.rect.x)+block.rect.bottom
+                player.rect.bottom=32-(0.3488603*(player.pos.x-block.rect.x))+block.rect.bottom
                 player.pos.xy=player.rect.center
             #pygame.draw.rect(game_window,(0,0,255),player.rect)
         else:
@@ -290,21 +290,28 @@ class camera():
     def __init__(cam):
         cam.offset=pygame.math.Vector2()
         cam.player_offset=pygame.math.Vector2()
-    def draw(cam,player_sprite_group,sprite_group_list):
+    def draw(cam,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list):
         for player_sprite in player_sprite_group:
             if player_sprite.pos.x<game_window.get_width()//2:
                 cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
-                cam.player_offset.y=0
-                cam.offset.xy=0,0
+                cam.offset.x=0
             else:
                 cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
+                cam.player_offset.x=0
+            if player_sprite.pos.y>game_window.get_height()-300:
+                cam.player_offset.y=player_sprite.pos.y-(game_window.get_height()-300)
+                cam.offset.y=player_sprite.pos.y-(game_window.get_height()-300)
+            else:
                 cam.offset.y=0
-                cam.player_offset.xy=0,0
-        for sprite_group in sprite_group_list:
+                cam.player_offset.y=0
+        for sprite_group in below_player_sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
         for player_sprite in player_sprite_group:
             game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
+        for sprite_group in above_player_sprite_group_list:
+            for sprite in sprite_group:
+                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
 
 player_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
@@ -397,9 +404,10 @@ while game_mode=='in_game':
     game_window.fill((150,200,0))#change later to white
     player_sprite_group.update(delta_time)
     reactive_block_sprite_group.update(delta_time)
-    camera.draw(player_sprite_group,[tree_sprite_group,
+    camera.draw([reactive_block_sprite_group],
+                player_sprite_group,
+                [tree_sprite_group,
                                      block_sprite_group,
-                                     reactive_block_sprite_group,
                                      dog_sprite_group,
                                      big_fat_guy_sprite_group])
     

@@ -52,10 +52,10 @@
         },
         "world_0.tmx": {
             "scale": 0.5,
-            "selectedLayer": 2,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 8830,
-                "y": 496
+                "x": 8590,
+                "y": 1176
             }
         }
     },
