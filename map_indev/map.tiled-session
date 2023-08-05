@@ -9,6 +9,11 @@
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "animals.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "apple.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 2,
@@ -35,6 +40,11 @@
                 "y": 640.909090909091
             }
         },
+        "mobs.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "reactive_blocks.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 0.75,
@@ -52,10 +62,10 @@
         },
         "world_0.tmx": {
             "scale": 0.33,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 7448.484848484848,
-                "y": 1045.4545454545455
+                "x": 1606.060606060606,
+                "y": 818.1818181818182
             }
         }
     },
@@ -71,14 +81,17 @@
         "world_0.tmx",
         "blocks.tsx",
         "reactive_blocks.tsx",
-        "tree.tsx"
+        "tree.tsx",
+        "mobs.tsx"
     ],
     "project": "map.tiled-project",
     "recentFiles": [
+        "mobs.tsx",
         "tree.tsx",
         "reactive_blocks.tsx",
         "blocks.tsx",
         "world_0.tmx",
+        "animals.tsx",
         "switch.tsx",
         "boss_fight.tmx",
         "lvl_0.tmx",
@@ -89,5 +102,5 @@
         "height": 48,
         "width": 48
     },
-    "tileset.type": 1
+    "tileset.type": 0
 }

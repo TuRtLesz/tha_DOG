@@ -33,8 +33,7 @@ class player(pygame.sprite.Sprite):
             player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
             player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
             player.run_image_list_right.append(player.import_image)
-            player.import_image=pygame.transform.flip(player.import_image,True,False)
-            player.run_image_list_left.append(player.import_image)
+            player.run_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
     def update(player,delta_time):
         if player.state=='run_right':
             player.acceleration.x=100
@@ -148,6 +147,66 @@ class player(pygame.sprite.Sprite):
         #        for i in range(block.rect.x,block.rect.x+block.rect.width):
         #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
 
+class rat(pygame.sprite.Sprite):
+    rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
+    rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_dead.png').convert_alpha()
+    rat_run_right_list=[]
+    rat_dead_right_list=[]
+    rat_run_left_list=[]
+    rat_dead_left_list=[]
+    for image_x in range(0,rat_run_sprite_sheet.get_width()//66):
+        image=pygame.Surface((66,37),pygame.SRCALPHA)
+        image.blit(rat_run_sprite_sheet,(0,0),(image_x*66,0,66,37))
+        rat_run_left_list.append(image)
+        rat_run_right_list.append(pygame.transform.flip(image,True,False))
+    for image_x in range(0,rat_dead_sprite_sheet.get_width()//66):
+        image=pygame.Surface((66,37),pygame.SRCALPHA)
+        image.blit(rat_dead_sprite_sheet,(0,0),(image_x*66,0,66,37))
+        rat_dead_left_list.append(image)
+        rat_dead_right_list.append(pygame.transform.flip(image,True,False))
+    def __init__(rat_instance,x,y):
+        super().__init__()
+        rat_instance.image=rat.rat_run_left_list[0]
+        rat_instance.rect=rat_instance.image.get_rect(topleft=(x*48,(y*48)+16))
+        rat_instance.mask=pygame.mask.from_surface(rat_instance.image)
+        rat_instance.frame=0
+        rat_instance.dead=False
+        rat_instance.velocity=pygame.math.Vector2(-10,0)
+        rat_instance.pos=pygame.math.Vector2(rat_instance.rect.center)
+    def update(rat_instance,delta_time):
+        for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+            if player.state=='jump':
+                rat_instance.dead=True
+            elif player.state=='jump_right':
+                rat_instance.dead=True
+            elif player.state=='jump_left':
+                rat_instance.dead=True
+        if rat_instance.dead:
+            if rat_instance.frame>len(rat.rat_dead_right_list)-1:
+                rat_instance.kill()
+            if rat_instance.velocity.x>0:
+                rat_instance.image=rat.rat_dead_right_list[round(rat_instance.frame)]
+            elif rat_instance.velocity.x<0:
+                rat_instance.image=rat.rat_dead_left_list[round(rat_instance.frame)]
+            rat_instance.frame+=8*delta_time
+        else:
+            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                if block.id=='41':#rat_hole
+                    rat_instance.velocity.x=-70
+                elif block.id=='37':#rock
+                    rat_instance.velocity.x=70
+                elif block.id=='91':#rock_long
+                    rat_instance.velocity.x=70
+            rat_instance.pos.x+=rat_instance.velocity.x*delta_time
+            rat_instance.rect.center=rat_instance.pos
+            if rat_instance.frame>len(rat.rat_run_right_list)-1:
+                rat_instance.frame=0
+            if rat_instance.velocity.x>0:
+                rat_instance.image=rat.rat_run_right_list[round(rat_instance.frame)]
+            elif rat_instance.velocity.x<0:
+                rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
+            rat_instance.frame+=10*delta_time
+
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
     def __init__(tree_instance,x,y):
@@ -169,6 +228,7 @@ class block(pygame.sprite.Sprite):
         block_instance.image=block.block_list[int(block_id)]
         block_instance.rect=block_instance.image.get_rect(topleft=(x*48,y*48))
         block_instance.mask=pygame.mask.from_surface(block_instance.image)
+
 class grass(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/grass.png').convert_alpha()
     def __init__(grass_instance,x,y):
@@ -351,14 +411,17 @@ class camera():
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
 
 player_sprite_group=pygame.sprite.Group()
+
+rat_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
+
 block_sprite_group=pygame.sprite.Group()
 bomb_rect_sprite_group=pygame.sprite.Group()
 reactive_block_sprite_group=pygame.sprite.Group()
 tree_sprite_group=pygame.sprite.Group()
 
-world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'trees':{0:[]}}#importing worlds
+world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -372,6 +435,10 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['trees'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_mobs.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['mobs'][world_name].append(row)
 
 camera=camera()
 
@@ -400,6 +467,10 @@ for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world
     for tree_number,tree_id in enumerate(row):    
         if tree_id!='-1': 
             tree_sprite_group.add(tree(tree_number,row_number))
+for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
+    for mob_x,mob_id in enumerate(row):  
+        if mob_id=='0':
+            rat_sprite_group.add(rat(mob_x,mob_y))
 
 prevoius_time=time.perf_counter()
 
@@ -433,6 +504,10 @@ while game_mode=='in_game':
             for tree_number,tree_id in enumerate(row):    
                 if tree_id!='-1': 
                     tree_sprite_group.add(tree(tree_number,row_number))
+        for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
+            for mob_x,mob_id in enumerate(row):  
+                if mob_id=='0':
+                    rat_sprite_group.add(rat(mob_x,mob_y))
         save_data['world']=game_varibles['current_world']
     pygame.mouse.set_visible(False)
     delta_time=time.perf_counter()-prevoius_time
@@ -440,13 +515,11 @@ while game_mode=='in_game':
     display_window.fill((255,255,255))
     game_window.fill((255,255,255))#change later to white
     player_sprite_group.update(delta_time)
+    rat_sprite_group.update(delta_time)
     reactive_block_sprite_group.update(delta_time)
-    camera.draw([reactive_block_sprite_group],
+    camera.draw([reactive_block_sprite_group,rat_sprite_group],
                 player_sprite_group,
-                [tree_sprite_group,
-                                     block_sprite_group,
-                                     dog_sprite_group,
-                                     big_fat_guy_sprite_group])
+                [tree_sprite_group,block_sprite_group])
     
     for player in player_sprite_group:
         print(str(player.pos),str(player.acceleration),str(player.velocity)+'\033c',end='')
