@@ -1,4 +1,4 @@
-import pygame,sys,time,csv
+import pygame,sys,time,csv,numpy
 pygame.init()
 display_size=[pygame.display.Info().current_w,pygame.display.Info().current_h]
 game_window=pygame.Surface((display_size[0],display_size[1]))
@@ -25,6 +25,7 @@ class player(pygame.sprite.Sprite):
         player.max_velocity=pygame.math.Vector2(200,5000)
         player.state='idle'
         player.hand=''
+        player.flower_count=0
         player.image_frame=0
         player.run_image_list_right=[]
         player.run_image_list_left=[]
@@ -69,6 +70,9 @@ class player(pygame.sprite.Sprite):
                     player.pos+=player.velocity*delta_time
         else:
             player.velocity.x=0
+            player.velocity.y+=player.acceleration.y*delta_time
+            player.pos.y+=player.velocity.y*delta_time
+        if player.state=='pick' or player.state=='interact':
             player.velocity.y+=player.acceleration.y*delta_time
             player.pos.y+=player.velocity.y*delta_time
         player.rect=player.image.get_rect(center=player.pos.xy)
@@ -237,7 +241,7 @@ class grass(pygame.sprite.Sprite):
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
         for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
-            player.state='grass'
+            player.state='grass'   
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
@@ -246,8 +250,20 @@ class apple(pygame.sprite.Sprite):
         apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,y*48))
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):
-            player.hand='apple'
-            apple_instance.kill()
+            if player.state=='pick':
+                player.hand='apple'
+                apple_instance.kill()
+class flower(pygame.sprite.Sprite):
+    image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
+    def __init__(flower_instance,x,y):
+        super().__init__()
+        flower_instance.image=flower.image
+        flower_instance.rect=flower_instance.image.get_rect(topleft=(x*48,y*48))
+    def update(flower_instance,delta_time):
+        for player in pygame.sprite.spritecollide(flower_instance,player_sprite_group,dokill=False):
+            if player.state=='pick':
+                player.flower_count+=1
+                flower_instance.kill()
 class bomb(pygame.sprite.Sprite):
     image_list=[]
     bomb_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha()
@@ -463,6 +479,8 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
             reactive_block_sprite_group.add(rock(block_number,row_number))
         elif block_id=='6':
             reactive_block_sprite_group.add(switch(block_number,row_number))
+        elif block_id=='7':
+            reactive_block_sprite_group.add(flower(block_number,row_number))
 for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
     for tree_number,tree_id in enumerate(row):    
         if tree_id!='-1': 
@@ -500,6 +518,8 @@ while game_mode=='in_game':
                     reactive_block_sprite_group.add(rock(block_number,row_number))
                 elif block_id=='6':
                     reactive_block_sprite_group.add(switch(block_number,row_number))
+                elif block_id=='7':
+                    reactive_block_sprite_group.add(flower(block_number,row_number))
         for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
             for tree_number,tree_id in enumerate(row):    
                 if tree_id!='-1': 
