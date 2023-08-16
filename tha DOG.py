@@ -399,6 +399,7 @@ class switch(pygame.sprite.Sprite):
             else:
                 switch_instance.frame+=10*delta_time
                 switch_instance.image=switch_instance.switch_instance_image_list[bomb.frame]
+                
 class camera():
     def __init__(cam):
         cam.offset=pygame.math.Vector2()
