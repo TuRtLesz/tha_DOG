@@ -154,9 +154,14 @@ class player(pygame.sprite.Sprite):
         for water_line in player.water_hitlines:
             if player.rect.clipline(water_line)!=():
                 #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
+                if numpy.random.randint(0,7)==1:
+                    bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
                 for water_dot in water_dot_sprite_group:
                     if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
-                        water_dot.force=20
+                        water_dot.force=30
+                    #if water_dot.dest_pos.x<player.rect.centerx-15:
+                    #    water_dot.force=20
+                    #    water_dot.spread_dir='left'
 
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
@@ -217,13 +222,6 @@ class rat(pygame.sprite.Sprite):
             elif rat_instance.velocity.x<0:
                 rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
             rat_instance.frame+=10*delta_time
-
-class tree(pygame.sprite.Sprite):
-    tree_image=pygame.image.load('Data/tree.png').convert_alpha()
-    def __init__(tree_instance,x,y):
-        super().__init__()
-        tree_instance.image=tree.tree_image
-        tree_instance.rect=tree_instance.image.get_rect(bottomleft=((x+1)*48,(y+1)*48))
 
 class block(pygame.sprite.Sprite):
     sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert_alpha()
@@ -312,6 +310,8 @@ class bomb(pygame.sprite.Sprite):
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
+                for bubble_count in range(numpy.random.randint(5,10)):
+                    bubble_sprite_group.add(bubble(numpy.random.randint(bomb_instance.rect.x,bomb_instance.rect.x+bomb_instance.image.get_width()),numpy.random.randint(bomb_instance.rect.y,bomb_instance.rect.bottom),round(numpy.random.uniform(0.1,2),ndigits=1)))
                 bomb_instance.kill()
             else:
                 bomb_instance.image=bomb_instance.bomb_image_list[int(bomb_instance.frame)]
@@ -395,7 +395,7 @@ class switch(pygame.sprite.Sprite):
         switch_instance.on=False
     def update(switch_instance,delta_time):
         for player in pygame.sprite.spritecollide(switch_instance,player_sprite_group,dokill=False):
-            if player.state=='intract':
+            if player.state=='interact':
                 switch_instance.on=True
                 for bomb_rect in pygame.sprite.spritecollide(switch_instance,bomb_rect_sprite_group,dokill=False):
                     bomb_rect.explode=True
@@ -407,6 +407,29 @@ class switch(pygame.sprite.Sprite):
                 switch_instance.frame+=10*delta_time
                 switch_instance.image=switch_instance.switch_instance_image_list[bomb.frame]
                 
+class tree(pygame.sprite.Sprite):
+    tree_image=pygame.image.load('Data/tree.png').convert_alpha()
+    def __init__(tree_instance,x,y):
+        super().__init__()
+        tree_instance.image=tree.tree_image
+        tree_instance.rect=tree_instance.image.get_rect(bottomleft=((x+1)*48,(y+1)*48))
+class bubble(pygame.sprite.Sprite):
+    bubble_image=pygame.image.load('Data/bubble.png').convert_alpha()
+    water_hitlines=[]
+    def __init__(bubble_instance,x,y,bubble_size):
+        super().__init__()
+        bubble_instance.size=bubble_size
+        bubble_instance.image=pygame.transform.scale_by(bubble.bubble_image,bubble_size)
+        bubble_instance.rect=bubble_instance.image.get_rect(center=(x,y))
+    def update(bubble_instance,delta_time):
+        game_window.blit(bubble_instance.image,bubble_instance.rect)
+        bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
+        for water_line in bubble.water_hitlines:
+            if bubble_instance.rect.clipline(water_line)!=():
+                for water_dot in water_dot_sprite_group:
+                    if bubble_instance.rect.centerx-15<water_dot.dest_pos.x<bubble_instance.rect.centerx+15:
+                        water_dot.force=bubble_instance.size*10
+                bubble_instance.kill()
 class water_dot(pygame.sprite.Sprite):
     def __init__(water_dot,pos):
         super().__init__()
@@ -414,7 +437,21 @@ class water_dot(pygame.sprite.Sprite):
         water_dot.pos=pos[1]
         water_dot.force=0
         water_dot.damping=1
+        #water_dot.spread_dir=None
+        #water_dot.spread_resistence=0.5
     def update(water_dot):
+        #if water_dot.spread_dir=='left':
+        #    for fellow_water_dot in water_dot_sprite_group:
+        #        if fellow_water_dot.dest_pos.x==water_dot.dest_pos.x-15:
+        #            fellow_water_dot.force=water_dot.force-water_dot.spread_resistence
+        #            fellow_water_dot.spread_dir='left'
+        #    water_dot.spread_dir=None
+        #elif water_dot.spread_dir=='right':
+        #    for fellow_water_dot in water_dot_sprite_group:
+        #        if fellow_water_dot.dest_pos.x==water_dot.dest_pos.x+15:
+        #            fellow_water_dot.force=water_dot.force-water_dot.spread_resistence
+        #            fellow_water_dot.spread_dir='left'
+        #    water_dot.spread_dir=None
         if water_dot.pos-water_dot.dest_pos.y>0:
             water_dot.pos-=water_dot.force
         elif water_dot.pos-water_dot.dest_pos.y<=0:
@@ -430,6 +467,24 @@ class camera():
         cam.offset=pygame.math.Vector2()
         cam.player_offset=pygame.math.Vector2()
     def draw(cam,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
+        for player_sprite in player_sprite_group:
+            if player_sprite.pos.x<game_window.get_width()//2:
+                cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
+                cam.offset.x=0
+            else:
+                cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
+                cam.player_offset.x=0
+            if player_sprite.pos.y>game_window.get_height()-300:
+                cam.player_offset.y=player_sprite.pos.y-(game_window.get_height()-300)
+                cam.offset.y=player_sprite.pos.y-(game_window.get_height()-300)
+            else:
+                cam.offset.y=0
+                cam.player_offset.y=0
+        for sprite_group in below_player_sprite_group_list:
+            for sprite in sprite_group:
+                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+        for player_sprite in player_sprite_group:
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
         #rendering waves?
         cam.water_bodies_list_counter=0
         cam.water_bodies={}
@@ -460,24 +515,6 @@ class camera():
                 else:
                     pygame.draw.line(game_window,(0,0,0),cam.prev_water_dot_pos-cam.offset,(water_dot_x-cam.offset.x,water_dot_y-cam.offset.y))
                     cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
-        for player_sprite in player_sprite_group:
-            if player_sprite.pos.x<game_window.get_width()//2:
-                cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
-                cam.offset.x=0
-            else:
-                cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
-                cam.player_offset.x=0
-            if player_sprite.pos.y>game_window.get_height()-300:
-                cam.player_offset.y=player_sprite.pos.y-(game_window.get_height()-300)
-                cam.offset.y=player_sprite.pos.y-(game_window.get_height()-300)
-            else:
-                cam.offset.y=0
-                cam.player_offset.y=0
-        for sprite_group in below_player_sprite_group_list:
-            for sprite in sprite_group:
-                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
-        for player_sprite in player_sprite_group:
-            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
         for sprite_group in above_player_sprite_group_list:
             for sprite in sprite_group:
                 game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
@@ -492,6 +529,7 @@ block_sprite_group=pygame.sprite.Group()
 bomb_rect_sprite_group=pygame.sprite.Group()
 reactive_block_sprite_group=pygame.sprite.Group()
 tree_sprite_group=pygame.sprite.Group()
+bubble_sprite_group=pygame.sprite.Group()
 
 water_dot_sprite_group=pygame.sprite.Group()
 
@@ -569,6 +607,7 @@ for key in water_bodies:
     water_bodies_list=water_bodies[key]
     for player in player_sprite_group:
         player.water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
+    bubble.water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
 
 prevoius_time=time.perf_counter()
 
@@ -627,6 +666,7 @@ while game_mode=='in_game':
             water_bodies_list=water_bodies[key]
             for player in player_sprite_group:
                 player.water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
+            bubble.water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
         save_data['world']=game_varibles['current_world']
     pygame.mouse.set_visible(False)
     delta_time=time.perf_counter()-prevoius_time
@@ -637,9 +677,11 @@ while game_mode=='in_game':
     rat_sprite_group.update(delta_time)
     reactive_block_sprite_group.update(delta_time)
     water_dot_sprite_group.update()
-    camera.draw([reactive_block_sprite_group,rat_sprite_group],
+    bubble_sprite_group.update(delta_time)
+    camera.draw([reactive_block_sprite_group,rat_sprite_group,bubble_sprite_group],
                 player_sprite_group,
-                [tree_sprite_group,block_sprite_group],water_dot_sprite_group)
+                [tree_sprite_group,block_sprite_group],
+                water_dot_sprite_group)
     
     #for player in player_sprite_group:
     #    print(str(player.pos),str(player.acceleration),str(player.velocity)+player.state+'\033c',end='')
