@@ -153,10 +153,10 @@ class player(pygame.sprite.Sprite):
         #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
         for water_line in player.water_hitlines:
             if player.rect.clipline(water_line)!=():
-                if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
-                    for water_dot in water_dot_sprite_group:
-                        if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
-                            water_dot.force=4
+                #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
+                for water_dot in water_dot_sprite_group:
+                    if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
+                        water_dot.force=20
 
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
@@ -416,9 +416,9 @@ class water_dot(pygame.sprite.Sprite):
         water_dot.damping=1
     def update(water_dot):
         if water_dot.pos-water_dot.dest_pos.y>0:
-            water_dot.pos-=water_dot.force*delta_time
+            water_dot.pos-=water_dot.force
         elif water_dot.pos-water_dot.dest_pos.y<=0:
-            water_dot.pos+=water_dot.force*delta_time
+            water_dot.pos+=water_dot.force
         if abs(water_dot.force)>0:
             if water_dot.force>0:
                 water_dot.force=water_dot.force-water_dot.damping
