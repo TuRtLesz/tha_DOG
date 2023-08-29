@@ -24,28 +24,64 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,100)
         player.max_velocity=pygame.math.Vector2(200,5000)
+        player.health=300
+        player.stamina=1000
         player.state='idle'
         player.hand=''
         player.flower_count=0
         player.image_frame=0
         player.run_image_list_right=[]
         player.run_image_list_left=[]
+        player.pant_image_list_right=[]
+        player.pant_image_list_left=[]
         player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
+        player.pant_image_spritesheet=pygame.image.load('Data/player/player_pant.png').convert_alpha()
         for image_x in range(0,player.run_image_spritesheet.get_width(),107):
             player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
             player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
             player.run_image_list_right.append(player.import_image)
             player.run_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
+        for image_x in range(0,player.pant_image_spritesheet.get_width(),109):
+            player.import_image=pygame.Surface((109,210),pygame.SRCALPHA)
+            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,109,210))
+            player.pant_image_list_right.append(player.import_image)
+            player.pant_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.water_hitlines=[]#for water collsion 
     def update(player,delta_time):
+        if player.stamina<=10:
+            player.state='pant'
+        if player.state=='idle':
+            if player.stamina<500:
+                player.state=='pant'
+        if player.state=='pant':
+            player.stamina+=200*delta_time
+            player.image_frame+=10*delta_time
         if player.state=='run_right':
-            player.acceleration.x=100
+            player.max_velocity.x=200
+            player.acceleration.x=50
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
+            if round(player.image_frame)>=len(player.run_image_list_right):
+                player.image_frame=5
+            player.image=player.run_image_list_right[round(player.image_frame)]
+        if player.state=='sprint_right':
+            player.max_velocity.x=300
+            player.stamina-=100*delta_time
+            player.acceleration.x=150
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_right):
                 player.image_frame=5
             player.image=player.run_image_list_right[round(player.image_frame)]
         if player.state=='run_left':
-            player.acceleration.x=-100
+            player.max_velocity.x=200
+            player.acceleration.x=-50
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
+            if round(player.image_frame)>=len(player.run_image_list_left):
+                player.image_frame=5
+            player.image=player.run_image_list_left[round(player.image_frame)]
+        if player.state=='sprint_left':
+            player.max_velocity.x=300
+            player.stamina-=100*delta_time
+            player.acceleration.x=-150
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_left):
                 player.image_frame=5
@@ -554,7 +590,7 @@ for world_name in range(0,1):
 
 camera=camera()
 
-player_sprite_group.add(player(4000,550))#550
+player_sprite_group.add(player(550,550))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -683,8 +719,8 @@ while game_mode=='in_game':
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.acceleration),str(player.velocity)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.acceleration),str(player.velocity)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
@@ -705,13 +741,19 @@ while game_mode=='in_game':
                     game_settings['fullscreen']=False
     for player in player_sprite_group:
         if keys_pressed[pygame.K_d]:
-            player.state='run_right'
+            if player.state[0:6]!='sprint':
+                player.state='run_right'
             if keys_pressed[pygame.K_w]:
                 player.state='jump_right'
+            if keys_pressed[pygame.K_LSHIFT]:
+                player.state='sprint_right'
         if keys_pressed[pygame.K_a]:
-            player.state='run_left'
+            if player.state[0:6]!='sprint':
+                player.state='run_left'
             if keys_pressed[pygame.K_w]:
                 player.state='jump_left'
+            if keys_pressed[pygame.K_LSHIFT]:
+                player.state='sprint_left'
         if keys_pressed[pygame.K_w]:
             player.state='jump'
             if keys_pressed[pygame.K_d]:
