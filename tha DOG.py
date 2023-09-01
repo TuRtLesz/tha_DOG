@@ -17,16 +17,13 @@ game_varibles={'current_world':save_data['world']}
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
-        player.image=pygame.image.load('temp.png').convert()
-        player.rect=player.image.get_rect()
-        player.rect.center=spawn_x,spawn_y
-        player.pos=pygame.math.Vector2(player.rect.center)
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,100)
         player.max_velocity=pygame.math.Vector2(200,5000)
         player.health=300
         player.stamina=1000
         player.state='idle'
+        player.direction='right'
         player.hand=''
         player.flower_count=0
         player.image_frame=0
@@ -43,49 +40,65 @@ class player(pygame.sprite.Sprite):
             player.run_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         for image_x in range(0,player.pant_image_spritesheet.get_width(),109):
             player.import_image=pygame.Surface((109,210),pygame.SRCALPHA)
-            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,109,210))
+            player.import_image.blit(player.pant_image_spritesheet,(0,0),(image_x,0,109,210))
             player.pant_image_list_right.append(player.import_image)
             player.pant_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.water_hitlines=[]#for water collsion 
+        player.image=player.run_image_list_right[0]
+        player.rect=player.image.get_rect()
+        player.rect.center=spawn_x,spawn_y
+        player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):
-        if player.stamina<=10:
-            player.state='pant'
+        if player.stamina<1000:
+                if player.state=='idle':
+                    player.state='pant'
+                    player.image_frame=0
+                if player.stamina<0:
+                    if player.state=='run' or player.state=='sprint' or player.state=='jump' or player.state=='jump_right' or player.state=='jump_left':
+                        player.state='fall'
+        elif player.stamina>=1000:
+            player.stamina=1000
+            if player.state=='pant':
+                player.state='idle'
         if player.state=='idle':
-            if player.stamina<500:
-                player.state=='pant'
+            player.image_frame=0
+            if player.direction=='right':
+                player.image=player.run_image_list_right[0]
+            elif player.direction=='left':
+                player.image=player.run_image_list_left[0]
         if player.state=='pant':
             player.stamina+=200*delta_time
+            if player.image_frame>=len(player.pant_image_list_left)-1:
+                player.image_frame=len(player.pant_image_list_left)-1
+            if player.direction=='right':
+                player.image=player.pant_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
-        if player.state=='run_right':
+        if player.state=='run':
             player.max_velocity.x=200
-            player.acceleration.x=50
+            player.stamina-=10*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_right):
                 player.image_frame=5
-            player.image=player.run_image_list_right[round(player.image_frame)]
-        if player.state=='sprint_right':
-            player.max_velocity.x=300
+            if player.direction=='right':    
+                player.acceleration.x=50
+                player.image=player.run_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.acceleration.x=-50
+                player.image=player.run_image_list_left[round(player.image_frame)]
+        if player.state=='sprint':
+            player.max_velocity.x=350
             player.stamina-=100*delta_time
-            player.acceleration.x=150
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_right):
                 player.image_frame=5
-            player.image=player.run_image_list_right[round(player.image_frame)]
-        if player.state=='run_left':
-            player.max_velocity.x=200
-            player.acceleration.x=-50
-            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
-            if round(player.image_frame)>=len(player.run_image_list_left):
-                player.image_frame=5
-            player.image=player.run_image_list_left[round(player.image_frame)]
-        if player.state=='sprint_left':
-            player.max_velocity.x=300
-            player.stamina-=100*delta_time
-            player.acceleration.x=-150
-            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
-            if round(player.image_frame)>=len(player.run_image_list_left):
-                player.image_frame=5
-            player.image=player.run_image_list_left[round(player.image_frame)]
+            if player.direction=='right':
+                player.acceleration.x=100
+                player.image=player.run_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.acceleration.x=-100
+                player.image=player.run_image_list_left[round(player.image_frame)]
         if player.state=='jump':
             player.velocity.y=-200
             player.velocity.x=0
@@ -101,11 +114,14 @@ class player(pygame.sprite.Sprite):
             player.velocity.x=-(player.max_velocity.x)
         if player.velocity.y>=player.max_velocity.y:
             player.velocity.y=player.max_velocity.y
+        if player.stamina<=0:
+            player.stamina=0
         if player.state!='idle':
-            if player.state!='pick':
-                if player.state!='interact':
-                    player.velocity+=player.acceleration*delta_time
-                    player.pos+=player.velocity*delta_time
+            if player.state!='pant':
+                if player.state!='pick':
+                    if player.state!='interact':
+                        player.velocity+=player.acceleration*delta_time
+                        player.pos+=player.velocity*delta_time
         else:
             player.velocity.x=0
             player.velocity.y+=player.acceleration.y*delta_time
@@ -281,8 +297,12 @@ class grass(pygame.sprite.Sprite):
         grass_instance.image=grass.image
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
-        for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
-            player.state='grass'   
+            for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
+                if player.state!='grass':
+                    for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
+                        pass
+                    else:
+                        player.state='grass'   
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
@@ -720,7 +740,7 @@ while game_mode=='in_game':
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
-        print(str(player.pos),str(player.acceleration),str(player.velocity)+player.state+'\033c',end='')
+        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
@@ -741,19 +761,23 @@ while game_mode=='in_game':
                     game_settings['fullscreen']=False
     for player in player_sprite_group:
         if keys_pressed[pygame.K_d]:
-            if player.state[0:6]!='sprint':
-                player.state='run_right'
+            if player.state!='sprint':
+                player.state='run'
+                player.direction='right'
             if keys_pressed[pygame.K_w]:
                 player.state='jump_right'
             if keys_pressed[pygame.K_LSHIFT]:
-                player.state='sprint_right'
+                player.state='sprint'
+                player.direction='right'
         if keys_pressed[pygame.K_a]:
-            if player.state[0:6]!='sprint':
-                player.state='run_left'
+            if player.state!='sprint':
+                player.state='run'
+                player.direction='left'
             if keys_pressed[pygame.K_w]:
                 player.state='jump_left'
             if keys_pressed[pygame.K_LSHIFT]:
-                player.state='sprint_left'
+                player.state='sprint'
+                player.direction='left'
         if keys_pressed[pygame.K_w]:
             player.state='jump'
             if keys_pressed[pygame.K_d]:
@@ -764,8 +788,8 @@ while game_mode=='in_game':
             player.state='interact'
         if keys_pressed[pygame.K_s]:
             player.state='pick'
-        if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE]):
-            player.state='idle'
+        if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
+                player.state='idle'
     #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
