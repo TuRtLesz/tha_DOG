@@ -215,6 +215,34 @@ class player(pygame.sprite.Sprite):
                     #    water_dot.force=20
                     #    water_dot.spread_dir='left'
 
+class dog(pygame.sprite.Sprite):
+    dog_run_image_sprite_sheet=pygame.image.load('Data/dog/dog_run.png').convert_alpha()
+    dog_run_image_list_right=[]
+    dog_run_image_list_left=[]
+    for image_x in range(0,dog_run_image_sprite_sheet.get_width(),116):
+            import_image=pygame.Surface((116,71),pygame.SRCALPHA)
+            import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,116,71))
+            dog_run_image_list_right.append(player.import_image)
+            dog_run_image_list_left.append(pygame.transform.flip(import_image,True,False))
+    def __init__(dog_instance,x,y):
+        dog_instance.velocity=pygame.math.Vector2(0,0)
+        dog_instance.acceleration=pygame.math.Vector2(0,100)
+        dog_instance.max_velocity=pygame.math.Vector2(200,5000)
+        dog_instance.health=500
+        dog_instance.state='idle'
+        dog_instance.image_frame=0
+        dog_instance.image=dog.dog_run_image_list_right[0]
+        dog_instance.rect=dog_instance.image.get_rect(topleft=(x,y))
+        dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
+        dog_instance.vission_line=[list(dog_instance.rect.topright),[0,0]]
+        dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
+    def update(dog_instance,dog_player_vission_line,delta_time):
+        if dog_instance.velocity>0:
+            dog_instance.vission_line=[list(dog_instance.rect.topright),list(dog_player_vission_line)]
+        elif dog_instance.velocity<0:
+            dog_instance.vission_line=[list(dog_instance.rect.topleft),list(dog_player_vission_line)]
+        dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
+        dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_dead.png').convert_alpha()
