@@ -221,8 +221,8 @@ class dog(pygame.sprite.Sprite):
     dog_run_image_list_left=[]
     for image_x in range(0,dog_run_image_sprite_sheet.get_width(),116):
             import_image=pygame.Surface((116,71),pygame.SRCALPHA)
-            import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,116,71))
-            dog_run_image_list_right.append(player.import_image)
+            import_image.blit(dog_run_image_sprite_sheet,(0,0),(image_x,0,116,71))
+            dog_run_image_list_right.append(import_image)
             dog_run_image_list_left.append(pygame.transform.flip(import_image,True,False))
     def __init__(dog_instance,x,y):
         dog_instance.velocity=pygame.math.Vector2(0,0)
@@ -388,9 +388,6 @@ class bomb(pygame.sprite.Sprite):
                 player.state='idle'
             elif player.state=='idle':
                 player.velocity.y=150
-        for bomb_rect in bomb_rect_sprite_group:
-            if bomb_rect.explode:
-                bomb_instance.explode=True
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -434,9 +431,6 @@ class bomb_land(pygame.sprite.Sprite):
                 player.state='idle'
             elif player.state=='idle':
                 player.velocity.y=150
-        for bomb_rect in bomb_rect_sprite_group:
-            if bomb_rect.explode:
-                bomb.explode=True
         if bomb.explode:
             bomb.frame+=4*delta_time
             if bomb.frame>len(bomb.bomb_image_list)-1:
@@ -450,9 +444,7 @@ class chain(pygame.sprite.Sprite):
         chain_instance.image=chain.image
         chain_instance.rect=chain_instance.image.get_rect(topleft=(x*48-17,y*48))
     def update(chain_instance,delta_time):
-        for bomb_rect in bomb_rect_sprite_group:
-            if bomb_rect.explode:
-                chain_instance.kill()
+        pass
 class rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/rock.png').convert_alpha()
     def __init__(rock_instance,x,y):
@@ -476,20 +468,23 @@ class switch(pygame.sprite.Sprite):
         switch_instance.image=switch_instance.switch_image_list[0]
         switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
         switch_instance.frame=0
-        switch_instance.on=False
     def update(switch_instance,delta_time):
         for player in pygame.sprite.spritecollide(switch_instance,player_sprite_group,dokill=False):
             if player.state=='interact':
-                switch_instance.on=True
-                for bomb_rect in pygame.sprite.spritecollide(switch_instance,bomb_rect_sprite_group,dokill=False):
-                    bomb_rect.explode=True
-        if switch_instance.on:
-            if switch_instance.frame>=len(switch_instance.switch_image_list)-1:
-                switch_instance.image=switch_instance.switch_image_list[len(switch_instance.switch_image_list)-1]
-                switch_instance.on=False
-            else:
-                switch_instance.frame+=10*delta_time
-                switch_instance.image=switch_instance.switch_instance_image_list[bomb.frame]
+                if switch_instance.frame>=len(switch_instance.switch_image_list)-1:
+                    switch_instance.image=switch_instance.switch_image_list[len(switch_instance.switch_image_list)-1]
+                    for bomb_rect in bomb_rect_list:
+                        if bomb_rect.colliderect(switch_instance.rect):
+                            for reative_block in reactive_block_sprite_group:
+                                if type(reative_block)==bomb:
+                                    if bomb_rect.collidepoint(reative_block.rect.center):
+                                        reative_block.explode=True
+                                elif type(reative_block)==chain:
+                                    if reative_block.rect.colliderect(bomb_rect):
+                                        reative_block.kill()
+                else:
+                    switch_instance.image=switch_instance.switch_image_list[round(switch_instance.frame)]
+                    switch_instance.frame+=5*delta_time
                 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
@@ -610,14 +605,15 @@ dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 
 block_sprite_group=pygame.sprite.Group()
-bomb_rect_sprite_group=pygame.sprite.Group()
 reactive_block_sprite_group=pygame.sprite.Group()
 tree_sprite_group=pygame.sprite.Group()
 bubble_sprite_group=pygame.sprite.Group()
 
 water_dot_sprite_group=pygame.sprite.Group()
 
-world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
+bomb_rect_list=[]
+
+world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -627,6 +623,11 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['blocks'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_bomb_rects.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['bomb_rects'][world_name].append(row)#transfose bombrect-map list here
+    world_maps['bomb_rects'][world_name]=[[row[i] for row in world_maps['bomb_rects'][world_name]] for i in range(len(world_maps['bomb_rects'][world_name][0]))]
     with open(f'Data/worlds/{world_name}/{world_name}_trees.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
@@ -638,7 +639,7 @@ for world_name in range(0,1):
 
 camera=camera()
 
-player_sprite_group.add(player(550,550))#550
+player_sprite_group.add(player(3659,566))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -666,6 +667,14 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
         elif block_id=='8':
             for x_pos in range(block_number*48,(block_number+1)*48,16):
                 water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+bomb_rect_list.clear()
+bomb_rect_topright=[]
+for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
+    for rect_number,block_id in enumerate(row):
+        if block_id=='0':
+            bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
+        if block_id=='1':
+            bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
 for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
     for tree_number,tree_id in enumerate(row):    
         if tree_id!='-1': 
@@ -725,6 +734,14 @@ while game_mode=='in_game':
                 elif block_id=='8':
                     for x_pos in range(block_number*48,(block_number+1)*48,16):
                         water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+        bomb_rect_list.clear()
+        bomb_rect_topright=[]
+        for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
+            for rect_number,block_id in enumerate(row):
+                if block_id=='0':
+                    bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
+                if block_id=='1':
+                    bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
         for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
             for tree_number,tree_id in enumerate(row):    
                 if tree_id!='-1': 
@@ -766,9 +783,8 @@ while game_mode=='in_game':
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
-    
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
