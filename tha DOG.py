@@ -18,13 +18,16 @@ class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
         player.velocity=pygame.math.Vector2(0,0)
-        player.acceleration=pygame.math.Vector2(0,100)
+        player.acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
         player.health=300
         player.stamina=1000
         player.state='idle'
+        player.jump=False
+        player.jump_counter=0
         player.direction='right'
         player.hand=''
+        player.jump_height=spawn_y
         player.flower_count=0
         player.image_frame=0
         player.run_image_list_right=[]
@@ -45,6 +48,8 @@ class player(pygame.sprite.Sprite):
             player.pant_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.water_hitlines=[]#for water collsion 
         player.image=player.run_image_list_right[0]
+        player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
+        player.player_grass_image=player.import_image.blit(player.image,(0,100),player.image.get_rect())
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
@@ -66,7 +71,7 @@ class player(pygame.sprite.Sprite):
                 player.image=player.run_image_list_right[0]
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
-        if player.state=='pant':
+        elif player.state=='pant':
             player.stamina+=200*delta_time
             if player.image_frame>=len(player.pant_image_list_left)-1:
                 player.image_frame=len(player.pant_image_list_left)-1
@@ -75,7 +80,9 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
-        if player.state=='run':
+        elif player.state=='grass':
+            player.image=player.player_grass_image
+        elif player.state=='run':
             player.max_velocity.x=200
             player.stamina-=10*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
@@ -87,7 +94,7 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.acceleration.x=-50
                 player.image=player.run_image_list_left[round(player.image_frame)]
-        if player.state=='sprint':
+        elif player.state=='sprint':
             player.max_velocity.x=350
             player.stamina-=100*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
@@ -99,21 +106,21 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.acceleration.x=-100
                 player.image=player.run_image_list_left[round(player.image_frame)]
-        if player.state=='jump':
-            player.velocity.y=-200
-            player.velocity.x=0
-        if player.state=='jump_right':
-            player.velocity.y=-200
-            player.velocity.x=50
-        elif player.state=='jump_left':
-            player.velocity.y=-200
-            player.velocity.x=-50
+        #elif player.state=='jump':
+        #    player.velocity.y=-200
+        #    player.velocity.x=0
+        #elif player.state=='jump_right':
+        #    player.velocity.y=-200
+        #    player.velocity.x=50
+        #elif player.state=='jump_left':
+        #    player.velocity.y=-200
+        #    player.velocity.x=-50
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
         if player.velocity.x<=(-player.max_velocity.x):
             player.velocity.x=-(player.max_velocity.x)
-        if player.velocity.y>=player.max_velocity.y:
-            player.velocity.y=player.max_velocity.y
+        #if player.velocity.y>=player.max_velocity.y:
+        #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
         if player.state!='idle':
@@ -124,13 +131,15 @@ class player(pygame.sprite.Sprite):
                         player.pos+=player.velocity*delta_time
         else:
             player.velocity.x=0
-            player.velocity.y+=player.acceleration.y*delta_time
-            player.pos.y+=player.velocity.y*delta_time
-        if player.state=='pick' or player.state=='interact':
-            player.velocity.y+=player.acceleration.y*delta_time
-            player.pos.y+=player.velocity.y*delta_time
+            #player.velocity.y+=player.acceleration.y*delta_time
+            #player.pos.y+=player.velocity.y*delta_time
+        #if player.state=='pick' or player.state=='interact' or player.state=='pant':
+        #    player.velocity.y+=player.acceleration.y*delta_time
+        #    player.pos.y+=player.velocity.y*delta_time
         player.rect=player.image.get_rect(center=player.pos.xy)
         for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
+            player.jump_height=player.pos.y
+            player.jump_counter=0
             #pygame.draw.rect(game_window,(0,0,0),block.rect)
             if block.id == '0':
                 player.rect.bottom=block.rect.top
@@ -199,10 +208,25 @@ class player(pygame.sprite.Sprite):
             #pygame.draw.rect(game_window,(0,0,255),player.rect)
         else:
             player.rect.center=player.pos
+            if abs(player.pos.y-player.jump_height)>0 and not player.jump:
+                player.pos.y+=400*delta_time
+                player.rect.center=player.pos
+                player.jump=False
+            if abs(player.pos.y-player.jump_height)>=0 and player.jump and player.jump_counter>0:
+                player.pos.y+=400*delta_time
+                player.rect.center=player.pos
+                player.jump=False   
         #for block in block_sprite_group:
         #    if block.id == '92' or '93' or '94' or '3' or '4' or '5':
         #        for i in range(block.rect.x,block.rect.x+block.rect.width):
         #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
+        if player.jump:
+            if abs(player.pos.y-player.jump_height)<150:
+                player.pos.y-=300*delta_time
+                player.rect.center=player.pos
+            else:
+                player.jump_counter+=1
+                player.jump=False
         for water_line in player.water_hitlines:
             if player.rect.clipline(water_line)!=():
                 #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
@@ -639,7 +663,7 @@ for world_name in range(0,1):
 
 camera=camera()
 
-player_sprite_group.add(player(3659,566))#550
+player_sprite_group.add(player(550,560))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -808,8 +832,6 @@ while game_mode=='in_game':
             if player.state!='sprint':
                 player.state='run'
                 player.direction='right'
-            if keys_pressed[pygame.K_w]:
-                player.state='jump_right'
             if keys_pressed[pygame.K_LSHIFT]:
                 player.state='sprint'
                 player.direction='right'
@@ -817,17 +839,11 @@ while game_mode=='in_game':
             if player.state!='sprint':
                 player.state='run'
                 player.direction='left'
-            if keys_pressed[pygame.K_w]:
-                player.state='jump_left'
             if keys_pressed[pygame.K_LSHIFT]:
                 player.state='sprint'
                 player.direction='left'
         if keys_pressed[pygame.K_w]:
-            player.state='jump'
-            if keys_pressed[pygame.K_d]:
-                player.state='jump_right'
-            elif keys_pressed[pygame.K_a]:
-                player.state='jump_left'
+            player.jump=True
         if keys_pressed[pygame.K_SPACE]:
             player.state='interact'
         if keys_pressed[pygame.K_s]:
