@@ -23,6 +23,7 @@ class player(pygame.sprite.Sprite):
         player.health=300
         player.stamina=1000
         player.state='idle'
+        player.water=False
         player.jump=False
         player.jump_counter=0
         player.direction='right'
@@ -32,9 +33,12 @@ class player(pygame.sprite.Sprite):
         player.image_frame=0
         player.run_image_list_right=[]
         player.run_image_list_left=[]
+        player.swim_image_list_right=[]
+        player.swim_image_list_left=[]
         player.pant_image_list_right=[]
         player.pant_image_list_left=[]
         player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
+        player.swim_image_spritesheet=pygame.image.load('Data/player/player_swim.png').convert_alpha()
         player.pant_image_spritesheet=pygame.image.load('Data/player/player_pant.png').convert_alpha()
         for image_x in range(0,player.run_image_spritesheet.get_width(),107):
             player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
@@ -46,6 +50,11 @@ class player(pygame.sprite.Sprite):
             player.import_image.blit(player.pant_image_spritesheet,(0,0),(image_x,0,109,210))
             player.pant_image_list_right.append(player.import_image)
             player.pant_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
+        for image_x in range(0,player.swim_image_spritesheet.get_width(),230):
+            player.import_image=pygame.Surface((230,211),pygame.SRCALPHA)
+            player.import_image.blit(player.swim_image_spritesheet,(0,0),(image_x,0,230,211))
+            player.swim_image_list_right.append(player.import_image)
+            player.swim_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.water_hitlines=[]#for water collsion 
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
@@ -54,6 +63,13 @@ class player(pygame.sprite.Sprite):
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):
+        player.water=False
+        for water_rect in water_blocks_rect_list:
+            if not player.water:
+                if player.rect.colliderect(water_rect):
+                    player.water=True
+            else:
+                break
         if player.stamina<1000:
                 if player.state=='idle':
                     player.state='pant'
@@ -106,6 +122,30 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.acceleration.x=-100
                 player.image=player.run_image_list_left[round(player.image_frame)]
+        elif player.state=='swim':
+            player.max_velocity.x=150
+            player.stamina-=50*delta_time
+            player.image_frame+=10*delta_time
+            if round(player.image_frame)>=len(player.swim_image_list_right):
+                player.image_frame=6
+            if player.direction=='right':    
+                player.acceleration.x=50
+                player.image=player.swim_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.acceleration.x=-50
+                player.image=player.swim_image_list_left[round(player.image_frame)]
+        elif player.state=='swim_fast':
+            player.max_velocity.x=300
+            player.stamina-=150*delta_time
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
+            if round(player.image_frame)>=len(player.run_image_list_right):
+                player.image_frame=5
+            if player.direction=='right':
+                player.acceleration.x=100
+                player.image=player.swim_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.acceleration.x=-100
+                player.image=player.swim_image_list_left[round(player.image_frame)]
         #elif player.state=='jump':
         #    player.velocity.y=-200
         #    player.velocity.x=0
@@ -230,8 +270,9 @@ class player(pygame.sprite.Sprite):
         for water_line in player.water_hitlines:
             if player.rect.clipline(water_line)!=():
                 #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
-                if numpy.random.randint(0,7)==1:
-                    bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
+                if player.state=='run' or player.state=='sprint':
+                    if numpy.random.randint(0,7)==1:
+                        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
                 for water_dot in water_dot_sprite_group:
                     if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
                         water_dot.force=30
@@ -363,9 +404,8 @@ class apple(pygame.sprite.Sprite):
         apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,y*48))
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):
-            if player.state=='pick':
-                player.hand='apple'
-                apple_instance.kill()
+            player.hand='apple'
+            apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
     def __init__(flower_instance,x,y):
@@ -636,8 +676,9 @@ bubble_sprite_group=pygame.sprite.Group()
 water_dot_sprite_group=pygame.sprite.Group()
 
 bomb_rect_list=[]
+water_blocks_rect_list=[]
 
-world_maps={'reactive_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
+world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -660,16 +701,24 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['mobs'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_water_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['water_blocks'][world_name].append(row)
 
 camera=camera()
 
-player_sprite_group.add(player(550,560))#550
+player_sprite_group.add(player(4000,560))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
     for block_number,block_id in enumerate(row):
         if block_id!='-1':
             block_sprite_group.add(block(block_id,block_number,row_number))
+for row_number,row in enumerate(world_maps['water_blocks'][game_varibles['current_world']]):
+    for block_number,block_id in enumerate(row):
+        if block_id=='0':
+            water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
 for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
     for block_number,block_id in enumerate(row):    
         if block_id=='0': 
@@ -737,6 +786,10 @@ while game_mode=='in_game':
             for block_number,block_id in enumerate(row):
                 if block_id!='-1':
                     block_sprite_group.add(block(block_id,block_number,row_number))
+        for row_number,row in enumerate(world_maps['water_blocks'][game_varibles['current_world']]):
+            for block_number,block_id in enumerate(row):
+                if block_id=='0':
+                    water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
         for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
             for block_number,block_id in enumerate(row):    
                 if block_id=='0': 
@@ -807,8 +860,8 @@ while game_mode=='in_game':
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
@@ -829,19 +882,39 @@ while game_mode=='in_game':
                     game_settings['fullscreen']=False
     for player in player_sprite_group:
         if keys_pressed[pygame.K_d]:
+            if player.direction=='left':
+                player.velocity.x=0
             if player.state!='sprint':
-                player.state='run'
-                player.direction='right'
+                if player.water:
+                    player.state='swim'
+                    player.direction='right'
+                else:
+                    player.state='run'
+                    player.direction='right'
             if keys_pressed[pygame.K_LSHIFT]:
-                player.state='sprint'
-                player.direction='right'
+                if player.water:
+                    player.state='swim_fast'
+                    player.direction='right'
+                else:
+                    player.state='sprint'
+                    player.direction='right'
         if keys_pressed[pygame.K_a]:
+            if player.direction=='right':
+                player.velocity.x=0
             if player.state!='sprint':
-                player.state='run'
-                player.direction='left'
+                if player.water:
+                    player.state='swim'
+                    player.direction='left'
+                else:
+                    player.state='run'
+                    player.direction='left'
             if keys_pressed[pygame.K_LSHIFT]:
-                player.state='sprint'
-                player.direction='left'
+                if player.water:
+                    player.state='swim_fast'
+                    player.direction='left'
+                else:
+                    player.state='sprint'
+                    player.direction='left'
         if keys_pressed[pygame.K_w]:
             player.jump=True
         if keys_pressed[pygame.K_SPACE]:
