@@ -37,9 +37,12 @@ class player(pygame.sprite.Sprite):
         player.swim_image_list_left=[]
         player.pant_image_list_right=[]
         player.pant_image_list_left=[]
+        player.jump_image_list_right=[]
+        player.jump_image_list_left=[]
         player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
         player.swim_image_spritesheet=pygame.image.load('Data/player/player_swim.png').convert_alpha()
         player.pant_image_spritesheet=pygame.image.load('Data/player/player_pant.png').convert_alpha()
+        player.jump_image_spritesheet=pygame.image.load('Data/player/player_jump.png').convert_alpha()
         for image_x in range(0,player.run_image_spritesheet.get_width(),107):
             player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
             player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
@@ -55,6 +58,11 @@ class player(pygame.sprite.Sprite):
             player.import_image.blit(player.swim_image_spritesheet,(0,0),(image_x,0,230,211))
             player.swim_image_list_right.append(player.import_image)
             player.swim_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
+        for image_x in range(0,player.jump_image_spritesheet.get_width(),108):
+            player.import_image=pygame.Surface((108,212),pygame.SRCALPHA)
+            player.import_image.blit(player.jump_image_spritesheet,(0,0),(image_x,0,108,212))
+            player.jump_image_list_right.append(player.import_image)
+            player.jump_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.water_hitlines=[]#for water collsion 
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
@@ -71,18 +79,19 @@ class player(pygame.sprite.Sprite):
             else:
                 break
         if player.stamina<1000:
-                if player.state=='idle':
+                if player.state=='idle' and not player.jump:
                     player.state='pant'
                     player.image_frame=0
                 if player.stamina<0:
-                    if player.state=='run' or player.state=='sprint' or player.state=='jump' or player.state=='jump_right' or player.state=='jump_left':
+                    if player.state=='run' or player.state=='sprint':
                         player.state='fall'
         elif player.stamina>=1000:
             player.stamina=1000
             if player.state=='pant':
                 player.state='idle'
         if player.state=='idle':
-            player.image_frame=0
+            if not player.jump:
+                player.image_frame=0
             if player.direction=='right':
                 player.image=player.run_image_list_right[0]
             elif player.direction=='left':
@@ -102,7 +111,7 @@ class player(pygame.sprite.Sprite):
             player.max_velocity.x=200
             player.stamina-=10*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
-            if round(player.image_frame)>=len(player.run_image_list_right):
+            if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':    
                 player.acceleration.x=50
@@ -114,7 +123,7 @@ class player(pygame.sprite.Sprite):
             player.max_velocity.x=350
             player.stamina-=100*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
-            if round(player.image_frame)>=len(player.run_image_list_right):
+            if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':
                 player.acceleration.x=100
@@ -126,7 +135,7 @@ class player(pygame.sprite.Sprite):
             player.max_velocity.x=150
             player.stamina-=50*delta_time
             player.image_frame+=10*delta_time
-            if round(player.image_frame)>=len(player.swim_image_list_right):
+            if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                 player.image_frame=6
             if player.direction=='right':    
                 player.acceleration.x=50
@@ -137,9 +146,9 @@ class player(pygame.sprite.Sprite):
         elif player.state=='swim_fast':
             player.max_velocity.x=300
             player.stamina-=150*delta_time
-            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
-            if round(player.image_frame)>=len(player.run_image_list_right):
-                player.image_frame=5
+            player.image_frame+=15*delta_time#change later?
+            if round(player.image_frame)>=len(player.swim_image_list_right)-1:
+                player.image_frame=6
             if player.direction=='right':
                 player.acceleration.x=100
                 player.image=player.swim_image_list_right[round(player.image_frame)]
@@ -180,88 +189,102 @@ class player(pygame.sprite.Sprite):
         for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
-            #pygame.draw.rect(game_window,(0,0,0),block.rect)
-            if block.id == '0':
-                player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
-            elif block.id == '1':
-                player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
-            elif block.id == '2':
-                player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
-            elif block.id == '10':
-                player.rect.bottom=block.rect.top+4
-                player.pos.xy=player.rect.center
-            elif block.id == '12':
-                player.rect.bottom=block.rect.top+30
-                player.pos.xy=player.rect.center
-            elif block.id == '13':
-                player.rect.bottom=block.rect.top+30
-                player.pos.xy=player.rect.center
-            elif block.id == '70':
-                player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
-            #if pygame.sprite.collide_mask(player,block):
-            elif block.id == '3':#ramps
-                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18#fix later
-                player.pos.xy=player.rect.center
-            elif block.id == '4':
-                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
-                player.pos.xy=player.rect.center
-            elif block.id == '5':
-                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
-                player.pos.xy=player.rect.center
-            elif block.id == '6':
-                if player.pos.x-block.rect.x>17:
-                    player.rect.bottom=48-(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-25
-                    player.pos.xy=player.rect.center
-            #elif block.id == '35':
-            #    if pygame.sprite.collide_mask(player,block):
-            #        if player.rect.bottom!=block.rect.bottom+1:
-            #            print('test')
-            #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
-            #        else:
-            #            if player.state=='run_right':
-            #                player.rect.right=block.rect.left+48
-            #        player.pos.xy=player.rect.center
-            elif block.id == '7':
-                player.rect.bottom=block.rect.top+28
-                player.pos.xy=player.rect.center
-            elif block.id == '8':
-                if player.pos.x-block.rect.x<=23:
-                    player.rect.bottom= -0.8659639*(player.pos.x-block.rect.x) - 29.3012+block.rect.bottom
-                    player.pos.xy=player.rect.center
-            elif block.id == '37':
-                if player.pos.x-block.rect.x>23:
-                    player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
-                    player.pos.xy=player.rect.center
-            #elif block.id == '92':
-            #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-            #    player.pos.xy=player.rect.center
-            #elif block.id == '93':
-            #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-            #    player.pos.xy=player.rect.center
-            #elif block.id == '94':
-            #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-            #    player.pos.xy=player.rect.center
-            #pygame.draw.rect(game_window,(0,0,255),player.rect)
         else:
-            player.rect.center=player.pos
-            if abs(player.pos.y-player.jump_height)>0 and not player.jump:
+            #player.rect.center=player.pos
+            if not player.jump or abs(player.pos.y-player.jump_height)==150:
                 player.pos.y+=400*delta_time
                 player.rect.center=player.pos
                 player.jump=False
-            if abs(player.pos.y-player.jump_height)>=0 and player.jump and player.jump_counter>0:
-                player.pos.y+=400*delta_time
-                player.rect.center=player.pos
-                player.jump=False   
+            for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
+                player.jump_height=player.pos.y
+                player.jump_counter=0
+                #pygame.draw.rect(game_window,(0,0,0),block.rect)
+                if block.id == '0':
+                    player.rect.bottom=block.rect.top
+                    player.pos.xy=player.rect.center
+                elif block.id == '1':
+                    player.rect.bottom=block.rect.top
+                    player.pos.xy=player.rect.center
+                elif block.id == '2':
+                    player.rect.bottom=block.rect.top
+                    player.pos.xy=player.rect.center
+                elif block.id == '10':
+                    player.rect.bottom=block.rect.top+4
+                    player.pos.xy=player.rect.center
+                elif block.id == '12':
+                    player.rect.bottom=block.rect.top+30
+                    player.pos.xy=player.rect.center
+                elif block.id == '13':
+                    player.rect.bottom=block.rect.top+30
+                    player.pos.xy=player.rect.center
+                elif block.id == '70':
+                    player.rect.bottom=block.rect.top
+                    player.pos.xy=player.rect.center
+                #if pygame.sprite.collide_mask(player,block):
+                elif block.id == '3':#ramps
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18#fix later
+                    player.pos.xy=player.rect.center
+                elif block.id == '4':
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
+                    player.pos.xy=player.rect.center
+                elif block.id == '5':
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
+                    player.pos.xy=player.rect.center
+                elif block.id == '6':
+                    if player.pos.x-block.rect.x>17:
+                        player.rect.bottom=48-(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-25
+                        player.pos.xy=player.rect.center
+                #pygame.draw.rect(game_window,(0,0,0),block.rect)
+                #elif block.id == '92':
+                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
+                #    player.pos.xy=player.rect.center
+                #elif block.id == '93':
+                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
+                #    player.pos.xy=player.rect.center
+                #elif block.id == '94':
+                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
+                #    player.pos.xy=player.rect.center
+                #pygame.draw.rect(game_window,(0,0,255),player.rect)
+                #elif block.id == '35':
+                #    if pygame.sprite.collide_mask(player,block):
+                #        if player.rect.bottom!=block.rect.bottom+1:
+                #            print('test')
+                #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
+                #        else:
+                #            if player.state=='run_right':
+                #                player.rect.right=block.rect.left+48
+                #        player.pos.xy=player.rect.center
+                elif block.id == '7':
+                    player.rect.bottom=block.rect.top+28
+                    player.pos.xy=player.rect.center
+                elif block.id == '8':
+                    if player.pos.x-block.rect.x<=23:
+                        player.rect.bottom= -0.8659639*(player.pos.x-block.rect.x) - 29.3012+block.rect.bottom
+                        player.pos.xy=player.rect.center
+                elif block.id == '37':
+                    if player.pos.x-block.rect.x>23:
+                        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
+                        player.pos.xy=player.rect.center
+            #if abs(player.pos.y-player.jump_height)>0 and player.jump and player.jump_counter>0:
+            #    player.pos.y+=400*delta_time
+            #    player.rect.center=player.pos
+            #    player.jump=False   
         #for block in block_sprite_group:
         #    if block.id == '92' or '93' or '94' or '3' or '4' or '5':
         #        for i in range(block.rect.x,block.rect.x+block.rect.width):
         #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
         if player.jump:
-            if abs(player.pos.y-player.jump_height)<150:
+            player.image_frame+=10*delta_time
+            if round(player.image_frame)>=len(player.jump_image_list_right)-1:
+                player.image_frame=len(player.jump_image_list_right)-1
+            if player.direction=='right':  
+                player.image=player.jump_image_list_right[round(player.image_frame)]
+                player.pos.x+=100*delta_time
+            elif player.direction=='left':  
+                player.image=player.jump_image_list_left[round(player.image_frame)]
+                player.pos.x-=100*delta_time
+            if abs(player.pos.y-player.jump_height)<150:      
+                player.stamina-=50*delta_time
                 player.pos.y-=300*delta_time
                 player.rect.center=player.pos
             else:
@@ -708,7 +731,7 @@ for world_name in range(0,1):
 
 camera=camera()
 
-player_sprite_group.add(player(4000,560))#550
+player_sprite_group.add(player(550,560))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -880,6 +903,15 @@ while game_mode=='in_game':
                 if game_settings['fullscreen']==True:
                     display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
                     game_settings['fullscreen']=False
+            if event.key==pygame.K_w:
+                for player in player_sprite_group:
+                    player.jump=True
+                    player.image_frame=0
+        #elif event.type==pygame.KEYUP:
+        #    if event.key==pygame.K_w:
+        #        for player in player_sprite_group:
+        #            player.image_frame=0
+        #            #player.jump_counter=0
     for player in player_sprite_group:
         if keys_pressed[pygame.K_d]:
             if player.direction=='left':
@@ -915,8 +947,6 @@ while game_mode=='in_game':
                 else:
                     player.state='sprint'
                     player.direction='left'
-        if keys_pressed[pygame.K_w]:
-            player.jump=True
         if keys_pressed[pygame.K_SPACE]:
             player.state='interact'
         if keys_pressed[pygame.K_s]:
