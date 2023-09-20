@@ -222,28 +222,28 @@ class player(pygame.sprite.Sprite):
                     player.pos.xy=player.rect.center
                 #if pygame.sprite.collide_mask(player,block):
                 elif block.id == '3':#ramps
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18#fix later
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52
                     player.pos.xy=player.rect.center
                 elif block.id == '4':
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
                     player.pos.xy=player.rect.center
                 elif block.id == '5':
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-18
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
+                    player.pos.xy=player.rect.center
+                elif block.id == '92':
+                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52
+                    player.pos.xy=player.rect.center
+                elif block.id == '93':
+                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
+                    player.pos.xy=player.rect.center
+                elif block.id == '94':
+                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
                     player.pos.xy=player.rect.center
                 elif block.id == '6':
                     if player.pos.x-block.rect.x>17:
                         player.rect.bottom=48-(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-25
                         player.pos.xy=player.rect.center
                 #pygame.draw.rect(game_window,(0,0,0),block.rect)
-                #elif block.id == '92':
-                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-                #    player.pos.xy=player.rect.center
-                #elif block.id == '93':
-                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-                #    player.pos.xy=player.rect.center
-                #elif block.id == '94':
-                #    player.rect.bottom=round(-0.3488603*abs(player.pos.x-block.rect.x))+block.rect.bottom
-                #    player.pos.xy=player.rect.center
                 #pygame.draw.rect(game_window,(0,0,255),player.rect)
                 #elif block.id == '35':
                 #    if pygame.sprite.collide_mask(player,block):
