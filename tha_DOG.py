@@ -580,7 +580,7 @@ class pressure_switch(pygame.sprite.Sprite):
         image_list.append(image)
     def __init__(switch_instance,x,y):
         super().__init__()
-        switch_instance.switch_image_list=switch.image_list
+        switch_instance.switch_image_list=pressure_switch.image_list
         switch_instance.image=switch_instance.switch_image_list[0]
         switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
     def update(switch_instance,delta_time):
@@ -659,16 +659,16 @@ class camera():
         cam.player_offset=pygame.math.Vector2()
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
-            if player_sprite.idle_timer>=3:
+            if player_sprite.idle_timer>=2:
                 if cam.player_offset.x>=game_window.get_width()//2-50:
                     cam.player_offset.x=game_window.get_width()//2-50
                 else:
-                    cam.player_offset.x+=100*delta_time
+                    cam.player_offset.x+=100*delta_time#pan speed for idle pan
             else:
                 if cam.player_offset.x<=0:
                     cam.player_offset.x=0
                 else:
-                    cam.player_offset.x-=100*delta_time
+                    cam.player_offset.x-=100*delta_time#pan speed for idle pan
             if player_sprite.pos.x<game_window.get_width()//2:
                 cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
                 cam.offset.x=0
@@ -766,7 +766,7 @@ for world_name in range(0,1):
 
 camera=camera()
 
-player_sprite_group.add(player(550,560))#550
+player_sprite_group.add(player(750,560))#550
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
