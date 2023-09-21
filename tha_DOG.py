@@ -79,11 +79,11 @@ class player(pygame.sprite.Sprite):
                     player.water=True
             else:
                 break
-        if player.stamina<1000:
+        if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
                     player.image_frame=0
-                if player.stamina<0:
+                if player.stamina<=0:
                     if player.state=='run' or player.state=='sprint':
                         player.state='fall'
         elif player.stamina>=1000:
@@ -135,7 +135,22 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.acceleration.x=-100
                 player.image=player.run_image_list_left[round(player.image_frame)]
-        elif player.state=='swim':
+        elif player.state=='swim_fast':
+            if player.stamina<=0:
+                player.state='swim'
+            else:
+                player.max_velocity.x=300
+                player.stamina-=150*delta_time
+                player.image_frame+=15*delta_time#change later?
+                if round(player.image_frame)>=len(player.swim_image_list_right)-1:
+                    player.image_frame=6
+                if player.direction=='right':
+                    player.acceleration.x=100
+                    player.image=player.swim_image_list_right[round(player.image_frame)]
+                elif player.direction=='left':
+                    player.acceleration.x=-100
+                    player.image=player.swim_image_list_left[round(player.image_frame)]
+        if player.state=='swim':
             player.max_velocity.x=150
             player.stamina-=50*delta_time
             player.image_frame+=10*delta_time
@@ -146,18 +161,6 @@ class player(pygame.sprite.Sprite):
                 player.image=player.swim_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
                 player.acceleration.x=-50
-                player.image=player.swim_image_list_left[round(player.image_frame)]
-        elif player.state=='swim_fast':
-            player.max_velocity.x=300
-            player.stamina-=150*delta_time
-            player.image_frame+=15*delta_time#change later?
-            if round(player.image_frame)>=len(player.swim_image_list_right)-1:
-                player.image_frame=6
-            if player.direction=='right':
-                player.acceleration.x=100
-                player.image=player.swim_image_list_right[round(player.image_frame)]
-            elif player.direction=='left':
-                player.acceleration.x=-100
                 player.image=player.swim_image_list_left[round(player.image_frame)]
         #elif player.state=='jump':
         #    player.velocity.y=-200
@@ -176,10 +179,7 @@ class player(pygame.sprite.Sprite):
         #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
-        if player.state!='idle':
-            if player.state!='pant':
-                if player.state!='pick':
-                    if player.state!='interact':
+        if player.state!='idle'and player.state!='pant'and player.state!='pick' and player.state!='interact' and player.state!='fall':
                         player.velocity+=player.acceleration*delta_time
                         player.pos+=player.velocity*delta_time
         else:
@@ -196,9 +196,14 @@ class player(pygame.sprite.Sprite):
         else:
             #player.rect.center=player.pos
             if not player.jump or abs(player.pos.y-player.jump_height)==150:
-                player.pos.y+=400*delta_time
-                player.rect.center=player.pos
-                player.jump=False
+                if player.water:
+                    player.pos.y+=10*delta_time
+                    player.rect.center=player.pos
+                    player.jump=False
+                else:
+                    player.pos.y+=400*delta_time
+                    player.rect.center=player.pos
+                    player.jump=False
             for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
                 player.jump_height=player.pos.y
                 player.jump_counter=0
