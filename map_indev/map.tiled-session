@@ -71,10 +71,10 @@
         },
         "world_0.tmx": {
             "scale": 0.5,
-            "selectedLayer": 3,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 7420,
-                "y": 812
+                "x": 8202,
+                "y": 764
             }
         }
     },

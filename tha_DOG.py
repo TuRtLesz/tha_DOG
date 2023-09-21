@@ -96,7 +96,7 @@ class player(pygame.sprite.Sprite):
                 player.image=player.run_image_list_right[0]
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
-        elif player.state=='pant':
+        if player.state=='pant':
             player.stamina+=200*delta_time
             if player.image_frame>=len(player.pant_image_list_left)-1:
                 player.image_frame=len(player.pant_image_list_left)-1
@@ -222,7 +222,7 @@ class player(pygame.sprite.Sprite):
                     player.pos.xy=player.rect.center
                 #if pygame.sprite.collide_mask(player,block):
                 elif block.id == '3':#ramps
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52
+                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
                     player.pos.xy=player.rect.center
                 elif block.id == '4':
                     player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
@@ -231,7 +231,7 @@ class player(pygame.sprite.Sprite):
                     player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
                     player.pos.xy=player.rect.center
                 elif block.id == '92':
-                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52
+                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
                     player.pos.xy=player.rect.center
                 elif block.id == '93':
                     player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
@@ -239,13 +239,19 @@ class player(pygame.sprite.Sprite):
                 elif block.id == '94':
                     player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
                     player.pos.xy=player.rect.center
-                elif block.id == '6':
-                    if player.pos.x-block.rect.x>17:
-                        player.rect.bottom=48-(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-25
-                        player.pos.xy=player.rect.center
-                #pygame.draw.rect(game_window,(0,0,0),block.rect)
-                #pygame.draw.rect(game_window,(0,0,255),player.rect)
-                #elif block.id == '35':
+                #rock
+                #elif block.id == '6':#top curve right
+                #    if player.pos.x-block.rect.x>18:
+                #        player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
+                #        player.pos.xy=player.rect.center
+                #elif block.id == '7':
+                #    player.rect.bottom=block.rect.top+23
+                #    player.pos.xy=player.rect.center
+                #elif block.id == '8':#top curve left
+                #    if player.pos.x-block.rect.x<=23:
+                #        player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
+                #        player.pos.xy=player.rect.center
+                #elif block.id == '35':#sideleft
                 #    if pygame.sprite.collide_mask(player,block):
                 #        if player.rect.bottom!=block.rect.bottom+1:
                 #            print('test')
@@ -254,25 +260,14 @@ class player(pygame.sprite.Sprite):
                 #            if player.state=='run_right':
                 #                player.rect.right=block.rect.left+48
                 #        player.pos.xy=player.rect.center
-                elif block.id == '7':
-                    player.rect.bottom=block.rect.top+28
-                    player.pos.xy=player.rect.center
-                elif block.id == '8':
-                    if player.pos.x-block.rect.x<=23:
-                        player.rect.bottom= -0.8659639*(player.pos.x-block.rect.x) - 29.3012+block.rect.bottom
-                        player.pos.xy=player.rect.center
-                elif block.id == '37':
-                    if player.pos.x-block.rect.x>23:
-                        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
-                        player.pos.xy=player.rect.center
+                #elif block.id == '37':#side right
+                #    if player.pos.x-block.rect.x>23:
+                #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
+                #        player.pos.xy=player.rect.center
             #if abs(player.pos.y-player.jump_height)>0 and player.jump and player.jump_counter>0:
             #    player.pos.y+=400*delta_time
             #    player.rect.center=player.pos
             #    player.jump=False   
-        #for block in block_sprite_group:
-        #    if block.id == '92' or '93' or '94' or '3' or '4' or '5':
-        #        for i in range(block.rect.x,block.rect.x+block.rect.width):
-        #            pygame.draw.circle(game_window,(255,0,0),(i,(0.3488603*i+ 48.61957)),1)
         if player.jump:
             player.image_frame+=10*delta_time
             if round(player.image_frame)>=len(player.jump_image_list_right)-1:
@@ -572,7 +567,33 @@ class switch(pygame.sprite.Sprite):
                 else:
                     switch_instance.image=switch_instance.switch_image_list[round(switch_instance.frame)]
                     switch_instance.frame+=5*delta_time
-                
+class pressure_switch(pygame.sprite.Sprite):
+    image_list=[]
+    switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha()
+    for image_x in range(0,switch_sprite_sheet.get_width()//42):
+        image=pygame.Surface((42,20),pygame.SRCALPHA)
+        image.blit(switch_sprite_sheet,(0,0),(image_x*42,0,42,20))
+        image_list.append(image)
+    def __init__(switch_instance,x,y):
+        super().__init__()
+        switch_instance.switch_image_list=switch.image_list
+        switch_instance.image=switch_instance.switch_image_list[0]
+        switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
+    def update(switch_instance,delta_time):
+        for trig_reactive_block in pygame.sprite.spritecollide(switch_instance,reactive_block_sprite_group,dokill=False):
+            if type(trig_reactive_block)==rock:
+                rock.velocity.xy=0,0
+                switch_instance.image=switch_instance.switch_image_list[1]
+                for bomb_rect in bomb_rect_list:
+                        if bomb_rect.colliderect(switch_instance.rect):
+                            for reative_block in reactive_block_sprite_group:
+                                if type(reative_block)==bomb:
+                                    if bomb_rect.collidepoint(reative_block.rect.center):
+                                        reative_block.explode=True
+                                elif type(reative_block)==chain:
+                                    if reative_block.rect.colliderect(bomb_rect):
+                                        reative_block.kill()
+
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
     def __init__(tree_instance,x,y):
@@ -763,6 +784,8 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
         elif block_id=='8':
             for x_pos in range(block_number*48,(block_number+1)*48,16):
                 water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+        elif block_id=='9':
+            reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
 bomb_rect_list.clear()
 bomb_rect_topright=[]
 for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -834,6 +857,8 @@ while game_mode=='in_game':
                 elif block_id=='8':
                     for x_pos in range(block_number*48,(block_number+1)*48,16):
                         water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+                elif block_id=='9':
+                    reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
         bomb_rect_list.clear()
         bomb_rect_topright=[]
         for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
