@@ -23,6 +23,7 @@ class player(pygame.sprite.Sprite):
         player.health=300
         player.stamina=1000
         player.state='idle'
+        player.idle_timer=0
         player.water=False
         player.jump=False
         player.jump_counter=0
@@ -90,12 +91,15 @@ class player(pygame.sprite.Sprite):
             if player.state=='pant':
                 player.state='idle'
         if player.state=='idle':
+            player.idle_timer+=delta_time
             if not player.jump:
                 player.image_frame=0
             if player.direction=='right':
                 player.image=player.run_image_list_right[0]
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
+        else:
+            player.idle_timer=0
         if player.state=='pant':
             player.stamina+=200*delta_time
             if player.image_frame>=len(player.pant_image_list_left)-1:
@@ -653,14 +657,24 @@ class camera():
     def __init__(cam):
         cam.offset=pygame.math.Vector2()
         cam.player_offset=pygame.math.Vector2()
-    def draw(cam,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
+    def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
+            if player_sprite.idle_timer>=3:
+                if cam.player_offset.x>=game_window.get_width()//2-50:
+                    cam.player_offset.x=game_window.get_width()//2-50
+                else:
+                    cam.player_offset.x+=100*delta_time
+            else:
+                if cam.player_offset.x<=0:
+                    cam.player_offset.x=0
+                else:
+                    cam.player_offset.x-=100*delta_time
             if player_sprite.pos.x<game_window.get_width()//2:
                 cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
                 cam.offset.x=0
             else:
-                cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)
-                cam.player_offset.x=0
+                cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
+                #cam.player_offset.x=0
             if player_sprite.pos.y>game_window.get_height()-300:
                 cam.player_offset.y=player_sprite.pos.y-(game_window.get_height()-300)
                 cam.offset.y=player_sprite.pos.y-(game_window.get_height()-300)
@@ -904,7 +918,7 @@ while game_mode=='in_game':
     reactive_block_sprite_group.update(delta_time)
     water_dot_sprite_group.update()
     bubble_sprite_group.update(delta_time)
-    camera.draw([reactive_block_sprite_group,rat_sprite_group,bubble_sprite_group],
+    camera.draw(delta_time,[reactive_block_sprite_group,rat_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
