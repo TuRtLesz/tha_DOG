@@ -195,7 +195,8 @@ class player(pygame.sprite.Sprite):
             player.jump_counter=0
         else:
             #player.rect.center=player.pos
-            if not player.jump or abs(player.pos.y-player.jump_height)==150:
+            if not player.jump or abs(player.pos.y-player.jump_height)>=150:
+                player.jump_counter+=1
                 if player.water:
                     player.pos.y+=10*delta_time
                     player.rect.center=player.pos
@@ -278,22 +279,22 @@ class player(pygame.sprite.Sprite):
             #    player.rect.center=player.pos
             #    player.jump=False   
         if player.jump:
-            player.image_frame+=10*delta_time
-            if round(player.image_frame)>=len(player.jump_image_list_right)-1:
-                player.image_frame=len(player.jump_image_list_right)-1
-            if player.direction=='right':  
-                player.image=player.jump_image_list_right[round(player.image_frame)]
-                player.pos.x+=100*delta_time
-            elif player.direction=='left':  
-                player.image=player.jump_image_list_left[round(player.image_frame)]
-                player.pos.x-=100*delta_time
-            if abs(player.pos.y-player.jump_height)<150:      
-                player.stamina-=50*delta_time
-                player.pos.y-=300*delta_time
-                player.rect.center=player.pos
-            else:
-                player.jump_counter+=1
-                player.jump=False
+            if abs(player.pos.y-player.jump_height)<150:
+                if player.jump_counter<=0:
+                    player.image_frame+=10*delta_time
+                    if round(player.image_frame)>=len(player.jump_image_list_right)-1:
+                        player.image_frame=len(player.jump_image_list_right)-1
+                    if player.direction=='right':  
+                        player.image=player.jump_image_list_right[round(player.image_frame)]
+                        player.pos.x+=100*delta_time
+                    elif player.direction=='left':  
+                        player.image=player.jump_image_list_left[round(player.image_frame)]
+                        player.pos.x-=100*delta_time   
+                    player.stamina-=50*delta_time
+                    player.pos.y-=300*delta_time
+                    player.rect.center=player.pos
+                else:
+                    player.jump=False
         for water_line in player.water_hitlines:
             if player.rect.clipline(water_line)!=():
                 #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
