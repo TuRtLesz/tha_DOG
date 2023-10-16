@@ -369,6 +369,17 @@ class dog(pygame.sprite.Sprite):
                     dog_instance.lose_sight_timer+=1*delta_time
             else:
                 dog_instance.lose_sight_timer+=1*delta_time
+        for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
+            dog_instance.state='chase_rat'
+            if rat.pos.x-dog_instance.pos.x>0:
+                dog_instance.direction='right'
+            elif rat.pos.x-dog_instance.pos.x<0:
+                dog_instance.direction='left'
+            if rat.rect.colliderect(dog_instance.rect):
+                rat.dead=True
+                dog_instance.state='stomp_rat'
+        if dog_instance.lose_sight_timer>=4 and dog_instance.state!='chase_rat':
+            dog_instance.state='idle'
         if dog_instance.state=='run':
             dog_instance.max_velocity.y=100
             dog_instance.image_frame+=10*delta_time
@@ -380,7 +391,7 @@ class dog(pygame.sprite.Sprite):
             elif dog_instance.direction=='left':
                 dog_instance.acceleration.x=-100
                 dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
-        elif dog_instance.state=='swim':
+        elif dog_instance.state=='swim' or dog_instance.state=='chase_rat':
             dog_instance.max_velocity.y=0
             dog_instance.image_frame+=15*delta_time
             if dog_instance.image_frame>=11:
@@ -391,6 +402,8 @@ class dog(pygame.sprite.Sprite):
             elif dog_instance.direction=='left':
                 dog_instance.acceleration.x=-80
                 dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
+        elif dog_instance.state=='stop_rat':
+            dog_instance.state='idle'#edit later
         if dog_instance.velocity.x>=dog_instance.max_velocity.x:
             dog_instance.velocity.x=dog_instance.max_velocity.x
         if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
