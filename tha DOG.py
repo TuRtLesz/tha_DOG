@@ -502,11 +502,11 @@ class dog(pygame.sprite.Sprite):
         dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
-    rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_dead.png').convert_alpha()
+    rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
     rat_run_right_list=[]
-    rat_dead_right_list=[]
+    rat_death_right_list=[]
     rat_run_left_list=[]
-    rat_dead_left_list=[]
+    rat_death_left_list=[]
     for image_x in range(0,rat_run_sprite_sheet.get_width()//66):
         image=pygame.Surface((66,37),pygame.SRCALPHA)
         image.blit(rat_run_sprite_sheet,(0,0),(image_x*66,0,66,37))
@@ -515,8 +515,8 @@ class rat(pygame.sprite.Sprite):
     for image_x in range(0,rat_dead_sprite_sheet.get_width()//66):
         image=pygame.Surface((66,37),pygame.SRCALPHA)
         image.blit(rat_dead_sprite_sheet,(0,0),(image_x*66,0,66,37))
-        rat_dead_left_list.append(image)
-        rat_dead_right_list.append(pygame.transform.flip(image,True,False))
+        rat_death_left_list.append(image)
+        rat_death_right_list.append(pygame.transform.flip(image,True,False))
     def __init__(rat_instance,x,y):
         super().__init__()
         rat_instance.image=rat.rat_run_left_list[0]
@@ -535,12 +535,12 @@ class rat(pygame.sprite.Sprite):
             elif player.state=='jump_left':
                 rat_instance.dead=True
         if rat_instance.dead:
-            if rat_instance.frame>len(rat.rat_dead_right_list)-1:
+            if rat_instance.frame>len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
             if rat_instance.velocity.x>0:
-                rat_instance.image=rat.rat_dead_right_list[round(rat_instance.frame)]
+                rat_instance.image=rat.rat_death_right_list[round(rat_instance.frame)]
             elif rat_instance.velocity.x<0:
-                rat_instance.image=rat.rat_dead_left_list[round(rat_instance.frame)]
+                rat_instance.image=rat.rat_death_left_list[round(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
             for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
