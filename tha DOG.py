@@ -559,6 +559,91 @@ class rat(pygame.sprite.Sprite):
             elif rat_instance.velocity.x<0:
                 rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
             rat_instance.frame+=10*delta_time
+class fish(pygame.sprite.Sprite):
+    fish_swim_spritesheet=pygame.image.load('Data/fish/fish_swim.png').convert()
+    fish_death_spritesheet=pygame.image.load('Data/fish/fish_death.png').convert()
+    fish_swim_imagelist_right=[]
+    fish_swim_imagelist_left=[]
+    fish_death_imagelist_right=[]
+    fish_death_imagelist_left=[]
+    for image_x in range(0,fish_swim_spritesheet.get_width()//49):
+        image=pygame.Surface((49,21),pygame.SRCALPHA)
+        image.blit(fish_swim_spritesheet,(0,0),(image_x*49,0,49,21))
+        fish_swim_imagelist_left.append(image)
+        fish_swim_imagelist_right.append(pygame.transform.flip(image,True,False))
+    for image_x in range(0,fish_death_spritesheet.get_width()//47):
+        image=pygame.Surface((47,19),pygame.SRCALPHA)
+        image.blit(fish_death_spritesheet,(0,0),(image_x*47,0,47,19))
+        fish_death_imagelist_left.append(image)
+        fish_death_imagelist_right.append(pygame.transform.flip(image,True,False))
+    def __init__(fish_instance,x,y,direction):
+        super().__init__()
+        fish_instance.death=False
+        fish_instance.player_bite=False
+        if direction=='left':
+            fish_instance.direction='left'
+            fish_instance.image=fish_instance.fish_swim_imagelist_left[0]
+        elif direction=='right':
+            fish_instance.direction='right'
+            fish_instance.image=fish_instance.fish_swim_imagelist_right[0]
+        fish_instance.image_frame=0
+        fish_instance.rect=fish_instance.image.get_rect(center=(x*48,y*48))
+        fish_instance.pos=pygame.math.Vector2(fish_instance.rect.center)
+        fish_instance.velocity=pygame.math.Vector2()
+    def update(fish_instance,delta_time):
+        if fish_instance.death:
+            if not fish_instance.image_frame>=len(fish.fish_death_imagelist_left):
+                if fish_instance.direction=='left':
+                    fish_instance.image=fish.fish_death_imagelist_left
+                elif fish_instance.direction=='right':
+                    fish_instance.image=fish.fish_death_imagelist_right
+                fish_instance.image_frame+=10*delta_time
+                fish_instance.velocity.xy=0,10
+        else:
+            for player in player_sprite_group:
+                if player.water:#to player when in water
+                    if fish_instance.player_bite:
+                        fish_instance.velocity.xy=0,0
+                        fish_instance.pos.xy=player.rect.center.x,player.rect.bottom-19
+                        if fish_instance.direction=='left':
+                            fish_instance.image=fish.fish_death_imagelist_left[1]
+                        elif fish_instance.direction=='right':
+                            fish_instance.image=fish.fish_death_imagelist_right[1]
+                    else:
+                        for player_obj in pygame.sprite.spritecollide(fish_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                            fish_instance.player_bite=True
+                        if player.pos.x>fish_instance.pos.x:
+                            fish_instance.velocity.x=10
+                            fish_instance.direction='right'
+                        else:
+                            fish_instance.velocity.x=-10
+                            fish_instance.direction='left'
+                        if player.pos.y>fish_instance.pos.y:
+                            fish_instance.velocity.y=8
+                        else:
+                            fish_instance.velocity.y=-8
+                        if fish_instance.image_frame>=len(fish.fish_swim_imagelist_left)-1:
+                            fish_instance.image_frame=0
+                        if fish_instance.direction=='left':
+                            fish_instance.image=fish.fish_swim_imagelist_left[fish_instance.image_frame]
+                        elif fish_instance.direction=='right':
+                            fish_instance.image=fish.fish_swim_imagelist_right[fish_instance.image_frame]
+                        if fish_instance.velocity.y>0:
+                            fish_instance.image=pygame.transform.rotate(fish_instance,-45)
+                        elif fish_instance.velocity.y<0:
+                            fish_instance.image=pygame.transform.rotate(fish_instance,45)
+                else:
+                    if fish_instance.image_frame>=len(fish.fish_swim_imagelist_left)-1:
+                        fish_instance.image_frame=0
+                    if fish_instance.direction=='left':
+                        fish_instance.image=fish.fish_swim_imagelist_left[fish_instance.image_frame]
+                        fish_instance.velocity.xy=-10,0
+                    elif fish_instance.direction=='right':
+                        fish_instance.image=fish.fish_swim_imagelist_right[fish_instance.image_frame]
+                        fish_instance.velocity.xy=10,0
+        fish_instance.pos+=fish_instance.velocity*delta_time
+        fish_instance.rect.center=fish_instance.pos
+        fish_instance.mask=pygame.mask.from_surface(fish_instance.image)
 
 class block(pygame.sprite.Sprite):
     sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert_alpha()
@@ -892,6 +977,7 @@ class camera():
 
 player_sprite_group=pygame.sprite.Group()
 
+fish_spirte_group=pygame.sprite.Group()
 rat_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
@@ -986,12 +1072,14 @@ for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
     for mob_x,mob_id in enumerate(row):  
         if mob_id=='0':
             rat_sprite_group.add(rat(mob_x,mob_y))
-        #elif mob_id=='1':
-        #    fish_sprite_group.add(fish(mob_x,mob_y))
+        elif mob_id=='1':
+            fish_sprite_group.add(fish(mob_x,mob_y,'right'))
         #elif mob_id=='2':
         #    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
         elif mob_id=='3':
             dog_sprite_group.add(dog(mob_x,mob_y))
+        elif mob_id=='1':
+            fish_sprite_group.add(fish(mob_x,mob_y,'left'))
 #water_hitline
 water_bodies_list_counter=0
 water_bodies={}
@@ -1065,12 +1153,14 @@ while game_mode=='in_game':
             for mob_x,mob_id in enumerate(row):  
                 if mob_id=='0':
                     rat_sprite_group.add(rat(mob_x,mob_y))
-                #elif mob_id=='1':
-                #    fish_sprite_group.add(fish(mob_x,mob_y))
+                elif mob_id=='1':
+                    fish_sprite_group.add(fish(mob_x,mob_y,'right'))
                 #elif mob_id=='2':
                 #    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
                 elif mob_id=='3':
                     dog_sprite_group.add(dog(mob_x,mob_y))
+                elif mob_id=='1':
+                    fish_sprite_group.add(fish(mob_x,mob_y,'left'))
         #water_hitline
         water_bodies_list_counter=0
         water_bodies={}
@@ -1096,6 +1186,7 @@ while game_mode=='in_game':
     display_window.fill((255,255,255))
     game_window.fill((255,255,255))#change later to white
     player_sprite_group.update(delta_time)
+    fish_spirte_group.update(delta_time)
     rat_sprite_group.update(delta_time)
     dog_sprite_group.update(delta_time)
     reactive_block_sprite_group.update(delta_time)
