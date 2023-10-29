@@ -208,13 +208,7 @@ class player(pygame.sprite.Sprite):
                 player.jump_height=player.pos.y
                 player.jump_counter=0
                 #pygame.draw.rect(game_window,(0,0,0),block.rect)
-                if block.id == '0':
-                    player.rect.bottom=block.rect.top
-                    player.pos.xy=player.rect.center
-                elif block.id == '1':
-                    player.rect.bottom=block.rect.top
-                    player.pos.xy=player.rect.center
-                elif block.id == '2':
+                if block.id == '0' or block.id == '1' or block.id == '2':
                     player.rect.bottom=block.rect.top
                     player.pos.xy=player.rect.center
                 elif block.id == '10':
@@ -410,13 +404,7 @@ class dog(pygame.sprite.Sprite):
         if dog_instance.velocity.y>=dog_instance.max_velocity.y:
             dog_instance.velocity.y=dog_instance.max_velocity.y
         for block in pygame.sprite.spritecollide(dog_instance,block_sprite_group,dokill=False):
-            if block.id == '0':
-                dog_instance.rect.bottom=block.rect.top
-                dog_instance.pos.xy=dog_instance.rect.center
-            elif block.id == '1':
-                dog_instance.rect.bottom=block.rect.top
-                dog_instance.pos.xy=dog_instance.rect.center
-            elif block.id == '2':
+            if block.id == '0' or block.id == '1' or block.id == '2':
                 dog_instance.rect.bottom=block.rect.top
                 dog_instance.pos.xy=dog_instance.rect.center
             elif block.id == '10':
@@ -537,9 +525,9 @@ class rat(pygame.sprite.Sprite):
             if rat_instance.frame>len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
             if rat_instance.velocity.x>0:
-                rat_instance.image=rat.rat_death_right_list[round(rat_instance.frame)]
+                rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
             elif rat_instance.velocity.x<0:
-                rat_instance.image=rat.rat_death_left_list[round(rat_instance.frame)]
+                rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
             for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
@@ -558,7 +546,7 @@ class rat(pygame.sprite.Sprite):
             elif rat_instance.velocity.x<0:
                 rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
             rat_instance.frame+=10*delta_time
-class fish(pygame.sprite.Sprite):
+class fish(pygame.sprite.Sprite):#fishes are not the bad guys
     fish_swim_spritesheet=pygame.image.load('Data/fish/fish_swim.png').convert_alpha()
     fish_death_spritesheet=pygame.image.load('Data/fish/fish_death.png').convert_alpha()
     fish_swim_imagelist_right=[]
@@ -603,15 +591,7 @@ class fish(pygame.sprite.Sprite):
                     fish_instance.velocity.y=0
                     fish_instance.rect.bottom=block.rect.top
                     fish_instance.pos.xy=fish_instance.rect.center
-                elif block.id=='0':
-                    fish_instance.velocity.y=0
-                    fish_instance.rect.bottom=block.rect.top
-                    fish_instance.pos.xy=fish_instance.rect.center
-                elif block.id=='1':
-                    fish_instance.velocity.y=0
-                    fish_instance.rect.bottom=block.rect.top
-                    fish_instance.pos.xy=fish_instance.rect.center
-                elif block.id=='2': 
+                elif block.id=='0' or block.id=='1' or block.id=='2':
                     fish_instance.velocity.y=0
                     fish_instance.rect.bottom=block.rect.top
                     fish_instance.pos.xy=fish_instance.rect.center
@@ -841,6 +821,43 @@ class rock(pygame.sprite.Sprite):
         rock_instance.angle=0
     def update(rock_instance,delta_time):
         rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
+class little_rock(pygame.sprite.Sprite):
+    image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
+    water_resistance=pygame.math.Vector2()
+    def __init__(rock_instance,x,y):
+        super().__init__()
+        rock_instance.image=little_rock.image
+        rock_instance.angle=0
+        rock_instance.rect=rock_instance.image.get_rect(topleft=(x*48,(y+1)*48-12))
+        rock_instance.mask=pygame.mask.from_surface(rock_instance.image)
+        rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
+        rock_instance.initial_velocity=pygame.math.Vector2()#for collsions
+        rock_instance.velocity=pygame.math.Vector2()
+        rock_instance.acceleration=pygame.math.Vector2()
+    def update(rock_instance,delta_time):
+        if rock_instance.angle>=360:
+            rock_instance.angle-=360
+        rock_instance.image=pygame.transform.rotate(little_rock.image,rock_instance.angle)
+        for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
+            if player.state=='pick':
+                player.hand='little_rock'
+                rock_instance.kill()
+        for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):#laggy heere?
+            if block.id=='0' or block.id=='1' or block.id=='2':
+                if (not rock_instance.velocity.x<=10) and rock_instance.initial_velocity>little_rock.water_resistance:
+                    rock_instance.velocity=rock_instance.initial_velocity-rock.water_resistance
+                    rock_instance.initial_velocity=rock_instance.velocity
+                else:
+                    rock_instance.rect.bottom=block.rect.top+12
+                    rock_instance.pos=rock_instance.rect.center
+        for water_line in water_hitlines:
+            if rock_instance.rect.clipline(water_line)!=():
+                if not rock_instance.velocity.x<5 and rock_instance.initial_velocity>little_rock.water_resistance:
+                    rock_instance.velocity=rock_instance.initial_velocity-rock.water_resistance
+                    rock_instance.initial_velocity=rock_instance.velocity
+        rock_instance.velocity+=rock_instance.acceleration*delta_time
+        rock_instance.pos+=rock_instance.velocity*delta_time
+        rock_instance.rect.center=rock_instance.pos.xy
 class switch(pygame.sprite.Sprite):
     image_list=[]
     switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
@@ -1115,6 +1132,8 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
                 water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
         elif block_id=='9':
             reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
+        elif block_id=='10':
+            reactive_block_sprite_group.add(little_rock(block_number,row_number))
 bomb_rect_list.clear()
 bomb_rect_topright=[]
 for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1194,6 +1213,8 @@ while game_mode=='in_game':
                         water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
                 elif block_id=='9':
                     reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
+                elif block_id=='10':
+                    reactive_block_sprite_group.add(little_rock(block_number,row_number))
         bomb_rect_list.clear()
         bomb_rect_topright=[]
         for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1252,8 +1273,8 @@ while game_mode=='in_game':
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
