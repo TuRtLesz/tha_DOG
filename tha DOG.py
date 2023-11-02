@@ -123,6 +123,7 @@ class player(pygame.sprite.Sprite):
         elif player.state=='grass':
             player.image=player.player_grass_image
         elif player.state=='aim':#make projetile path here
+            print(player.throw_angle,player.throw_power)
             if player.image_frame>=3:
                 player.image_frame=3
             if player.direction=='left':
@@ -132,13 +133,23 @@ class player(pygame.sprite.Sprite):
             player.image_frame+=5*delta_time
             if player.throw_angle>=45:
                 player.throw_angle=45
-                player.throw_power+=5*delta_time
+                player.throw_power+=30*delta_time
             else:
-                player.throw_angle+=5*delta_time
+                player.throw_angle+=20*delta_time
         elif player.state=='throw':
             if player.image_frame>len(player.throw_image_list_left):
-                player.rock_obj=little_rock(player.rect.right,player.rect.centery-42)
+                if player.direction=='left':
+                    player.rock_obj=little_rock(player.rect.left+19,player.rect.top+28)
+                else:
+                    player.rock_obj=little_rock(player.rect.right-19,player.rect.top+28)
                 player.rock_obj.velocity.from_polar((player.throw_power,player.throw_angle))
+                player.throw_angle,player.throw_power=10,10
+                player.rock_obj.velocity.y=-player.rock_obj.velocity.y
+                if player.direction=='left':
+                    player.rock_obj.velocity.x=-player.rock_obj.velocity.x
+                player.rock_obj.acceleration.y=10
+                player.rock_obj.initial_velocity=player.rock_obj.velocity
+                print(player.rock_obj.velocity)
                 reactive_block_sprite_group.add(player.rock_obj)
                 player.state='idle'
             else:
@@ -207,6 +218,10 @@ class player(pygame.sprite.Sprite):
         #elif player.state=='jump_left':
         #    player.velocity.y=-200
         #    player.velocity.x=-50
+        #for realtive_block in reactive_block_sprite_group:
+        #    if type(realtive_block)==little_rock:
+        #        print(realtive_block.pos)
+        #print('\033c')
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
         if player.velocity.x<=(-player.max_velocity.x):
@@ -861,17 +876,17 @@ class rock(pygame.sprite.Sprite):
         rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
 class little_rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
-    water_resistance=pygame.math.Vector2()
+    water_resistance=pygame.math.Vector2(20,0)
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.image=little_rock.image
         rock_instance.angle=0
-        rock_instance.rect=rock_instance.image.get_rect(topleft=(x*48,(y+1)*48-12))
+        rock_instance.rect=rock_instance.image.get_rect(topleft=(x,y))
         rock_instance.mask=pygame.mask.from_surface(rock_instance.image)
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.initial_velocity=pygame.math.Vector2()#for collsions
         rock_instance.velocity=pygame.math.Vector2()
-        rock_instance.acceleration=pygame.math.Vector2(0,10)
+        rock_instance.acceleration=pygame.math.Vector2()
     def update(rock_instance,delta_time):
         if rock_instance.angle>=360:
             rock_instance.angle-=360
@@ -880,23 +895,21 @@ class little_rock(pygame.sprite.Sprite):
             if player.state=='pick':
                 player.hand='little_rock'
                 rock_instance.kill()
-        for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):#laggy heere?
+        rock_instance.velocity+=rock_instance.acceleration*delta_time*4# for increaing the speed of rock falling
+        rock_instance.pos+=rock_instance.velocity*delta_time*4# for increaing the speed of rock falling
+        rock_instance.rect.center=rock_instance.pos.xy
+        for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):
+            rock_instance.velocity.xy=0,0
+            rock_instance.acceleration.xy=0,0
             if block.id=='0' or block.id=='1' or block.id=='2':
-                if (not rock_instance.velocity.x<=10) and rock_instance.initial_velocity>little_rock.water_resistance:
-                    rock_instance.velocity=rock_instance.initial_velocity-rock.water_resistance
-                    rock_instance.initial_velocity=rock_instance.velocity
-                else:
-                    rock_instance.rect.bottom=block.rect.top+12
-                    rock_instance.pos=rock_instance.rect.center
-        else:
-            rock_instance.velocity+=rock_instance.acceleration*delta_time
-            rock_instance.pos+=rock_instance.velocity*delta_time
-            rock_instance.rect.center=rock_instance.pos.xy
+                rock_instance.rect.bottom=block.rect.top+12
+            rock_instance.pos.xy=rock_instance.rect.center
         for water_line in water_hitlines:
             if rock_instance.rect.clipline(water_line)!=():
-                if not rock_instance.velocity.x<5 and rock_instance.initial_velocity>little_rock.water_resistance:
-                    rock_instance.velocity=rock_instance.initial_velocity-rock.water_resistance
+                if not rock_instance.velocity.x<0 and rock_instance.initial_velocity.x>little_rock.water_resistance.x:
+                    rock_instance.velocity=rock_instance.initial_velocity-little_rock.water_resistance
                     rock_instance.initial_velocity=rock_instance.velocity
+                    rock_instance.velocity.y=-rock_instance.velocity.y//2
 class switch(pygame.sprite.Sprite):
     image_list=[]
     switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
@@ -1172,7 +1185,7 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
         elif block_id=='9':
             reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
         elif block_id=='10':
-            reactive_block_sprite_group.add(little_rock(block_number,row_number))
+            reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))#x*48,(y+1)*48-12
 bomb_rect_list.clear()
 bomb_rect_topright=[]
 for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1253,7 +1266,7 @@ while game_mode=='in_game':
                 elif block_id=='9':
                     reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
                 elif block_id=='10':
-                    reactive_block_sprite_group.add(little_rock(block_number,row_number))
+                    reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))
         bomb_rect_list.clear()
         bomb_rect_topright=[]
         for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1314,8 +1327,8 @@ while game_mode=='in_game':
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
     
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
 
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
