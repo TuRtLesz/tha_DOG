@@ -108,7 +108,7 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
         else:
-            if player.state!='pant':
+            if player.state!='pant'or player.state!='aim':
                 player.idle_timer=0
         if player.state=='pant':
             player.idle_timer+=delta_time
@@ -124,6 +124,7 @@ class player(pygame.sprite.Sprite):
             player.image=player.player_grass_image
         elif player.state=='aim':#make projetile path here
             print(player.throw_angle,player.throw_power)
+            player.idle_timer+=delta_time
             if player.image_frame>=3:
                 player.image_frame=3
             if player.direction=='left':
@@ -876,7 +877,7 @@ class rock(pygame.sprite.Sprite):
         rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
 class little_rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
-    water_resistance=pygame.math.Vector2(20,0)
+    water_resistance=pygame.math.Vector2(5,0)
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.image=little_rock.image
@@ -895,8 +896,8 @@ class little_rock(pygame.sprite.Sprite):
             if player.state=='pick':
                 player.hand='little_rock'
                 rock_instance.kill()
-        rock_instance.velocity+=rock_instance.acceleration*delta_time*4# for increaing the speed of rock falling
-        rock_instance.pos+=rock_instance.velocity*delta_time*4# for increaing the speed of rock falling
+        rock_instance.velocity+=rock_instance.acceleration*delta_time*2# for increaing the speed of rock falling
+        rock_instance.pos+=rock_instance.velocity*delta_time*2# for increaing the speed of rock falling
         rock_instance.rect.center=rock_instance.pos.xy
         for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):
             rock_instance.velocity.xy=0,0
@@ -906,7 +907,7 @@ class little_rock(pygame.sprite.Sprite):
             rock_instance.pos.xy=rock_instance.rect.center
         for water_line in water_hitlines:
             if rock_instance.rect.clipline(water_line)!=():
-                if not rock_instance.velocity.x<0 and rock_instance.initial_velocity.x>little_rock.water_resistance.x:
+                if rock_instance.velocity.x>10:
                     rock_instance.velocity=rock_instance.initial_velocity-little_rock.water_resistance
                     rock_instance.initial_velocity=rock_instance.velocity
                     rock_instance.velocity.y=-rock_instance.velocity.y//2
@@ -1041,16 +1042,25 @@ class camera():
         cam.player_offset=pygame.math.Vector2()
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
+            print(cam.player_offset.x)
             if player_sprite.idle_timer>=2:
                 if cam.player_offset.x>=game_window.get_width()//2-50:
                     cam.player_offset.x=game_window.get_width()//2-50
                 else:
-                    cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                    if cam.player_offset.x<=-(game_window.get_width()//2-50):
+                        cam.player_offset.x=-(game_window.get_width()//2-50)
+                    else:
+                        if player_sprite.direction=='right':
+                            cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                        else:
+                            cam.player_offset.x-=100*delta_time#pan speed for idle pan
             else:
-                if cam.player_offset.x<=0:
-                    cam.player_offset.x=0
-                else:
+                if cam.player_offset.x>0:
                     cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                    if cam.player_offset.x<0:cam.player_offset.x=0
+                elif cam.player_offset.x<0:
+                    cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                    if cam.player_offset.x>0:cam.player_offset.x=0
             if player_sprite.pos.x<game_window.get_width()//2:
                 cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
                 cam.offset.x=0
