@@ -82,12 +82,12 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):
         player.water=False
-        for water_rect in water_blocks_rect_list:
-            if not player.water:
-                if player.rect.colliderect(water_rect):
-                    player.water=True
-            else:
-                break
+        #for water_rect in water_blocks_rect_list:
+        #    if not player.water:
+        #        if player.rect.colliderect(water_rect):
+        #            player.water=True
+        #    else:
+        #        break
         if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
@@ -210,19 +210,6 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.acceleration.x=-50
                 player.image=player.swim_image_list_left[round(player.image_frame)]
-        #elif player.state=='jump':
-        #    player.velocity.y=-200
-        #    player.velocity.x=0
-        #elif player.state=='jump_right':
-        #    player.velocity.y=-200
-        #    player.velocity.x=50
-        #elif player.state=='jump_left':
-        #    player.velocity.y=-200
-        #    player.velocity.x=-50
-        #for realtive_block in reactive_block_sprite_group:
-        #    if type(realtive_block)==little_rock:
-        #        print(realtive_block.pos)
-        #print('\033c')
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
         if player.velocity.x<=(-player.max_velocity.x):
@@ -237,94 +224,88 @@ class player(pygame.sprite.Sprite):
             player.rect=player.image.get_rect(center=player.pos.xy)
         else:
             player.velocity.x=0
-            #player.velocity.y+=player.acceleration.y*delta_time
-            #player.pos.y+=player.velocity.y*delta_time
-        #if player.state=='pick' or player.state=='interact' or player.state=='pant':
-        #    player.velocity.y+=player.acceleration.y*delta_time
-        #    player.pos.y+=player.velocity.y*delta_time
-        #player.rect=player.image.get_rect(center=player.pos.xy)
+        #for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
+        #    player.jump_height=player.pos.y
+        #    player.jump_counter=0
+        #else:
+        #    #player.rect.center=player.pos
+        if not player.jump or abs(player.pos.y-player.jump_height)>=150:
+            player.jump_counter+=1
+            if player.water or player.state=='swim' or player.state=='siwm_fast':
+                player.pos.y+=5*delta_time
+                player.rect.center=player.pos
+                player.jump=False
+            else:
+                player.pos.y+=400*delta_time
+                player.rect.center=player.pos
+                player.jump=False
         for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
-        else:
-            #player.rect.center=player.pos
-            if not player.jump or abs(player.pos.y-player.jump_height)>=150:
-                player.jump_counter+=1
-                if player.water or player.state=='swim' or player.state=='siwm_fast':
-                    player.pos.y+=5*delta_time
-                    player.rect.center=player.pos
-                    player.jump=False
-                else:
-                    player.pos.y+=400*delta_time
-                    player.rect.center=player.pos
-                    player.jump=False
-            for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
-                player.jump_height=player.pos.y
-                player.jump_counter=0
-                #pygame.draw.rect(game_window,(0,0,0),block.rect)
-                if block.id == '0' or block.id == '1' or block.id == '2':
-                    player.rect.bottom=block.rect.top
-                    player.pos.xy=player.rect.center
-                elif block.id == '10':
-                    player.rect.bottom=block.rect.top+4
-                    player.pos.xy=player.rect.center
-                elif block.id == '12':
-                    player.rect.bottom=block.rect.top+30
-                    player.pos.xy=player.rect.center
-                elif block.id == '13':
-                    player.rect.bottom=block.rect.top+30
-                    player.pos.xy=player.rect.center
-                elif block.id == '70':
-                    player.rect.bottom=block.rect.top
-                    player.pos.xy=player.rect.center
-                #if pygame.sprite.collide_mask(player,block):
-                elif block.id == '3':#ramps
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
-                    player.pos.xy=player.rect.center
-                elif block.id == '4':
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
-                    player.pos.xy=player.rect.center
-                elif block.id == '5':
-                    player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
-                    player.pos.xy=player.rect.center
-                elif block.id == '92':
-                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-                    player.pos.xy=player.rect.center
-                elif block.id == '93':
-                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-                    player.pos.xy=player.rect.center
-                elif block.id == '94':
-                    player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
-                    player.pos.xy=player.rect.center
-                #rock
-                #elif block.id == '6':#top curve right
-                #    if player.pos.x-block.rect.x>18:
-                #        player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
-                #        player.pos.xy=player.rect.center
-                #elif block.id == '7':
-                #    player.rect.bottom=block.rect.top+23
-                #    player.pos.xy=player.rect.center
-                #elif block.id == '8':#top curve left
-                #    if player.pos.x-block.rect.x<=23:
-                #        player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
-                #        player.pos.xy=player.rect.center
-                #elif block.id == '35':#sideleft
-                #    if pygame.sprite.collide_mask(player,block):
-                #        if player.rect.bottom!=block.rect.bottom+1:
-                #            print('test')
-                #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
-                #        else:
-                #            if player.state=='run_right':
-                #                player.rect.right=block.rect.left+48
-                #        player.pos.xy=player.rect.center
-                #elif block.id == '37':#side right
-                #    if player.pos.x-block.rect.x>23:
-                #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
-                #        player.pos.xy=player.rect.center
-            #if abs(player.pos.y-player.jump_height)>0 and player.jump and player.jump_counter>0:
-            #    player.pos.y+=400*delta_time
-            #    player.rect.center=player.pos
-            #    player.jump=False   
+            #pygame.draw.rect(game_window,(0,0,0),block.rect)
+            if block.id == '0' or block.id == '1' or block.id == '2':
+                player.rect.bottom=block.rect.top
+                player.pos.xy=player.rect.center
+            elif block.id == '10':
+                player.rect.bottom=block.rect.top+4
+                player.pos.xy=player.rect.center
+            elif block.id == '12':
+                player.rect.bottom=block.rect.top+30
+                player.pos.xy=player.rect.center
+            elif block.id == '13':
+                player.rect.bottom=block.rect.top+30
+                player.pos.xy=player.rect.center
+            elif block.id == '70':
+                player.rect.bottom=block.rect.top
+                player.pos.xy=player.rect.center
+            #if pygame.sprite.collide_mask(player,block):
+            elif block.id == '3':#ramps
+                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
+                player.pos.xy=player.rect.center
+            elif block.id == '4':
+                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
+                player.pos.xy=player.rect.center
+            elif block.id == '5':
+                player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
+                player.pos.xy=player.rect.center
+            elif block.id == '92':
+                player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
+                player.pos.xy=player.rect.center
+            elif block.id == '93':
+                player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
+                player.pos.xy=player.rect.center
+            elif block.id == '94':
+                player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
+                player.pos.xy=player.rect.center
+            #rock
+            #elif block.id == '6':#top curve right
+            #    if player.pos.x-block.rect.x>18:
+            #        player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
+            #        player.pos.xy=player.rect.center
+            #elif block.id == '7':
+            #    player.rect.bottom=block.rect.top+23
+            #    player.pos.xy=player.rect.center
+            #elif block.id == '8':#top curve left
+            #    if player.pos.x-block.rect.x<=23:
+            #        player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
+            #        player.pos.xy=player.rect.center
+            #elif block.id == '35':#sideleft
+            #    if pygame.sprite.collide_mask(player,block):
+            #        if player.rect.bottom!=block.rect.bottom+1:
+            #            print('test')
+            #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
+            #        else:
+            #            if player.state=='run_right':
+            #                player.rect.right=block.rect.left+48
+            #        player.pos.xy=player.rect.center
+            #elif block.id == '37':#side right
+            #    if player.pos.x-block.rect.x>23:
+            #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
+            #        player.pos.xy=player.rect.center
+        #if abs(player.pos.y-player.jump_height)>0 and player.jump and player.jump_counter>0:
+        #    player.pos.y+=400*delta_time
+        #    player.rect.center=player.pos
+        #    player.jump=False   
         if player.jump:
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
@@ -539,8 +520,6 @@ class dog(pygame.sprite.Sprite):
 
         #for dog in dog_sprite_group:
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
-
-        dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
@@ -584,7 +563,7 @@ class rat(pygame.sprite.Sprite):
                 rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
-            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False):
                 if block.id=='41':#rat_hole
                     rat_instance.velocity.x=-70
                 elif block.id=='37':#rock
@@ -627,6 +606,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
         elif direction=='right':
             fish_instance.direction='right'
             fish_instance.image=fish.fish_swim_imagelist_right[0]
+        fish_instance.mask=pygame.mask.from_surface(fish_instance.image)
         fish_instance.image_frame=0
         fish_instance.rect=fish_instance.image.get_rect(center=(x*48,y*48))
         fish_instance.pos=pygame.math.Vector2(fish_instance.rect.center)
@@ -720,7 +700,6 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                 if fish_instance.rect.clipline(water_line)!=():
                     if water_line[1][1]<=fish_instance.rect.top:
                         fish_instance.velocity.y=0
-        fish_instance.mask=pygame.mask.from_surface(fish_instance.image)
         fish_instance.pos+=fish_instance.velocity*delta_time
         fish_instance.rect.center=fish_instance.pos
 
@@ -737,7 +716,6 @@ class block(pygame.sprite.Sprite):
         block_instance.id=block_id
         block_instance.image=block.block_list[int(block_id)]
         block_instance.rect=block_instance.image.get_rect(topleft=(x*48,y*48))
-        block_instance.mask=pygame.mask.from_surface(block_instance.image)
 
 class grass(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/grass.png').convert_alpha()
@@ -883,7 +861,6 @@ class little_rock(pygame.sprite.Sprite):
         rock_instance.image=little_rock.image
         rock_instance.angle=0
         rock_instance.rect=rock_instance.image.get_rect(topleft=(x,y))
-        rock_instance.mask=pygame.mask.from_surface(rock_instance.image)
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.initial_velocity=pygame.math.Vector2()#for collsions
         rock_instance.velocity=pygame.math.Vector2()
@@ -1042,7 +1019,6 @@ class camera():
         cam.player_offset=pygame.math.Vector2()
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
-            print(cam.player_offset.x)
             if player_sprite.idle_timer>=2:
                 if cam.player_offset.x>=game_window.get_width()//2-50:
                     cam.player_offset.x=game_window.get_width()//2-50
@@ -1339,7 +1315,6 @@ while game_mode=='in_game':
     
     #for player in player_sprite_group:
     #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
-
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1419,4 +1394,5 @@ while game_mode=='in_game':
     else:
         display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
     pygame.display.update()
+    print(str(clock.get_fps()))
     clock.tick()
