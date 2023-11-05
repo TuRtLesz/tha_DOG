@@ -92,9 +92,6 @@ class player(pygame.sprite.Sprite):
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
                     player.image_frame=0
-                #if player.stamina<=0:#eanble later
-                #    if (player.state=='run' or player.state=='sprint') and not player.water:
-                #        player.state='fall'
         elif player.stamina>=1000:
             player.stamina=1000
             if player.state=='pant':
@@ -161,7 +158,6 @@ class player(pygame.sprite.Sprite):
                 player.image_frame+=10*delta_time
         elif player.state=='run':
             player.max_velocity.x=200
-            player.stamina-=10*delta_time
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
@@ -200,7 +196,6 @@ class player(pygame.sprite.Sprite):
                     player.image=player.swim_image_list_left[round(player.image_frame)]
         if player.state=='swim':
             player.max_velocity.x=150
-            player.stamina-=50*delta_time
             player.image_frame+=10*delta_time
             if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                 player.image_frame=6
@@ -224,11 +219,6 @@ class player(pygame.sprite.Sprite):
             player.rect=player.image.get_rect(center=player.pos.xy)
         else:
             player.velocity.x=0
-        #for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
-        #    player.jump_height=player.pos.y
-        #    player.jump_counter=0
-        #else:
-        #    #player.rect.center=player.pos
         if not player.jump or abs(player.pos.y-player.jump_height)>=150:
             player.jump_counter+=1
             if player.water or player.state=='swim' or player.state=='siwm_fast':
@@ -242,7 +232,6 @@ class player(pygame.sprite.Sprite):
         for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
-            #pygame.draw.rect(game_window,(0,0,0),block.rect)
             if block.id == '0' or block.id == '1' or block.id == '2':
                 player.rect.bottom=block.rect.top
                 player.pos.xy=player.rect.center
@@ -302,10 +291,6 @@ class player(pygame.sprite.Sprite):
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             #        player.pos.xy=player.rect.center
-        #if abs(player.pos.y-player.jump_height)>0 and player.jump and player.jump_counter>0:
-        #    player.pos.y+=400*delta_time
-        #    player.rect.center=player.pos
-        #    player.jump=False   
         if player.jump:
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
@@ -325,16 +310,12 @@ class player(pygame.sprite.Sprite):
                     player.jump=False
         for water_line in water_hitlines:
             if player.rect.clipline(water_line)!=():
-                #if water_line[1]==player.rect.top or water_line[1]==player.rect.bottom:
                 if player.state=='run' or player.state=='sprint':
                     if numpy.random.randint(0,7)==1:
                         bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
                 for water_dot in water_dot_sprite_group:
                     if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
                         water_dot.force=30
-                    #if water_dot.dest_pos.x<player.rect.centerx-15:
-                    #    water_dot.force=20
-                    #    water_dot.spread_dir='left'
 
 class dog(pygame.sprite.Sprite):
     dog_run_image_sprite_sheet=pygame.image.load('Data/dog/dog_run.png').convert_alpha()
@@ -438,8 +419,17 @@ class dog(pygame.sprite.Sprite):
             dog_instance.velocity.x=-(dog_instance.max_velocity.x)
         if dog_instance.velocity.y>=dog_instance.max_velocity.y:
             dog_instance.velocity.y=dog_instance.max_velocity.y
+        dog_instance.velocity+=dog_instance.acceleration*delta_time
+        dog_instance.pos+=dog_instance.velocity*delta_time
+        dog_instance.rect.center=dog_instance.pos.xy
         for block in pygame.sprite.spritecollide(dog_instance,block_sprite_group,dokill=False):
-            if block.id == '0' or block.id == '1' or block.id == '2':
+            if block.id == '0':
+                dog_instance.rect.bottom=block.rect.top
+                dog_instance.pos.xy=dog_instance.rect.center
+            elif block.id == '1':
+                dog_instance.rect.bottom=block.rect.top
+                dog_instance.pos.xy=dog_instance.rect.center
+            elif block.id == '2':
                 dog_instance.rect.bottom=block.rect.top
                 dog_instance.pos.xy=dog_instance.rect.center
             elif block.id == '10':
@@ -472,50 +462,6 @@ class dog(pygame.sprite.Sprite):
             elif block.id == '94':
                 dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                 dog_instance.pos.xy=dog_instance.rect.center
-        else:
-            dog_instance.velocity+=dog_instance.acceleration*delta_time
-            dog_instance.pos+=dog_instance.velocity*delta_time
-            dog_instance.rect.center=dog_instance.pos.xy
-            for block in pygame.sprite.spritecollide(dog_instance,block_sprite_group,dokill=False):
-                if block.id == '0':
-                    dog_instance.rect.bottom=block.rect.top
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '1':
-                    dog_instance.rect.bottom=block.rect.top
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '2':
-                    dog_instance.rect.bottom=block.rect.top
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '10':
-                    dog_instance.rect.bottom=block.rect.top+4
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '12':
-                    dog_instance.rect.bottom=block.rect.top+30
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '13':
-                    dog_instance.rect.bottom=block.rect.top+30
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '70':
-                    dog_instance.rect.bottom=block.rect.top
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '3':#ramps
-                    dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-52#ramp_up
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '4':
-                    dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-37
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '5':
-                    dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-22
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '92':
-                    dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '93':
-                    dog_instance.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-                    dog_instance.pos.xy=dog_instance.rect.center
-                elif block.id == '94':
-                    dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
-                    dog_instance.pos.xy=dog_instance.rect.center
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
 
         #for dog in dog_sprite_group:
@@ -1315,17 +1261,10 @@ while game_mode=='in_game':
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     display_window.fill((255,255,255))
-    game_window.fill((255,255,255))#change later to white
-    #player_sprite_group.update(delta_time)
+    game_window.fill((255,255,255))
     for player in player_sprite_group:
         if player.state!='aim':
             game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],delta_time,water_dot_sprite_group)
-            #fish_sprite_group.update(delta_time)
-            #rat_sprite_group.update(delta_time)
-            #dog_sprite_group.update(delta_time)
-            #reactive_block_sprite_group.update(delta_time)
-            #water_dot_sprite_group.update()
-            #bubble_sprite_group.update(delta_time)
     game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_group],
