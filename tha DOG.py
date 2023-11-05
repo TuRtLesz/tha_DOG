@@ -229,7 +229,7 @@ class player(pygame.sprite.Sprite):
                 player.pos.y+=400*delta_time
                 player.rect.center=player.pos
                 player.jump=False
-        for block in pygame.sprite.spritecollide(player,block_sprite_group,dokill=False):
+        for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
             if block.id == '0' or block.id == '1' or block.id == '2':
@@ -367,7 +367,7 @@ class dog(pygame.sprite.Sprite):
                 if player.state!='grass':
                     dog_instance.direction='right'
             if abs(player.rect.x-dog_instance.rect.centerx)<800:
-                for block in pygame.sprite.spritecollide(dog_instance,block_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
+                for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
                     if block.rect.clipline(dog_instance.vission_line[0],dog_instance.vission_line[1]):
                         dog_instance.lose_sight_timer+=1*delta_time
                     else:
@@ -422,7 +422,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.velocity+=dog_instance.acceleration*delta_time
         dog_instance.pos+=dog_instance.velocity*delta_time
         dog_instance.rect.center=dog_instance.pos.xy
-        for block in pygame.sprite.spritecollide(dog_instance,block_sprite_group,dokill=False):
+        for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False):
             if block.id == '0':
                 dog_instance.rect.bottom=block.rect.top
                 dog_instance.pos.xy=dog_instance.rect.center
@@ -509,7 +509,7 @@ class rat(pygame.sprite.Sprite):
                 rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
-            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_group,dokill=False):
+            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='41':#rat_hole
                     rat_instance.velocity.x=-70
                 elif block.id=='37':#rock
@@ -566,7 +566,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                     fish_instance.image=fish.fish_death_imagelist_right[int(fish_instance.image_frame)]
                 fish_instance.image_frame+=10*delta_time
                 fish_instance.velocity.xy=0,10
-            for block in pygame.sprite.spritecollide(fish_instance,block_sprite_group,dokill=False):
+            for block in pygame.sprite.spritecollide(fish_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='10':
                     fish_instance.velocity.y=0
                     fish_instance.rect.bottom=block.rect.top
@@ -582,7 +582,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                     if water_rect.colliderect(fish_instance.rect):
                         fish_instance.water=True
                         break
-            for block in pygame.sprite.spritecollide(fish_instance,block_sprite_group,dokill=False):
+            for block in pygame.sprite.spritecollide(fish_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='147' or block.id=='177' or block.id=='206' or block.id=='145' or block.id=='174' or block.id=='204':
                     if fish_instance.direction=='left':
                         fish_instance.direction='right'
@@ -822,7 +822,7 @@ class little_rock(pygame.sprite.Sprite):
         rock_instance.velocity+=rock_instance.acceleration*delta_time*2# for increaing the speed of rock falling
         rock_instance.pos+=rock_instance.velocity*delta_time*2# for increaing the speed of rock falling
         rock_instance.rect.center=rock_instance.pos.xy
-        for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):
+        for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
             rock_instance.velocity.xy=0,0
             rock_instance.acceleration.xy=0,0
             if block.id=='0' or block.id=='1' or block.id=='2':
@@ -1043,6 +1043,10 @@ class game():
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
+        block_sprite_instance_group.empty()
+        for block in block_sprite_group:
+            if block.rect.colliderect(update_instance.update_rect):
+                block_sprite_instance_group.add(block)
         for sprite_group in update_sprite_group_list:
             for sprite in sprite_group:
                 if update_instance.update_rect.colliderect(sprite.rect):
@@ -1062,6 +1066,8 @@ block_sprite_group=pygame.sprite.Group()
 reactive_block_sprite_group=pygame.sprite.Group()
 tree_sprite_group=pygame.sprite.Group()
 bubble_sprite_group=pygame.sprite.Group()
+
+block_sprite_instance_group=pygame.sprite.Group()
 
 water_dot_sprite_group=pygame.sprite.Group()
 
@@ -1264,10 +1270,11 @@ while game_mode=='in_game':
     game_window.fill((255,255,255))
     for player in player_sprite_group:
         if player.state!='aim':
-            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],delta_time,water_dot_sprite_group)
+            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],
+                        delta_time,water_dot_sprite_group)
     game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
-                [tree_sprite_group,block_sprite_group],
+                [tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
     #for player in player_sprite_group:
