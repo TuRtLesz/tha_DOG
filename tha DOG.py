@@ -817,7 +817,7 @@ class little_rock(pygame.sprite.Sprite):
         rock_instance.image=pygame.transform.rotate(little_rock.image,rock_instance.angle)
         for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
             if player.state=='pick':
-                player.hand='little_rock'
+                player.hand='rock'
                 rock_instance.kill()
         rock_instance.velocity+=rock_instance.acceleration*delta_time*2# for increaing the speed of rock falling
         rock_instance.pos+=rock_instance.velocity*delta_time*2# for increaing the speed of rock falling
@@ -834,6 +834,16 @@ class little_rock(pygame.sprite.Sprite):
                     rock_instance.velocity=rock_instance.initial_velocity-little_rock.water_resistance
                     rock_instance.initial_velocity=rock_instance.velocity
                     rock_instance.velocity.y=-rock_instance.velocity.y//2
+class rock_pile(pygame.sprite.Sprite):
+    image=pygame.image.load('Data/blocks/reactive_blocks/rock_pile.png').convert_alpha()
+    def __init__(rock_pile_instance,x,y):
+        super().__init__()
+        rock_pile_instance.image=rock_pile.image
+        rock_pile_instance.rect=rock_pile_instance.image.get_rect(midbottom=(x,y))
+    def update(rock_pile_instance,delta_time):
+        for player in pygame.sprite.spritecollide(rock_pile_instance,player_sprite_group,dokill=False):
+            if player.state=='pick':
+                player.hand='rock'
 class switch(pygame.sprite.Sprite):
     image_list=[]
     switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
@@ -1105,7 +1115,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(5130,560))#550,1311
+player_sprite_group.add(player(14727,560))#550,1311
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1141,6 +1151,8 @@ for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['cur
             reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
         elif block_id=='10':
             reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))#x*48,(y+1)*48-12
+        elif block_id=='11':
+            reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
 bomb_rect_list.clear()
 bomb_rect_topright=[]
 for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1222,6 +1234,8 @@ while game_mode=='in_game':
                     reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
                 elif block_id=='10':
                     reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))
+                elif block_id=='11':
+                    reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
         bomb_rect_list.clear()
         bomb_rect_topright=[]
         for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
@@ -1277,8 +1291,8 @@ while game_mode=='in_game':
                 [tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1341,7 +1355,7 @@ while game_mode=='in_game':
                     player.state='sprint'
                     player.direction='left'
         if keys_pressed[pygame.K_SPACE]:
-            if player.hand=='little_rock':
+            if player.hand=='rock':
                 player.state='aim'
             else:
                 player.state='interact'
@@ -1358,5 +1372,5 @@ while game_mode=='in_game':
     else:
         display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
     pygame.display.update()
-    print(str(clock.get_fps()))
+    #print(str(clock.get_fps()))
     clock.tick()
