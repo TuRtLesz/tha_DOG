@@ -82,12 +82,12 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):
         player.water=False
-        #for water_rect in water_blocks_rect_list:
-        #    if not player.water:
-        #        if player.rect.colliderect(water_rect):
-        #            player.water=True
-        #    else:
-        #        break
+        for water_rect in water_blocks_rect_list:
+            if not player.water:
+                if player.rect.colliderect(water_rect):
+                    player.water=True
+            else:
+                break
         if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
@@ -1013,10 +1013,12 @@ class water_dot(pygame.sprite.Sprite):
             else:
                 water_dot.force=water_dot.force+water_dot.damping
 
-class camera():
-    def __init__(cam):
-        cam.offset=pygame.math.Vector2()
-        cam.player_offset=pygame.math.Vector2()
+class game():
+    def __init__(game):
+        game.offset=pygame.math.Vector2()
+        game.player_offset=pygame.math.Vector2()
+        game.draw_rect=pygame.Rect(0,0,display_size[0]+200,display_size[1]+400)
+        game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
             if player_sprite.idle_timer>=2:
@@ -1049,44 +1051,59 @@ class camera():
             else:
                 cam.offset.y=0
                 cam.player_offset.y=0
-        for sprite_group in below_player_sprite_group_list:
-            for sprite in sprite_group:
-                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
-        for player_sprite in player_sprite_group:
+            cam.draw_rect.center=player_sprite.rect.center
+            cam.draw_rect.centerx+=cam.player_offset.x
+            cam.draw_rect.centery+=cam.player_offset.y
+            for sprite_group in below_player_sprite_group_list:
+                for sprite in sprite_group:
+                    if cam.draw_rect.colliderect(sprite.rect):
+                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
             game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
-        #rendering waves?
-        cam.water_bodies_list_counter=0
-        cam.water_bodies={}
-        cam.prev_water_dot_xpos=0
-        for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
-            if water_dot.dest_pos.x-cam.prev_water_dot_xpos>17:
-                cam.water_bodies_list_counter+=1
-            cam.prev_water_dot_xpos=water_dot.dest_pos.x
-            try:
-                cam.water_bodies[cam.water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-            except:
-                cam.water_bodies[cam.water_bodies_list_counter]=[]
-                cam.water_bodies[cam.water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-        for key in cam.water_bodies:
-            cam.water_dot_list=cam.water_bodies[key]
-            cam.water_dot_xpos=[water_dot.x for water_dot in cam.water_dot_list]
-            cam.x_array=numpy.array([water_dot.x for water_dot in cam.water_dot_list[:-1]])
-            cam.y_array=numpy.array([water_dot.y for water_dot in cam.water_dot_list[:-1]])
-            cam.funtion=interp1d(cam.x_array,cam.y_array,kind='cubic',fill_value='extrapolate')
-            cam.water_dot_ypos=cam.funtion(cam.water_dot_xpos)
-            cam.water_dot_x_list=list(cam.water_dot_xpos)
-            cam.water_dot_y_list=list(cam.water_dot_ypos)
-            cam.water_dot_list_final=[(round(cam.water_dot_x_list[water_dot]),round(cam.water_dot_y_list[water_dot])) for water_dot in range(len(cam.water_dot_x_list))]
-            cam.prev_water_dot_pos=pygame.math.Vector2(0,0)
-            for water_dot_x,water_dot_y in cam.water_dot_list_final:
-                if cam.prev_water_dot_pos.x==0:
-                    cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
-                else:
-                    pygame.draw.line(game_window,(0,0,0),cam.prev_water_dot_pos-cam.offset,(water_dot_x-cam.offset.x,water_dot_y-cam.offset.y))
-                    cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
-        for sprite_group in above_player_sprite_group_list:
+            #rendering waves?
+            cam.water_bodies_list_counter=0
+            cam.water_bodies={}
+            cam.prev_water_dot_xpos=0
+            for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
+                if water_dot.dest_pos.x-cam.prev_water_dot_xpos>17:
+                    cam.water_bodies_list_counter+=1
+                cam.prev_water_dot_xpos=water_dot.dest_pos.x
+                try:
+                    cam.water_bodies[cam.water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
+                except:
+                    cam.water_bodies[cam.water_bodies_list_counter]=[]
+                    cam.water_bodies[cam.water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
+            for key in cam.water_bodies:
+                cam.water_dot_list=cam.water_bodies[key]
+                cam.water_dot_xpos=[water_dot.x for water_dot in cam.water_dot_list]
+                cam.x_array=numpy.array([water_dot.x for water_dot in cam.water_dot_list[:-1]])
+                cam.y_array=numpy.array([water_dot.y for water_dot in cam.water_dot_list[:-1]])
+                cam.funtion=interp1d(cam.x_array,cam.y_array,kind='cubic',fill_value='extrapolate')
+                cam.water_dot_ypos=cam.funtion(cam.water_dot_xpos)
+                cam.water_dot_x_list=list(cam.water_dot_xpos)
+                cam.water_dot_y_list=list(cam.water_dot_ypos)
+                cam.water_dot_list_final=[(round(cam.water_dot_x_list[water_dot]),round(cam.water_dot_y_list[water_dot])) for water_dot in range(len(cam.water_dot_x_list))]
+                cam.prev_water_dot_pos=pygame.math.Vector2(0,0)
+                for water_dot_x,water_dot_y in cam.water_dot_list_final:
+                    if cam.prev_water_dot_pos.x==0:
+                        cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
+                    else:
+                        pygame.draw.line(game_window,(0,0,0),cam.prev_water_dot_pos-cam.offset,(water_dot_x-cam.offset.x,water_dot_y-cam.offset.y))
+                        cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
+            for sprite_group in above_player_sprite_group_list:
+                for sprite in sprite_group:
+                    if cam.draw_rect.colliderect(sprite.rect):
+                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+    def update(update_instance,update_sprite_group_list,delta_time,water_dot_sprite_group):
+        for player in player_sprite_group:
+            player.update(delta_time)
+            update_instance.update_rect.center=player.rect.center
+        for sprite_group in update_sprite_group_list:
             for sprite in sprite_group:
-                game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+                if update_instance.update_rect.colliderect(sprite.rect):
+                    sprite.update(delta_time)
+        for water_dot in water_dot_sprite_group:
+            if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
+                water_dot.update()
 
 player_sprite_group=pygame.sprite.Group()
 
@@ -1134,7 +1151,7 @@ for world_name in range(0,1):
         for row in world_reader:
             world_maps['water_blocks'][world_name].append(row)
 
-camera=camera()
+game=game()
 
 player_sprite_group.add(player(5130,560))#550,1311
 
@@ -1299,16 +1316,17 @@ while game_mode=='in_game':
     prevoius_time=time.perf_counter()
     display_window.fill((255,255,255))
     game_window.fill((255,255,255))#change later to white
-    player_sprite_group.update(delta_time)
+    #player_sprite_group.update(delta_time)
     for player in player_sprite_group:
         if player.state!='aim':
-            fish_sprite_group.update(delta_time)
-            rat_sprite_group.update(delta_time)
-            dog_sprite_group.update(delta_time)
-            reactive_block_sprite_group.update(delta_time)
-            water_dot_sprite_group.update()
-            bubble_sprite_group.update(delta_time)
-    camera.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
+            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],delta_time,water_dot_sprite_group)
+            #fish_sprite_group.update(delta_time)
+            #rat_sprite_group.update(delta_time)
+            #dog_sprite_group.update(delta_time)
+            #reactive_block_sprite_group.update(delta_time)
+            #water_dot_sprite_group.update()
+            #bubble_sprite_group.update(delta_time)
+    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_group],
                 water_dot_sprite_group)
