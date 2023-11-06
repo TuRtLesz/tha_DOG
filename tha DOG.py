@@ -134,6 +134,14 @@ class player(pygame.sprite.Sprite):
                 player.throw_power+=30*delta_time
             else:
                 player.throw_angle+=20*delta_time
+            player.a=numpy.tan(numpy.deg2rad(player.throw_angle))
+            player.b=5/((numpy.cos(numpy.deg2rad(player.throw_angle)**2)*(player.throw_power**2)))
+            if player.direction=='right':
+                for x in range(0,100,10):
+                    pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,550-player.a*x+player.b*x**2-game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,550-player.a*x+player.b*(x+5)**2-game.player_offset.y))
+            elif player.direction=='left':
+                for x in range(0,100,10):
+                    pygame.draw.line(game_window,(0,0,0),(game.player_offset.x+(display_size[0]//2)-50-x,550-player.a*x+player.b*x**2-game.player_offset.y),(game.player_offset.x+(display_size[0]//2)-50-x-5,550-player.a*x+player.b*(x+5)**2-game.player_offset.y))
         elif player.state=='throw':
             if player.image_frame>len(player.throw_image_list_left):
                 if player.direction=='left':
