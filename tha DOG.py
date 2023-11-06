@@ -18,13 +18,13 @@ class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
         player.velocity=pygame.math.Vector2(0,0)
-        player.acceleration=pygame.math.Vector2(0,0)
+        player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
         player.health=300
         player.stamina=1000
         player.state='idle'
-        player.throw_angle=10
-        player.throw_power=10
+        player.throw_angle=0
+        player.throw_power=150
         player.idle_timer=0
         player.water=False
         player.jump=False
@@ -105,7 +105,7 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
         else:
-            if player.state!='pant'or player.state!='aim':
+            if player.state!='pant'or player.state!='aim' or player.state!='throw':
                 player.idle_timer=0
         if player.state=='pant':
             player.idle_timer+=delta_time
@@ -131,18 +131,22 @@ class player(pygame.sprite.Sprite):
             player.image_frame+=5*delta_time
             if player.throw_angle>=45:
                 player.throw_angle=45
-                player.throw_power+=30*delta_time
+                player.throw_power+=40*delta_time
             else:
-                player.throw_angle+=20*delta_time
-            player.a=numpy.tan(numpy.deg2rad(player.throw_angle))
-            player.b=5/((numpy.cos(numpy.deg2rad(player.throw_angle)**2)*(player.throw_power**2)))
+                if player.throw_power>=300:
+                    player.throw_angle+=10*delta_time
+                else:
+                    player.throw_power+=100*delta_time
+            player.arc_eq_a=numpy.tan(numpy.deg2rad(player.throw_angle))
+            player.arc_eq_b=250/((numpy.cos(numpy.deg2rad(player.throw_angle)**2)*(player.throw_power**2)))
             if player.direction=='right':
-                for x in range(0,100,10):
-                    pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,550-player.a*x+player.b*x**2-game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,550-player.a*x+player.b*(x+5)**2-game.player_offset.y))
+                for x in range(0,300,10):#change later
+                    pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
             elif player.direction=='left':
-                for x in range(0,100,10):
-                    pygame.draw.line(game_window,(0,0,0),(game.player_offset.x+(display_size[0]//2)-50-x,550-player.a*x+player.b*x**2-game.player_offset.y),(game.player_offset.x+(display_size[0]//2)-50-x-5,550-player.a*x+player.b*(x+5)**2-game.player_offset.y))
+                for x in range(0,300,10):
+                    pygame.draw.line(game_window,(0,0,0),(game.player_offset.x+(display_size[0]//2)-50-x,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),(game.player_offset.x+(display_size[0]//2)-50-x-5,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
         elif player.state=='throw':
+            player.idle_timer+=delta_time
             if player.image_frame>len(player.throw_image_list_left):
                 if player.direction=='left':
                     player.rock_obj=little_rock(player.rect.left+19,player.rect.top+28)
@@ -150,11 +154,11 @@ class player(pygame.sprite.Sprite):
                     player.rock_obj=little_rock(player.rect.right-19,player.rect.top+28)
                 player.hand=''
                 player.rock_obj.velocity.from_polar((player.throw_power,player.throw_angle))
-                player.throw_angle,player.throw_power=10,10
+                player.throw_angle,player.throw_power=0,150
                 player.rock_obj.velocity.y=-player.rock_obj.velocity.y
                 if player.direction=='left':
                     player.rock_obj.velocity.x=-player.rock_obj.velocity.x
-                player.rock_obj.acceleration.y=10
+                player.rock_obj.acceleration.y=300
                 player.rock_obj.initial_velocity=player.rock_obj.velocity
                 print(player.rock_obj.velocity)
                 reactive_block_sprite_group.add(player.rock_obj)
@@ -171,10 +175,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':    
-                player.acceleration.x=50
+                player.arc_eq_acceleration.x=50
                 player.image=player.run_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.acceleration.x=-50
+                player.arc_eq_acceleration.x=-50
                 player.image=player.run_image_list_left[round(player.image_frame)]
         elif player.state=='sprint':
             player.max_velocity.x=350
@@ -183,10 +187,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':
-                player.acceleration.x=100
+                player.arc_eq_acceleration.x=100
                 player.image=player.run_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.acceleration.x=-100
+                player.arc_eq_acceleration.x=-100
                 player.image=player.run_image_list_left[round(player.image_frame)]
         elif player.state=='swim_fast':
             if player.stamina<=0:
@@ -198,10 +202,10 @@ class player(pygame.sprite.Sprite):
                 if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                     player.image_frame=6
                 if player.direction=='right':
-                    player.acceleration.x=100
+                    player.arc_eq_acceleration.x=100
                     player.image=player.swim_image_list_right[round(player.image_frame)]
                 elif player.direction=='left':
-                    player.acceleration.x=-100
+                    player.arc_eq_acceleration.x=-100
                     player.image=player.swim_image_list_left[round(player.image_frame)]
         if player.state=='swim':
             player.max_velocity.x=150
@@ -209,10 +213,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                 player.image_frame=6
             if player.direction=='right':    
-                player.acceleration.x=50
+                player.arc_eq_acceleration.x=50
                 player.image=player.swim_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.acceleration.x=-50
+                player.arc_eq_acceleration.x=-50
                 player.image=player.swim_image_list_left[round(player.image_frame)]
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
@@ -223,7 +227,7 @@ class player(pygame.sprite.Sprite):
         if player.stamina<=0:
             player.stamina=0
         if player.state!='idle'and player.state!='pant'and player.state!='pick' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw':
-            player.velocity+=player.acceleration*delta_time
+            player.velocity+=player.arc_eq_acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
         else:
@@ -692,8 +696,7 @@ class apple(pygame.sprite.Sprite):
         apple_instance.image=apple.image
         apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,y*48))
     def update(apple_instance,delta_time):
-        for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):
-            player.hand='apple'
+        for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
             apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
@@ -825,12 +828,15 @@ class little_rock(pygame.sprite.Sprite):
             rock_instance.angle-=360
         rock_instance.image=pygame.transform.rotate(little_rock.image,rock_instance.angle)
         for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
-            if player.state=='pick':
+            if player.state=='pick' and player.hand=='':
                 player.hand='rock'
                 rock_instance.kill()
-        rock_instance.velocity+=rock_instance.acceleration*delta_time*2# for increaing the speed of rock falling
-        rock_instance.pos+=rock_instance.velocity*delta_time*2# for increaing the speed of rock falling
+        rock_instance.velocity+=rock_instance.acceleration*delta_time
+        rock_instance.pos+=rock_instance.velocity*delta_time
         rock_instance.rect.center=rock_instance.pos.xy
+        if rock_instance.velocity.x>0:
+            for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
+                dog.state='stunned'
         for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
             rock_instance.velocity.xy=0,0
             rock_instance.acceleration.xy=0,0
@@ -986,7 +992,7 @@ class game():
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
-            if player_sprite.idle_timer>=2:
+            if player_sprite.idle_timer>=2:#repair pan workin only when idle
                 if cam.player_offset.x>=game_window.get_width()//2-50:
                     cam.player_offset.x=game_window.get_width()//2-50
                 else:
@@ -1302,8 +1308,8 @@ while game_mode=='in_game':
                 [tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
