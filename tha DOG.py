@@ -140,6 +140,7 @@ class player(pygame.sprite.Sprite):
                     player.rock_obj=little_rock(player.rect.left+19,player.rect.top+28)
                 else:
                     player.rock_obj=little_rock(player.rect.right-19,player.rect.top+28)
+                player.hand=''
                 player.rock_obj.velocity.from_polar((player.throw_power,player.throw_angle))
                 player.throw_angle,player.throw_power=10,10
                 player.rock_obj.velocity.y=-player.rock_obj.velocity.y
@@ -1286,13 +1287,15 @@ while game_mode=='in_game':
         if player.state!='aim':
             game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],
                         delta_time,water_dot_sprite_group)
+        else:
+            player.update(delta_time)
     game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
-        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+'     deltatime'+str(delta_time)+player.state+'\033c',end='')
+        print(str(player.pos),str(player.acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1323,11 +1326,12 @@ while game_mode=='in_game':
         if keys_pressed[pygame.K_d]:
             if player.direction=='left':
                 player.velocity.x=0
-            if player.state!='sprint':
-                if player.water:
+            if player.water:
+                if player.state!='swim_fast':
                     player.state='swim'
                     player.direction='right'
-                else:
+            else:
+                if player.state!='sprint':
                     player.state='run'
                     player.direction='right'
             if keys_pressed[pygame.K_LSHIFT]:
@@ -1340,11 +1344,12 @@ while game_mode=='in_game':
         if keys_pressed[pygame.K_a]:
             if player.direction=='right':
                 player.velocity.x=0
-            if player.state!='sprint':
-                if player.water:
+            if player.water:
+                if player.state!='swim_fast':
                     player.state='swim'
                     player.direction='left'
-                else:
+            else:
+                if player.state!='sprint':
                     player.state='run'
                     player.direction='left'
             if keys_pressed[pygame.K_LSHIFT]:
