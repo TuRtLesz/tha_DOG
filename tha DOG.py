@@ -479,6 +479,34 @@ class dog(pygame.sprite.Sprite):
 
         #for dog in dog_sprite_group:
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
+class big_fat_guy(pygame.sprite.Sprite):
+    whack_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha()
+    run_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha()
+    whack_image_list_left=[]
+    run_image_list_left=[]
+    whack_image_list_right=[]
+    run_image_list_right=[]
+    for image_x in range(0,whack_sprite_sheet.get_width(),116):
+        import_image=pygame.Surface((330,322),pygame.SRCALPHA)
+        import_image.blit(whack_sprite_sheet,(0,0),(image_x,0,330,322))
+        whack_image_list_left.append(import_image)
+        whack_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    for image_x in range(0,run_sprite_sheet.get_width(),116):
+        import_image=pygame.Surface((251,285),pygame.SRCALPHA)
+        import_image.blit(run_sprite_sheet,(0,0),(image_x,0,251,285))
+        run_image_list_left.append(import_image)
+        run_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    def __init__(fat_guy,x,y):
+        super().__init__()
+        fat_guy.direction='left'
+        fat_guy.state='idle'
+        fat_guy.health=1000
+        if fat_guy.direction=='left':
+            fat_guy.image=big_fat_guy.whack_image_list_left[0]
+        elif fat_guy.direction=='right':
+            fat_guy.image=big_fat_guy.whack_image_list_right[0]
+        fat_guy.rect=fat_guy.image.get_rect(midbottom=(x*48,(y+1)*48))
+        fat_guy.pos=pygame.math.Vector2(fat_guy.rect.center)
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
@@ -1186,8 +1214,8 @@ for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
             rat_sprite_group.add(rat(mob_x,mob_y))
         elif mob_id=='1':
             fish_sprite_group.add(fish(mob_x,mob_y,'right'))
-        #elif mob_id=='2':
-        #    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
+        elif mob_id=='2':
+            big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
         elif mob_id=='3':
             dog_sprite_group.add(dog(mob_x,mob_y))
         elif mob_id=='4':
@@ -1269,8 +1297,8 @@ while game_mode=='in_game':
                     rat_sprite_group.add(rat(mob_x,mob_y))
                 elif mob_id=='1':
                     fish_sprite_group.add(fish(mob_x,mob_y,'right'))
-                #elif mob_id=='2':
-                #    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
+                elif mob_id=='2':
+                    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
                 elif mob_id=='3':
                     dog_sprite_group.add(dog(mob_x,mob_y))
                 elif mob_id=='4':
@@ -1299,17 +1327,17 @@ while game_mode=='in_game':
     game_window.fill((255,255,255))
     for player in player_sprite_group:
         if player.state!='aim':
-            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,reactive_block_sprite_group,bubble_sprite_group],
+            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group],
                         delta_time,water_dot_sprite_group)
-        else:
+        elif player.state=='aim' or player.state=='throw':
             player.update(delta_time)
-    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
+    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1384,7 +1412,8 @@ while game_mode=='in_game':
                 if player.state=='aim' or player.state=='throw':
                     player.state='throw'
                 else:
-                    player.state='idle'
+                    if player.state!='pant':
+                        player.state='idle'
     #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
