@@ -481,6 +481,7 @@ class dog(pygame.sprite.Sprite):
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
 class big_fat_guy(pygame.sprite.Sprite):
     whack_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha()
+    whack_sprite_sheet_right=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert_alpha()
     run_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha()
     whack_image_list_left=[]
     run_image_list_left=[]
@@ -490,7 +491,10 @@ class big_fat_guy(pygame.sprite.Sprite):
         import_image=pygame.Surface((330,322),pygame.SRCALPHA)
         import_image.blit(whack_sprite_sheet,(0,0),(image_x,0,330,322))
         whack_image_list_left.append(import_image)
-        whack_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    for image_x in range(0,whack_sprite_sheet_right.get_width(),330):
+        import_image=pygame.Surface((330,322),pygame.SRCALPHA)
+        import_image.blit(whack_sprite_sheet_right,(0,0),(image_x,0,330,322))
+        whack_image_list_right.append(import_image)
     for image_x in range(0,run_sprite_sheet.get_width(),116):
         import_image=pygame.Surface((251,285),pygame.SRCALPHA)
         import_image.blit(run_sprite_sheet,(0,0),(image_x,0,251,285))
