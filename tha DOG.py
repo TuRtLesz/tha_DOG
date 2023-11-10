@@ -486,7 +486,7 @@ class big_fat_guy(pygame.sprite.Sprite):
     run_image_list_left=[]
     whack_image_list_right=[]
     run_image_list_right=[]
-    for image_x in range(0,whack_sprite_sheet.get_width(),116):
+    for image_x in range(0,whack_sprite_sheet.get_width(),330):
         import_image=pygame.Surface((330,322),pygame.SRCALPHA)
         import_image.blit(whack_sprite_sheet,(0,0),(image_x,0,330,322))
         whack_image_list_left.append(import_image)
@@ -498,15 +498,67 @@ class big_fat_guy(pygame.sprite.Sprite):
         run_image_list_right.append(pygame.transform.flip(import_image,True,False))
     def __init__(fat_guy,x,y):
         super().__init__()
+        fat_guy.image_frame=0
         fat_guy.direction='left'
+        fat_guy.bat='left'
         fat_guy.state='idle'
         fat_guy.health=1000
         if fat_guy.direction=='left':
-            fat_guy.image=big_fat_guy.whack_image_list_left[0]
+            fat_guy.image=big_fat_guy.whack_image_list_left[10]
         elif fat_guy.direction=='right':
-            fat_guy.image=big_fat_guy.whack_image_list_right[0]
-        fat_guy.rect=fat_guy.image.get_rect(midbottom=(x*48,(y+1)*48))
+            fat_guy.image=big_fat_guy.whack_image_list_right[10]
+        fat_guy.rect=pygame.Rect(x*48,(y*48)-270,91,160)#body rect
         fat_guy.pos=pygame.math.Vector2(fat_guy.rect.center)
+        fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-38,fat_guy.rect.centery+116,49,32)
+    def update(fat_guy,delta_time):
+        for player in player_sprite_group:
+            if abs(player.pos.x-fat_guy.pos.x)>=300:
+                fat_guy.state='rope'
+            elif 300>abs(player.pos.x-fat_guy.pos.x)>200:
+                if fat_guy.bat=='left':
+                    fat_guy.image_frame=10
+                else:
+                    fat_guy.image_frame=0
+                fat_guy.state='run'
+            else:
+                fat_guy.state='whack'
+            if player.pos.x>fat_guy.pos.x:
+                fat_guy.direction='right'
+            else:
+                fat_guy.direction='left'
+        if fat_guy.state=='whack':
+            if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
+                fat_guy.image_frame=0
+            if fat_guy.bat=='left':
+                if fat_guy.image_frame==0:
+                    fat_guy.image_frame=11
+                elif fat_guy.image_frame>=26:
+                    fat_guy.bat='right'
+            if fat_guy.direction=='left':
+                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-37,fat_guy.rect.centery+116,49,32)
+                fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
+            elif fat_guy.direction=='right':
+                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx+37,fat_guy.rect.centery+116,49,32)
+                fat_guy.image=big_fat_guy.whack_image_list_right[int(fat_guy.image_frame)]
+            fat_guy.image_frame+=10*delta_time
+            fat_guy.rect.center=fat_guy.pos.xy
+        elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
+            if fat_guy.direction=='left':
+                fat_guy.pos.x-=10*delta_time
+                fat_guy.image=big_fat_guy.run_image_list_left[int(fat_guy.image_frame)]
+                fat_guy.rect.centerx=fat_guy.pos.x+50
+            elif fat_guy.direction=='right':
+                fat_guy.pos.x+=10*delta_time
+                fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
+                fat_guy.rect.centerx=fat_guy.pos.x+29
+            fat_guy.rect.centery=fat_guy.pos.y+37
+            fat_guy.image_frame+=10*delta_time
+        for reactive_block in reactive_block_sprite_group:
+            if type(reactive_block)==little_rock:
+                if reactive_block.rect.colliderect(fat_guy.head_rect):
+                    fat_guy.health-=10*delta_time
+                elif reactive_block.rect.colliderect(fat_guy.rect):
+                    fat_guy.health-=5*delta_time
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
@@ -1331,9 +1383,9 @@ while game_mode=='in_game':
                         delta_time,water_dot_sprite_group)
         elif player.state=='aim' or player.state=='throw':
             player.update(delta_time)
-    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group],
+    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
-                [tree_sprite_group,block_sprite_instance_group],
+                [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group],
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
