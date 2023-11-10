@@ -483,10 +483,13 @@ class big_fat_guy(pygame.sprite.Sprite):
     whack_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha()
     whack_sprite_sheet_right=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert_alpha()
     run_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha()
+    rope_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_rope.png').convert_alpha()
     whack_image_list_left=[]
     run_image_list_left=[]
+    rope_image_list_left=[]
     whack_image_list_right=[]
     run_image_list_right=[]
+    rope_image_list_right=[]
     for image_x in range(0,whack_sprite_sheet.get_width(),330):
         import_image=pygame.Surface((330,322),pygame.SRCALPHA)
         import_image.blit(whack_sprite_sheet,(0,0),(image_x,0,330,322))
@@ -500,6 +503,12 @@ class big_fat_guy(pygame.sprite.Sprite):
         import_image.blit(run_sprite_sheet,(0,0),(image_x,0,251,285))
         run_image_list_left.append(import_image)
         run_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    for image_x in range(0,rope_sprite_sheet.get_width(),221):
+        import_image=pygame.Surface((221,285),pygame.SRCALPHA)
+        import_image.blit(rope_sprite_sheet,(0,0),(image_x,0,221,285))
+        rope_image_list_left.append(import_image)
+        rope_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    hook_image=pygame.image.load('Data/big_fat_guy/hook.png').convert_alpha()
     def __init__(fat_guy,x,y):
         super().__init__()
         fat_guy.image_frame=0
@@ -514,18 +523,20 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.rect=pygame.Rect(x*48,(y*48)-270,91,160)#body rect
         fat_guy.pos=pygame.math.Vector2(fat_guy.rect.center)
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-38,fat_guy.rect.centery+116,49,32)
+        fat_guy.hook_rect=big_fat_guy.hook_image.get_rect()
     def update(fat_guy,delta_time):
         for player in player_sprite_group:
             if abs(player.pos.x-fat_guy.pos.x)>=300:
                 fat_guy.state='rope'
-            elif 300>abs(player.pos.x-fat_guy.pos.x)>200:
-                if fat_guy.bat=='left':
-                    fat_guy.image_frame=10
+            if fat_guy.state!='rope':
+                if 300>abs(player.pos.x-fat_guy.pos.x)>200:
+                        if fat_guy.bat=='left':
+                            fat_guy.image_frame=10
+                        else:
+                            fat_guy.image_frame=0
+                        fat_guy.state='run'
                 else:
-                    fat_guy.image_frame=0
-                fat_guy.state='run'
-            else:
-                fat_guy.state='whack'
+                        fat_guy.state='whack'
             if player.pos.x>fat_guy.pos.x:
                 fat_guy.direction='right'
             else:
@@ -554,6 +565,22 @@ class big_fat_guy(pygame.sprite.Sprite):
             elif fat_guy.direction=='right':
                 fat_guy.pos.x+=10*delta_time
                 fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
+                fat_guy.rect.centerx=fat_guy.pos.x+29
+            fat_guy.rect.centery=fat_guy.pos.y+37
+            fat_guy.image_frame+=10*delta_time
+        elif fat_guy.state=='rope':
+            if fat_guy.image_frame>=13:
+                if abs(fat_guy.pos.x-player.pos.x)>200:
+                    game_window.blit(big_fat_guy.hook_image,fat_guy.hook_rect.xy)
+                    fat_guy.image_frame=13
+                else:
+                    if fat_guy.image_frame>=len(fat_guy.rope_image_list_left):
+                        fat_guy.state='idle'
+            if fat_guy.direction=='left':
+                fat_guy.image=big_fat_guy.rope_image_list_left[int(fat_guy.image_frame)]
+                fat_guy.rect.centerx=fat_guy.pos.x+50
+            elif fat_guy.direction=='right':
+                fat_guy.image=big_fat_guy.rope_image_list_right[int(fat_guy.image_frame)]
                 fat_guy.rect.centerx=fat_guy.pos.x+29
             fat_guy.rect.centery=fat_guy.pos.y+37
             fat_guy.image_frame+=10*delta_time
