@@ -992,7 +992,7 @@ class switch(pygame.sprite.Sprite):
                     for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
                             for reative_block in reactive_block_sprite_group:
-                                if type(reative_block)==bomb:
+                                if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                     if bomb_rect.collidepoint(reative_block.rect.center):
                                         switch_instance.connected=True
                                         reative_block.explode=True
@@ -1028,7 +1028,7 @@ class pressure_switch(pygame.sprite.Sprite):
                 for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
                             for reative_block in reactive_block_sprite_group:
-                                if type(reative_block)==bomb:
+                                if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                     if bomb_rect.collidepoint(reative_block.rect.center):
                                         switch_instance.connected=True
                                         reative_block.explode=True
