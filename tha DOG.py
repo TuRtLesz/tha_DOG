@@ -76,7 +76,7 @@ class player(pygame.sprite.Sprite):
             player.throw_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
-        player.player_grass_image=player.import_image.blit(player.image,(0,100),player.image.get_rect())
+        player.player_grass_image=player.import_image.blit(player.image,(0,100))
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
@@ -929,7 +929,7 @@ class little_rock(pygame.sprite.Sprite):
         super().__init__()
         rock_instance.image=little_rock.image
         rock_instance.angle=0
-        rock_instance.rect=rock_instance.image.get_rect(topleft=(x,y))
+        rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.initial_velocity=pygame.math.Vector2()#for collsions
         rock_instance.velocity=pygame.math.Vector2()
@@ -1094,6 +1094,25 @@ class water_dot(pygame.sprite.Sprite):
                 water_dot.force=water_dot.force-water_dot.damping
             else:
                 water_dot.force=water_dot.force+water_dot.damping
+class tutorial_block(pygame.sprite.Sprite):
+    def __init__(tut_block,x_image_len,name,x,y):
+        super().__init__()
+        tut_block.image_list=[]
+        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert_alpha()
+        for image_x in range(0,tut_block.spirte_sheet.get_width()//x_image_len):
+            image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()),pygame.SRCALPHA)
+            final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2),pygame.SRCALPHA)
+            image.blit(tut_block.spirte_sheet,(0,0),(image_x*x_image_len,0,x_image_len,tut_block.spirte_sheet.get_height()))
+            final_image=pygame.transform.scale2x(image,final_image)
+            tut_block.image_list.append(final_image)
+        tut_block.image_frame=0
+        tut_block.image=tut_block.image_list[tut_block.image_frame]
+        tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+    def update(tut_block,delta_time):
+        if tut_block.image_frame>=len(tut_block.image_list):
+            tut_block.image_frame=0
+        tut_block.image=tut_block.image_list[int(tut_block.image_frame)]
+        tut_block.image_frame+=5*delta_time
 
 class game():
     def __init__(game):
@@ -1207,11 +1226,13 @@ block_sprite_instance_group=pygame.sprite.Group()
 
 water_dot_sprite_group=pygame.sprite.Group()
 
+tutorial_block_sprite_group=pygame.sprite.Group()
+
 bomb_rect_list=[]
 water_blocks_rect_list=[]
 water_hitlines=[]
 
-world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]}}#importing worlds
+world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -1238,10 +1259,14 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['water_blocks'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_tut_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['tut_blocks'][world_name].append(row)
 
 game=game()
 
-player_sprite_group.add(player(14727,560))#550,1311
+player_sprite_group.add(player(2067,560))#550,1311
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1303,6 +1328,30 @@ for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
             dog_sprite_group.add(dog(mob_x,mob_y))
         elif mob_id=='4':
             fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_world']]):
+    for block_number,block_id in enumerate(row):    
+        if block_id=='0':
+            tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
+        elif block_id=='1':
+            tutorial_block_sprite_group.add(tutorial_block(151,'move_left',block_number,row_number))
+        elif block_id=='2':
+            tutorial_block_sprite_group.add(tutorial_block(221,'move_up',block_number,row_number))
+        elif block_id=='3':
+            tutorial_block_sprite_group.add(tutorial_block(183,'pick_up',block_number,row_number))
+        elif block_id=='4':
+            tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
+        elif block_id=='5':
+            tutorial_block_sprite_group.add(tutorial_block(381,'rock_throw',block_number,row_number))
+        elif block_id=='6':
+            tutorial_block_sprite_group.add(tutorial_block(158,'sniff',block_number,row_number))
+        elif block_id=='7':
+            tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
+        elif block_id=='8':
+            tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
+        elif block_id=='9':
+            tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
+        elif block_id=='10':
+            tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
 #water_hitline
 water_bodies_list_counter=0
 water_bodies={}
@@ -1386,6 +1435,10 @@ while game_mode=='in_game':
                     dog_sprite_group.add(dog(mob_x,mob_y))
                 elif mob_id=='4':
                     fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+        for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_world']]):
+            for block_number,block_id in enumerate(row):    
+                if block_id=='0':
+                    tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
         #water_hitline
         water_bodies_list_counter=0
         water_bodies={}
@@ -1410,13 +1463,13 @@ while game_mode=='in_game':
     game_window.fill((255,255,255))
     for player in player_sprite_group:
         if player.state!='aim':
-            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group],
+            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
                         delta_time,water_dot_sprite_group)
         elif player.state=='aim' or player.state=='throw':
             player.update(delta_time)
     game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
-                [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group],
+                [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
