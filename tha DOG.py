@@ -356,6 +356,10 @@ class dog(pygame.sprite.Sprite):
         dog_instance.vission_line=[list(dog_instance.rect.topright),[0,0]]
         dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
     def update(dog_instance,delta_time):
+        if dog_instance.pos.x<17035:
+            dog_instance.max_velocity.x=150
+        else:
+            dog_instance.max_velocity.x=250
         for water_rect in water_blocks_rect_list:
             if dog_instance.state!='swim':
                 if dog_instance.rect.colliderect(water_rect):
@@ -379,18 +383,15 @@ class dog(pygame.sprite.Sprite):
                 dog_instance.vission_line=[(dog_instance.rect.topleft),(player.rect.topleft)]
                 if player.state!='grass':
                     dog_instance.direction='right'
-            if abs(player.rect.x-dog_instance.rect.centerx)<800:
-                for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
-                    if block.rect.clipline(dog_instance.vission_line[0],dog_instance.vission_line[1]):
-                        dog_instance.lose_sight_timer+=1*delta_time
-                    else:
-                        dog_instance.state='run'
-                        if player.state!='grass':
-                            dog_instance.lose_sight_timer=0
+            for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
+                if block.rect.clipline(dog_instance.vission_line[0],dog_instance.vission_line[1]):
+                    dog_instance.lose_sight_timer+=1*delta_time
+                else:
+                    dog_instance.state='run'
+                    if player.state!='grass':
+                        dog_instance.lose_sight_timer=0
                 if player.state=='grass':
                     dog_instance.lose_sight_timer+=1*delta_time
-            else:
-                dog_instance.lose_sight_timer+=1*delta_time
         for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
             dog_instance.state='chase_rat'
             if rat.pos.x-dog_instance.pos.x>0:
@@ -924,14 +925,13 @@ class rock(pygame.sprite.Sprite):
         rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
 class little_rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
-    water_resistance=pygame.math.Vector2(5,0)
+    water_resistance=pygame.math.Vector2(0,100)
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.image=little_rock.image
         rock_instance.angle=0
         rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
-        rock_instance.initial_velocity=pygame.math.Vector2()#for collsions
         rock_instance.velocity=pygame.math.Vector2()
         rock_instance.acceleration=pygame.math.Vector2()
     def update(rock_instance,delta_time):
@@ -956,10 +956,10 @@ class little_rock(pygame.sprite.Sprite):
             rock_instance.pos.xy=rock_instance.rect.center
         for water_line in water_hitlines:
             if rock_instance.rect.clipline(water_line)!=():
-                if rock_instance.velocity.x>10:
-                    rock_instance.velocity=rock_instance.initial_velocity-little_rock.water_resistance
-                    rock_instance.initial_velocity=rock_instance.velocity
-                    rock_instance.velocity.y=-rock_instance.velocity.y//2
+                rock_instance.acceleration.y=300
+                if rock_instance.velocity.y>little_rock.water_resistance.y:
+                    rock_instance.velocity-=little_rock.water_resistance
+                    rock_instance.velocity.y=-rock_instance.velocity.y
 class rock_pile(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/rock_pile.png').convert_alpha()
     def __init__(rock_pile_instance,x,y):
@@ -1266,7 +1266,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#550,1311
+player_sprite_group.add(player(2067,560))#2067
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
