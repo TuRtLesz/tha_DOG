@@ -572,10 +572,10 @@ class big_fat_guy(pygame.sprite.Sprite):
         elif fat_guy.state=='rope':
             if fat_guy.image_frame>=13:
                 if abs(fat_guy.pos.x-player.pos.x)>200:
-                    game_window.blit(big_fat_guy.hook_image,fat_guy.hook_rect.xy)
+                    #game_window.blit(big_fat_guy.hook_image,fat_guy.hook_rect.midright)
                     fat_guy.image_frame=13
                 else:
-                    if fat_guy.image_frame>=len(fat_guy.rope_image_list_left):
+                    if fat_guy.image_frame>=len(fat_guy.rope_image_list_left)-1:
                         fat_guy.state='idle'
             if fat_guy.direction=='left':
                 fat_guy.image=big_fat_guy.rope_image_list_left[int(fat_guy.image_frame)]
@@ -1118,7 +1118,7 @@ class game():
     def __init__(game):
         game.offset=pygame.math.Vector2()
         game.player_offset=pygame.math.Vector2()
-        game.draw_rect=pygame.Rect(0,0,display_size[0]+200,display_size[1]+400)
+        game.draw_rect=pygame.Rect(0,0,display_size[0],display_size[1])
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
@@ -1165,7 +1165,7 @@ class game():
             cam.water_bodies={}
             cam.prev_water_dot_xpos=0
             for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
-                if water_dot.dest_pos.x-cam.prev_water_dot_xpos>17:
+                if abs(water_dot.dest_pos.x-cam.prev_water_dot_xpos)>17:
                     cam.water_bodies_list_counter+=1
                 cam.prev_water_dot_xpos=water_dot.dest_pos.x
                 try:
@@ -1266,7 +1266,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067
+player_sprite_group.add(player(34000,560))#2067,560,35184
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1357,7 +1357,7 @@ water_bodies_list_counter=0
 water_bodies={}
 prev_water_dot_xpos=0
 for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodiesS
-    if water_dot.dest_pos.x-prev_water_dot_xpos>17:
+    if abs(water_dot.dest_pos.x-prev_water_dot_xpos)>17:
         water_bodies_list_counter+=1
     prev_water_dot_xpos=water_dot.dest_pos.x
     try:
@@ -1472,8 +1472,8 @@ while game_mode=='in_game':
                 [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
