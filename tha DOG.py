@@ -104,9 +104,8 @@ class player(pygame.sprite.Sprite):
                 player.image=player.run_image_list_right[0]
             elif player.direction=='left':
                 player.image=player.run_image_list_left[0]
-        else:
-            if player.state!='pant'or player.state!='aim' or player.state!='throw':
-                player.idle_timer=0
+        if player.state!='pant'and player.state!='aim' and player.state!='throw' and player.state!='idle' and player.state!='pick':
+            player.idle_timer=0
         if player.state=='pant':
             player.idle_timer+=delta_time
             player.stamina+=200*delta_time
@@ -1154,7 +1153,7 @@ class game():
                 cam.player_offset.y=0
             cam.draw_rect.center=player_sprite.rect.center
             cam.draw_rect.centerx+=cam.player_offset.x
-            cam.draw_rect.centery+=cam.player_offset.y
+            cam.draw_rect.centery+=player_sprite.rect.top-cam.player_offset.y-((display_size[1]//2)-300)-player_sprite.image.get_height()//2
             for sprite_group in below_player_sprite_group_list:
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
