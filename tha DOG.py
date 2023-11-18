@@ -520,10 +520,11 @@ class big_fat_guy(pygame.sprite.Sprite):
             fat_guy.image=big_fat_guy.whack_image_list_left[10]
         elif fat_guy.direction=='right':
             fat_guy.image=big_fat_guy.whack_image_list_right[10]
-        fat_guy.body_rect=pygame.Rect(x*48,(y*48)-270,94,160)#body rect
+        #fat_guy.body_rect=pygame.Rect(x*48,(y*48)-270,91,160)#body rect
+        fat_guy.rect=fat_guy.image.get_rect(midbottom=((x+1)*48,(y+1)*48))
+        fat_guy.body_rect=pygame.Rect(fat_guy.rect.left+149,fat_guy.rect.top+119,94,160)
         fat_guy.pos=pygame.math.Vector2(fat_guy.body_rect.center)
-        fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.top-148,fat_guy.body_rect.left-117))
-        fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-38,fat_guy.rect.centery+116,49,32)
+        fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect()
     def update(fat_guy,delta_time):
         for player in player_sprite_group:
@@ -551,23 +552,24 @@ class big_fat_guy(pygame.sprite.Sprite):
                 elif fat_guy.image_frame>=26:
                     fat_guy.bat='right'
             if fat_guy.direction=='left':
-                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-37,fat_guy.rect.centery+116,49,32)
+                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
                 fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
             elif fat_guy.direction=='right':
-                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx+37,fat_guy.rect.centery+116,49,32)
+                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
                 fat_guy.image=big_fat_guy.whack_image_list_right[int(fat_guy.image_frame)]
             fat_guy.image_frame+=10*delta_time
-            fat_guy.rect.center=fat_guy.pos.xy
+            fat_guy.rect.topleft=(fat_guy.body_rect.left-149,fat_guy.body_rect.top-119)
         elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
             if fat_guy.direction=='left':
                 fat_guy.pos.x-=10*delta_time
                 fat_guy.image=big_fat_guy.run_image_list_left[int(fat_guy.image_frame)]
-                fat_guy.rect.centerx=fat_guy.pos.x+50
+                fat_guy.body_rect.centerx=fat_guy.pos.x#+50
             elif fat_guy.direction=='right':
                 fat_guy.pos.x+=10*delta_time
                 fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
-                fat_guy.rect.centerx=fat_guy.pos.x+29
-            fat_guy.rect.centery=fat_guy.pos.y+37
+                fat_guy.body_rect.centerx=fat_guy.pos.x#+29
+            fat_guy.body_rect.centery=fat_guy.pos.y#+37
+            fat_guy.rect.topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81)
             fat_guy.image_frame+=10*delta_time
         elif fat_guy.state=='rope':
             if fat_guy.image_frame>=13:
@@ -578,11 +580,9 @@ class big_fat_guy(pygame.sprite.Sprite):
                         fat_guy.state='idle'
             if fat_guy.direction=='left':
                 fat_guy.image=big_fat_guy.rope_image_list_left[int(fat_guy.image_frame)]
-                fat_guy.rect.centerx=fat_guy.pos.x+50
             elif fat_guy.direction=='right':
                 fat_guy.image=big_fat_guy.rope_image_list_right[int(fat_guy.image_frame)]
-                fat_guy.rect.centerx=fat_guy.pos.x+29
-            fat_guy.rect.centery=fat_guy.pos.y+37
+            fat_guy.rect.topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81)
             fat_guy.image_frame+=10*delta_time
         for reactive_block in reactive_block_sprite_group:
             if type(reactive_block)==little_rock:
