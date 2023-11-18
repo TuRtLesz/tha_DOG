@@ -498,7 +498,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         import_image=pygame.Surface((330,322),pygame.SRCALPHA)
         import_image.blit(whack_sprite_sheet_right,(0,0),(image_x,0,330,322))
         whack_image_list_right.append(import_image)
-    for image_x in range(0,run_sprite_sheet.get_width(),116):
+    for image_x in range(0,run_sprite_sheet.get_width(),251):
         import_image=pygame.Surface((251,285),pygame.SRCALPHA)
         import_image.blit(run_sprite_sheet,(0,0),(image_x,0,251,285))
         run_image_list_left.append(import_image)
@@ -520,8 +520,9 @@ class big_fat_guy(pygame.sprite.Sprite):
             fat_guy.image=big_fat_guy.whack_image_list_left[10]
         elif fat_guy.direction=='right':
             fat_guy.image=big_fat_guy.whack_image_list_right[10]
-        fat_guy.rect=pygame.Rect(x*48,(y*48)-270,91,160)#body rect
-        fat_guy.pos=pygame.math.Vector2(fat_guy.rect.center)
+        fat_guy.body_rect=pygame.Rect(x*48,(y*48)-270,94,160)#body rect
+        fat_guy.pos=pygame.math.Vector2(fat_guy.body_rect.center)
+        fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.top-148,fat_guy.body_rect.left-117))
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx-38,fat_guy.rect.centery+116,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect()
     def update(fat_guy,delta_time):
@@ -571,7 +572,6 @@ class big_fat_guy(pygame.sprite.Sprite):
         elif fat_guy.state=='rope':
             if fat_guy.image_frame>=13:
                 if abs(fat_guy.pos.x-player.pos.x)>200:
-                    #game_window.blit(big_fat_guy.hook_image,fat_guy.hook_rect.midright)
                     fat_guy.image_frame=13
                 else:
                     if fat_guy.image_frame>=len(fat_guy.rope_image_list_left)-1:
@@ -1265,7 +1265,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(34000,560))#2067,560,35184
+player_sprite_group.add(player(30111,560))#2067,560,35184
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1466,13 +1466,14 @@ while game_mode=='in_game':
                         delta_time,water_dot_sprite_group)
         elif player.state=='aim' or player.state=='throw':
             player.update(delta_time)
+            big_fat_guy_sprite_group.update(delta_time)
     game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                 player_sprite_group,
                 [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
