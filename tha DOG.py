@@ -509,6 +509,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         rope_image_list_left.append(import_image)
         rope_image_list_right.append(pygame.transform.flip(import_image,True,False))
     hook_image=pygame.image.load('Data/big_fat_guy/hook.png').convert_alpha()
+    hook_image_right=pygame.transform.flip(hook_image,True,False)
     def __init__(fat_guy,x,y):
         super().__init__()
         fat_guy.image_frame=0
@@ -516,6 +517,10 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.bat='left'
         fat_guy.state='idle'
         fat_guy.health=1000
+        fat_guy.hook_offset=pygame.math.Vector2()
+        fat_guy.hook_throw=False
+        fat_guy.player_caught=False
+        fat_guy.player_collide=False
         if fat_guy.direction=='left':
             fat_guy.image=big_fat_guy.whack_image_list_left[10]
         elif fat_guy.direction=='right':
@@ -543,53 +548,93 @@ class big_fat_guy(pygame.sprite.Sprite):
                 fat_guy.direction='right'
             else:
                 fat_guy.direction='left'
-        if fat_guy.state=='whack':
-            if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
-                fat_guy.image_frame=0
-            if fat_guy.bat=='left':
-                if fat_guy.image_frame==0:
-                    fat_guy.image_frame=11
-                elif fat_guy.image_frame>=26:
-                    fat_guy.bat='right'
-            if fat_guy.direction=='left':
-                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
-                fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
-            elif fat_guy.direction=='right':
-                fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
-                fat_guy.image=big_fat_guy.whack_image_list_right[int(fat_guy.image_frame)]
-            fat_guy.image_frame+=10*delta_time
-            fat_guy.rect.topleft=(fat_guy.body_rect.left-149,fat_guy.body_rect.top-119)
-        elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
-            if fat_guy.direction=='left':
-                fat_guy.pos.x-=10*delta_time
-                fat_guy.image=big_fat_guy.run_image_list_left[int(fat_guy.image_frame)]
-                fat_guy.body_rect.centerx=fat_guy.pos.x#+50
-            elif fat_guy.direction=='right':
-                fat_guy.pos.x+=10*delta_time
-                fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
-                fat_guy.body_rect.centerx=fat_guy.pos.x#+29
-            fat_guy.body_rect.centery=fat_guy.pos.y#+37
-            fat_guy.rect.topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81)
-            fat_guy.image_frame+=10*delta_time
-        elif fat_guy.state=='rope':
-            if fat_guy.image_frame>=13:
-                if abs(fat_guy.pos.x-player.pos.x)>200:
-                    fat_guy.image_frame=13
-                else:
-                    if fat_guy.image_frame>=len(fat_guy.rope_image_list_left)-1:
-                        fat_guy.state='idle'
-            if fat_guy.direction=='left':
-                fat_guy.image=big_fat_guy.rope_image_list_left[int(fat_guy.image_frame)]
-            elif fat_guy.direction=='right':
-                fat_guy.image=big_fat_guy.rope_image_list_right[int(fat_guy.image_frame)]
-            fat_guy.rect.topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81)
-            fat_guy.image_frame+=10*delta_time
-        for reactive_block in reactive_block_sprite_group:
-            if type(reactive_block)==little_rock:
-                if reactive_block.rect.colliderect(fat_guy.head_rect):
-                    fat_guy.health-=10*delta_time
-                elif reactive_block.rect.colliderect(fat_guy.rect):
-                    fat_guy.health-=5*delta_time
+            if fat_guy.state=='whack':
+                if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
+                    fat_guy.image_frame=0
+                if fat_guy.bat=='left':
+                    if fat_guy.image_frame==0:
+                        fat_guy.image_frame=11
+                    elif fat_guy.image_frame>=26:
+                        fat_guy.bat='right'
+                if fat_guy.direction=='left':
+                    fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
+                    fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
+                elif fat_guy.direction=='right':
+                    fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
+                    fat_guy.image=big_fat_guy.whack_image_list_right[int(fat_guy.image_frame)]
+                fat_guy.image_frame+=10*delta_time
+                fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-149,fat_guy.body_rect.top-119))
+            elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
+                if fat_guy.direction=='left':
+                    fat_guy.pos.x-=10*delta_time
+                    fat_guy.image=big_fat_guy.run_image_list_left[int(fat_guy.image_frame)]
+                    fat_guy.body_rect.centerx=fat_guy.pos.x#+50
+                elif fat_guy.direction=='right':
+                    fat_guy.pos.x+=10*delta_time
+                    fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
+                    fat_guy.body_rect.centerx=fat_guy.pos.x#+29
+                fat_guy.body_rect.centery=fat_guy.pos.y#+37
+                fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81))
+                fat_guy.image_frame+=10*delta_time
+            elif fat_guy.state=='rope':
+                if fat_guy.image_frame>=12:
+                    if not fat_guy.player_collide:
+                        if fat_guy.direction=='left':
+                            if player.pos.x>fat_guy.hook_rect.x:
+                                fat_guy.player_caught=True
+                        elif fat_guy.direction=='right':
+                            if fat_guy.hook_rect.x>player.pos.x:
+                                fat_guy.player_caught=True
+                        if pygame.sprite.spritecollideany(fat_guy,player_sprite_group):
+                            fat_guy.player_collide=True
+                        if fat_guy.player_caught:
+                            player.state='idle'
+                            if fat_guy.direction=='left':
+                                player.rect.topleft=fat_guy.hook_rect.midright
+                                player.pos.xy=player.rect.center
+                                fat_guy.hook_rect.x+=1100*delta_time
+                            elif fat_guy.direction=='right':
+                                player.rect.topright=fat_guy.hook_rect.midleft
+                                player.pos.xy=player.rect.center
+                                fat_guy.hook_rect.x-=1100*delta_time
+                        else:
+                            if fat_guy.direction=='left':
+                                fat_guy.hook_rect.x-=1100*delta_time
+                            elif fat_guy.direction=='right':
+                                fat_guy.hook_rect.x+=1100*delta_time
+                        fat_guy.hook_rect.y+=50*delta_time
+                        if int(fat_guy.image_frame)==12 and not fat_guy.hook_throw:#first time?
+                            if fat_guy.direction=='left':
+                                fat_guy.hook_rect.midright=(fat_guy.rect.left,fat_guy.rect.top+35)
+                            else:
+                                fat_guy.hook_rect.midleft=(fat_guy.rect.right,fat_guy.rect.top+35)
+                            fat_guy.hook_throw=True
+                        fat_guy.image_frame=12
+                        if fat_guy.direction=='left':
+                            game_window.blit(fat_guy.hook_image,(fat_guy.hook_rect.x-fat_guy.hook_offset.x,fat_guy.hook_rect.y-fat_guy.hook_offset.y))
+                            pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.right-fat_guy.hook_offset.x,fat_guy.hook_rect.midright[1]-fat_guy.hook_offset.y),(fat_guy.rect.left-fat_guy.hook_offset.x,fat_guy.rect.top+41-fat_guy.hook_offset.y))
+                        else:
+                            game_window.blit(fat_guy.hook_image_right,(fat_guy.hook_rect.x-fat_guy.hook_offset.x,fat_guy.hook_rect.y-fat_guy.hook_offset.y))
+                            pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.left-fat_guy.hook_offset.x,fat_guy.hook_rect.midright[1]-fat_guy.hook_offset.y),(fat_guy.rect.right-fat_guy.hook_offset.x,fat_guy.rect.top+41-fat_guy.hook_offset.y))
+                    else:
+                        fat_guy.player_caught=False
+                        if fat_guy.image_frame>=len(fat_guy.rope_image_list_left)-1:
+                            fat_guy.player_collide=False
+                            fat_guy.hook_throw=False
+                            fat_guy.image_frame=0
+                            fat_guy.state='idle'
+                if fat_guy.direction=='left':
+                    fat_guy.image=big_fat_guy.rope_image_list_left[int(fat_guy.image_frame)]
+                elif fat_guy.direction=='right':
+                    fat_guy.image=big_fat_guy.rope_image_list_right[int(fat_guy.image_frame)]
+                fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81))
+                fat_guy.image_frame+=10*delta_time
+            for reactive_block in reactive_block_sprite_group:
+                if type(reactive_block)==little_rock:
+                    if reactive_block.rect.colliderect(fat_guy.head_rect):
+                        fat_guy.health-=10*delta_time
+                    elif reactive_block.rect.colliderect(fat_guy.rect):
+                        fat_guy.health-=5*delta_time
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
@@ -1158,6 +1203,8 @@ class game():
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+                        if type(sprite)==big_fat_guy and sprite.state=='rope':
+                            sprite.hook_offset=cam.offset
             game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
             #rendering waves?
             cam.water_bodies_list_counter=0
@@ -1472,8 +1519,8 @@ while game_mode=='in_game':
                 [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
