@@ -531,16 +531,11 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
     def update(fat_guy,delta_time):
-        print(fat_guy.hook_rect)
         for player in player_sprite_group:
-            if abs(player.pos.x-fat_guy.pos.x)>=300:#change later
+            if abs(player.pos.x-fat_guy.pos.x)>=400:#change later
                 fat_guy.state='rope'
             if fat_guy.state!='rope':
                 if 300>abs(player.pos.x-fat_guy.pos.x)>200:
-                        if fat_guy.bat=='left':
-                            fat_guy.image_frame=10
-                        else:
-                            fat_guy.image_frame=0
                         fat_guy.state='run'
                 else:
                         fat_guy.state='whack'
@@ -565,15 +560,21 @@ class big_fat_guy(pygame.sprite.Sprite):
                 fat_guy.image_frame+=10*delta_time
                 fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-149,fat_guy.body_rect.top-119))
             elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
+                if fat_guy.image_frame>=len(big_fat_guy.run_image_list_left)-1:
+                    fat_guy.image_frame=9
                 if fat_guy.direction=='left':
-                    fat_guy.pos.x-=10*delta_time
+                    if fat_guy.bat=='left':
+                        if int(fat_guy.image_frame)<9:
+                            fat_guy.image_frame=9
+                    fat_guy.pos.x-=100*delta_time
                     fat_guy.image=big_fat_guy.run_image_list_left[int(fat_guy.image_frame)]
-                    fat_guy.body_rect.centerx=fat_guy.pos.x#+50
                 elif fat_guy.direction=='right':
-                    fat_guy.pos.x+=10*delta_time
+                    if fat_guy.bat=='right':
+                        if int(fat_guy.image_frame)<9:
+                            fat_guy.image_frame=9
+                    fat_guy.pos.x+=100*delta_time
                     fat_guy.image=big_fat_guy.run_image_list_right[int(fat_guy.image_frame)]
-                    fat_guy.body_rect.centerx=fat_guy.pos.x#+29
-                fat_guy.body_rect.centery=fat_guy.pos.y#+37
+                fat_guy.body_rect.center=fat_guy.pos#+37
                 fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81))
                 fat_guy.image_frame+=10*delta_time
             elif fat_guy.state=='rope':
