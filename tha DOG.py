@@ -525,15 +525,15 @@ class big_fat_guy(pygame.sprite.Sprite):
             fat_guy.image=big_fat_guy.whack_image_list_left[10]
         elif fat_guy.direction=='right':
             fat_guy.image=big_fat_guy.whack_image_list_right[10]
-        #fat_guy.body_rect=pygame.Rect(x*48,(y*48)-270,91,160)#body rect
         fat_guy.rect=fat_guy.image.get_rect(midbottom=((x+1)*48,(y+1)*48))
         fat_guy.body_rect=pygame.Rect(fat_guy.rect.left+149,fat_guy.rect.top+119,94,160)
         fat_guy.pos=pygame.math.Vector2(fat_guy.body_rect.center)
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
-        fat_guy.hook_rect=big_fat_guy.hook_image.get_rect()
+        fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
     def update(fat_guy,delta_time):
+        print(fat_guy.hook_rect)
         for player in player_sprite_group:
-            if abs(player.pos.x-fat_guy.pos.x)>=300:
+            if abs(player.pos.x-fat_guy.pos.x)>=300:#change later
                 fat_guy.state='rope'
             if fat_guy.state!='rope':
                 if 300>abs(player.pos.x-fat_guy.pos.x)>200:
