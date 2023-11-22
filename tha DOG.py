@@ -134,7 +134,6 @@ class player(pygame.sprite.Sprite):
                     player.state='run'
                     player.image_frame=0
                     player.dodge=False
-                player.max_velocity.x=400
                 if player.direction=='left':
                     player.velocity.x=-400
                     player.image=player.dodge_image_list_left[int(player.image_frame)]
@@ -347,10 +346,8 @@ class player(pygame.sprite.Sprite):
                         player.image_frame=len(player.jump_image_list_right)-1
                     if player.direction=='right':  
                         player.image=player.jump_image_list_right[round(player.image_frame)]
-                        player.pos.x+=100*delta_time
                     elif player.direction=='left':  
-                        player.image=player.jump_image_list_left[round(player.image_frame)]
-                        player.pos.x-=100*delta_time   
+                        player.image=player.jump_image_list_left[round(player.image_frame)] 
                     player.stamina-=50*delta_time
                     player.pos.y-=300*delta_time
                     player.rect.center=player.pos
