@@ -98,7 +98,7 @@ class player(pygame.sprite.Sprite):
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
-    def update(player,delta_time):
+    def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
         player.water=False
         for water_rect in water_blocks_rect_list:
             if not player.water:
@@ -723,11 +723,7 @@ class rat(pygame.sprite.Sprite):
         rat_instance.pos=pygame.math.Vector2(rat_instance.rect.center)
     def update(rat_instance,delta_time):
         for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            if player.state=='jump':
-                rat_instance.dead=True
-            elif player.state=='jump_right':
-                rat_instance.dead=True
-            elif player.state=='jump_left':
+            if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
                 rat_instance.dead=True
         if rat_instance.dead:
             if rat_instance.frame>len(rat.rat_death_right_list)-1:
@@ -1453,6 +1449,8 @@ for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_
             tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
         elif block_id=='10':
             tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
+        elif block_id=='11':
+            tutorial_block_sprite_group.add(tutorial_block(100,'shiny',block_number,row_number))
 #water_hitline
 water_bodies_list_counter=0
 water_bodies={}
