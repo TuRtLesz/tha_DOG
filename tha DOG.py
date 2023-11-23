@@ -20,7 +20,8 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
-        player.health=300
+        player.life=300#change later
+        player.explode_timer=0
         player.stamina=1000
         player.state='idle'
         player.throw_angle=0
@@ -47,12 +48,15 @@ class player(pygame.sprite.Sprite):
         player.throw_image_list_left=[]
         player.dodge_image_list_right=[]
         player.dodge_image_list_left=[]
+        player.explode_image_list_right=[]
+        player.explode_image_list_left=[]
         player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
         player.swim_image_spritesheet=pygame.image.load('Data/player/player_swim.png').convert_alpha()
         player.pant_image_spritesheet=pygame.image.load('Data/player/player_pant.png').convert_alpha()
         player.jump_image_spritesheet=pygame.image.load('Data/player/player_jump.png').convert_alpha()
         player.throw_image_spritesheet=pygame.image.load('Data/player/player_throw.png').convert_alpha()
         player.dodge_image_spritesheet=pygame.image.load('Data/player/player_dodge.png').convert_alpha()
+        player.explode_image_spritesheet=pygame.image.load('Data/player/player_explode.png').convert_alpha()
         for image_x in range(0,player.run_image_spritesheet.get_width(),107):
             player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
             player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
@@ -83,6 +87,11 @@ class player(pygame.sprite.Sprite):
             player.import_image.blit(player.dodge_image_spritesheet,(0,0),(image_x,0,240,212))
             player.dodge_image_list_right.append(player.import_image)
             player.dodge_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
+        for image_x in range(0,player.explode_image_spritesheet.get_width(),109):
+            player.import_image=pygame.Surface((109,210),pygame.SRCALPHA)
+            player.import_image.blit(player.explode_image_spritesheet,(0,0),(image_x,0,109,210))
+            player.explode_image_list_right.append(player.import_image)
+            player.explode_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
         player.player_grass_image=player.import_image.blit(player.image,(0,100))
@@ -115,6 +124,22 @@ class player(pygame.sprite.Sprite):
                 player.image=player.run_image_list_left[0]
         if player.state!='pant'and player.state!='aim' and player.state!='throw' and player.state!='idle' and player.state!='pick':
             player.idle_timer=0
+        if player.state=='explode':
+            player.velocity.x=0
+            player.stamina+=200*delta_time
+            if player.image_frame>=len(player.explode_image_list_left)-1:
+                player.image_frame=len(player.explode_image_list_left)-1
+                if player.explode_timer>1:
+                    player.state='idle'
+                    player.explode_timer=0
+                else:
+                    player.explode_timer+=delta_time
+                #player.state='idle'
+            if player.direction=='right':
+                player.image=player.explode_image_list_right[round(player.image_frame)]
+            elif player.direction=='left':
+                player.image=player.explode_image_list_left[round(player.image_frame)]
+            player.image_frame+=10*delta_time
         if player.state=='dodge':
             if not player.dodge:
                 for fat_guy in pygame.sprite.spritecollide(player,big_fat_guy_sprite_group,dokill=False):
@@ -260,7 +285,7 @@ class player(pygame.sprite.Sprite):
         #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
-        if player.state!='idle'and player.state!='pant'and player.state!='pick' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw':
+        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode':
             player.velocity+=player.arc_eq_acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
@@ -958,32 +983,27 @@ class bomb_land(pygame.sprite.Sprite):
         bomb.frame=0
         bomb.mask=pygame.mask.from_surface(bomb.image)
         bomb.explode=False
+        #bomb.explode_dir=numpy.random.randint(3)
     def update(bomb,delta_time):
-        for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-            bomb.explode=True
-            if player.state=='run_right':
-                player.velocity.xy=150,100
-                player.state='idle'
-            elif player.state=='run_left':
-                player.velocity.xy=-150,100
-                player.state='idle'
-            elif player.state=='jump_right':
-                player.velocity.xy=150,100
-                player.state='idle'
-            elif player.state=='jump_left':
-                player.velocity.xy=-150,100
-                player.state='idle'
-            elif player.state=='jump':
-                player.velocity.y=150
-                player.state='idle'
-            elif player.state=='idle':
-                player.velocity.y=150
         if bomb.explode:
             bomb.frame+=4*delta_time
             if bomb.frame>len(bomb.bomb_image_list)-1:
                 bomb.kill()
             else:
                 bomb.image=bomb.bomb_image_list[int(bomb.frame)]
+                bomb.mask=pygame.mask.from_surface(bomb.image)
+        else:
+            for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
+                bomb.explode=True
+                player.life-=1
+                player.image_frame=0
+                player.state='explode'
+            #if bomb.explode_dir==1:
+            #    player.pos.x-=2050*delta_time
+            #else:player.pos.x+=2050*delta_time
+            #player.pos.y-=2000*delta_time
+            #player.rect.center=player.pos.xy
+                
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
     def __init__(chain_instance,x,y):
@@ -1347,7 +1367,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(30111,560))#2067,560,35184
+player_sprite_group.add(player(2067,560))#2067,560,30111
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1555,7 +1575,7 @@ while game_mode=='in_game':
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+'\033c',end='')
+        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1583,53 +1603,54 @@ while game_mode=='in_game':
         #            player.image_frame=0
         #            #player.jump_counter=0
     for player in player_sprite_group:
-        if keys_pressed[pygame.K_d]:
-            player.direction='right'
-            if player.direction=='left':
-                player.velocity.x=0
-            if player.water:
-                if player.state!='swim_fast':
-                    player.state='swim'
-            else:
-                if player.state!='sprint' and player.state!='dodge':
-                    player.state='run'
-            if keys_pressed[pygame.K_LSHIFT]:
+        if player.state!='explode':
+            if keys_pressed[pygame.K_d]:
+                player.direction='right'
+                if player.direction=='left':
+                    player.velocity.x=0
                 if player.water:
-                    player.state='swim_fast'
+                    if player.state!='swim_fast':
+                        player.state='swim'
                 else:
-                    player.state='sprint'
-            if keys_pressed[pygame.K_SPACE] and not player.water:
-                player.state='dodge'
-        if keys_pressed[pygame.K_a]:
-            player.direction='left'
-            if player.direction=='right':
-                player.velocity.x=0
-            if player.water:
-                if player.state!='swim_fast':
-                    player.state='swim'
-            else:
-                if player.state!='sprint' and player.state!='dodge':
-                    player.state='run'
-            if keys_pressed[pygame.K_LSHIFT]:
+                    if player.state!='sprint' and player.state!='dodge':
+                        player.state='run'
+                if keys_pressed[pygame.K_LSHIFT]:
+                    if player.water:
+                        player.state='swim_fast'
+                    else:
+                        player.state='sprint'
+                if keys_pressed[pygame.K_SPACE] and not player.water:
+                    player.state='dodge'
+            if keys_pressed[pygame.K_a]:
+                player.direction='left'
+                if player.direction=='right':
+                    player.velocity.x=0
                 if player.water:
-                    player.state='swim_fast'
+                    if player.state!='swim_fast':
+                        player.state='swim'
                 else:
-                    player.state='sprint'
-            if keys_pressed[pygame.K_SPACE] and not player.water:
-                player.state='dodge'
-        if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
-            if player.hand=='rock':
-                player.state='aim'
-            else:
-                player.state='interact'
-        if keys_pressed[pygame.K_s]:
-            player.state='pick'
-        if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
-                if player.state=='aim' or player.state=='throw':
-                    player.state='throw'
+                    if player.state!='sprint' and player.state!='dodge':
+                        player.state='run'
+                if keys_pressed[pygame.K_LSHIFT]:
+                    if player.water:
+                        player.state='swim_fast'
+                    else:
+                        player.state='sprint'
+                if keys_pressed[pygame.K_SPACE] and not player.water:
+                    player.state='dodge'
+            if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
+                if player.hand=='rock':
+                    player.state='aim'
                 else:
-                    if player.state!='pant':
-                        player.state='idle'
+                    player.state='interact'
+            if keys_pressed[pygame.K_s]:
+                player.state='pick'
+            if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
+                    if player.state=='aim' or player.state=='throw':
+                        player.state='throw'
+                    else:
+                        if player.state!='pant' and player.state!='explode':
+                            player.state='idle'
     #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
