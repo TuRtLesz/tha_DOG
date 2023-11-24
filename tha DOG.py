@@ -630,6 +630,7 @@ class big_fat_guy(pygame.sprite.Sprite):
             if fat_guy.state=='whack':
                 if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
                     fat_guy.image_frame=0
+                    game.earthquake=True
                 if fat_guy.bat=='left':
                     if fat_guy.image_frame==0:
                         fat_guy.image_frame=11
@@ -961,23 +962,9 @@ class bomb(pygame.sprite.Sprite):
     def update(bomb_instance,delta_time):
         for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
             bomb_instance.explode=True
-            if player.state=='run_right':#does not work
-                player.velocity.xy=150,100
-                player.state='idle'
-            elif player.state=='run_left':
-                player.velocity.xy=-150,100
-                player.state='idle'
-            elif player.state=='jump_right':
-                player.velocity.xy=150,100
-                player.state='idle'
-            elif player.state=='jump_left':
-                player.velocity.xy=-150,100
-                player.state='idle'
-            elif player.state=='jump':
-                player.velocity.y=150
-                player.state='idle'
-            elif player.state=='idle':
-                player.velocity.y=150
+            player.life-=1
+            player.image_frame=0
+            player.state='explode'
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -1235,11 +1222,25 @@ class game():
     def __init__(game):
         game.offset=pygame.math.Vector2()
         game.player_offset=pygame.math.Vector2()
-        game.draw_rect=pygame.Rect(0,0,display_size[0],display_size[1])
+        game.screen_shake=pygame.math.Vector2()
+        game.draw_rect=pygame.Rect(0,0,display_size[0]+30,display_size[1]+30)
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
+        game.earthquake=False
+        game.earthquake_timer=0
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
-            if player_sprite.idle_timer>=2:#repair pan workin only when idle
+            if player.state=='explode':
+                cam.screen_shake.xy=(numpy.random.randint(-10,10),numpy.random.randint(-10,10))
+            else:
+                cam.screen_shake.xy=(0,0)
+            if cam.earthquake:
+                cam.screen_shake.xy=(numpy.random.randint(-15,15),numpy.random.randint(-15,15))
+                if cam.earthquake_timer>=60:#1 min
+                    cam.earthquake=False
+                    cam.earthqake_timer=0
+                else:
+                    cam.earthquake_timer+=delta_time
+            if player_sprite.idle_timer>=2:
                 if cam.player_offset.x>=game_window.get_width()//2-50:
                     cam.player_offset.x=game_window.get_width()//2-50
                 else:
@@ -1275,10 +1276,10 @@ class game():
             for sprite_group in below_player_sprite_group_list:
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
-                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
                         if type(sprite)==big_fat_guy and sprite.state=='rope':
                             sprite.hook_offset=cam.offset
-            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x,player_sprite.rect.top-cam.player_offset.y))
+            game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x+cam.screen_shake.x,player_sprite.rect.top-cam.player_offset.y+cam.screen_shake.y))
             #rendering waves?
             cam.water_bodies_list_counter=0
             cam.water_bodies={}
@@ -1307,12 +1308,12 @@ class game():
                     if cam.prev_water_dot_pos.x==0:
                         cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
                     else:
-                        pygame.draw.line(game_window,(0,0,0),cam.prev_water_dot_pos-cam.offset,(water_dot_x-cam.offset.x,water_dot_y-cam.offset.y))
+                        pygame.draw.line(game_window,(0,0,0),cam.prev_water_dot_pos-cam.offset,(water_dot_x-cam.offset.x+cam.screen_shake.x,water_dot_y-cam.offset.y+cam.screen_shake.y))
                         cam.prev_water_dot_pos.xy=water_dot_x,water_dot_y
             for sprite_group in above_player_sprite_group_list:
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
-                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x,sprite.rect.y-cam.offset.y))
+                        game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
     def update(update_instance,update_sprite_group_list,delta_time,water_dot_sprite_group):
         for player in player_sprite_group:
             player.update(delta_time)
@@ -1647,7 +1648,7 @@ while game_mode=='in_game':
                 player.prev_life=player.life
             else:
                 game_window.blit(life_death_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life,24))
-                player.life_image_frame+=2*delta_time#chnage to 10 later?
+                player.life_image_frame+=9*delta_time#chnage to 10 later?
         elif player.prev_life<player.life:
             for life_count in range(player.prev_life):
                 game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
@@ -1657,7 +1658,7 @@ while game_mode=='in_game':
                 player.prev_life=player.life
             else:
                 game_window.blit(new_life_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life+30,30))
-                player.life_image_frame+=2*delta_time#chnage to 10 later?
+                player.life_image_frame+=5*delta_time#chnage to 10 later?
         else:
             for life_count in range(player.prev_life):
                 game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
