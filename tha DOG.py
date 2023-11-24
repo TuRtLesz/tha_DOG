@@ -1458,6 +1458,8 @@ for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_
             tutorial_block_sprite_group.add(tutorial_block(100,'shiny',block_number,row_number))
         elif block_id=='12':
             tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
+        elif block_id=='13':
+            tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
 #water_hitline
 water_bodies_list_counter=0
 water_bodies={}
