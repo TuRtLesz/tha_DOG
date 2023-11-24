@@ -14,6 +14,11 @@ save_data={'world':0}
 game_settings={'fullscreen':False}
 game_varibles={'current_world':save_data['world']}
 
+def text(text,color,size,text_pos):
+        font=pygame.font.Font('Data/font/font.ttf',int(size))
+        text_data=font.render(text,False,color)
+        game_window.blit(text_data,text_pos)
+
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
@@ -34,7 +39,9 @@ class player(pygame.sprite.Sprite):
         player.direction='right'
         player.hand=''
         player.jump_height=spawn_y
+        player.prev_flower_count=0
         player.flower_count=0
+        player.flower_timer=2
         player.image_frame=0
         player.run_image_list_right=[]
         player.run_image_list_left=[]
@@ -94,7 +101,8 @@ class player(pygame.sprite.Sprite):
             player.explode_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
-        player.player_grass_image=player.import_image.blit(player.image,(0,100))
+        player.import_image.blit(player.image,(0,100))
+        player.player_grass_image=player.import_image
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
@@ -366,7 +374,7 @@ class player(pygame.sprite.Sprite):
         if player.jump:
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
-                    player.image_frame+=10*delta_time
+                    player.image_frame+=5*delta_time
                     if round(player.image_frame)>=len(player.jump_image_list_right)-1:
                         player.image_frame=len(player.jump_image_list_right)-1
                     if player.direction=='right':  
@@ -895,12 +903,8 @@ class grass(pygame.sprite.Sprite):
         grass_instance.image=grass.image
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
-            for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
-                if player.state!='grass':
-                    for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
-                        pass
-                    else:
-                        player.state='grass'   
+        for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
+            player.state='grass'   
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
@@ -909,6 +913,7 @@ class apple(pygame.sprite.Sprite):
         apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,y*48))
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
+            player.life+=1
             apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
@@ -1574,8 +1579,8 @@ while game_mode=='in_game':
                 [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
+    #for player in player_sprite_group:
+    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1603,6 +1608,18 @@ while game_mode=='in_game':
         #            player.image_frame=0
         #            #player.jump_counter=0
     for player in player_sprite_group:
+        if player.prev_flower_count!=player.flower_count:
+            player.prev_flower_count=player.flower_count
+            player.flower_timer=4
+        text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
+        if player.flower_timer>2:
+            player.flower_timer-=2*delta_time
+            game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
+        else:
+            player.flower_timer=2
+            game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
+        if player.hand=='rock':
+            game_window.blit(pygame.transform.scale2x(little_rock.image),(display_size[0]-100,120))
         if player.state!='explode':
             if keys_pressed[pygame.K_d]:
                 player.direction='right'
