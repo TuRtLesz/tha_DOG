@@ -14,6 +14,21 @@ save_data={'world':0}
 game_settings={'fullscreen':False}
 game_varibles={'current_world':save_data['world']}
 
+new_life_image_list=[]
+life_death_image_list=[]
+new_life_spritesheet=pygame.image.load('Data/life/new_life.png').convert_alpha()
+life_death_spritesheet=pygame.image.load('Data/life/life_death.png').convert_alpha()
+for image_x in range(0,new_life_spritesheet.get_width(),23):
+            import_image=pygame.Surface((23,15),pygame.SRCALPHA)
+            import_image.blit(new_life_spritesheet,(0,0),(image_x,0,23,15))
+            import_image=pygame.transform.scale2x(import_image)
+            new_life_image_list.append(import_image)
+for image_x in range(0,life_death_spritesheet.get_width(),27):
+            import_image=pygame.Surface((27,20),pygame.SRCALPHA)
+            import_image.blit(life_death_spritesheet,(0,0),(image_x,0,27,20))
+            import_image=pygame.transform.scale2x(import_image)
+            life_death_image_list.append(import_image)
+
 def text(text,color,size,text_pos):
         font=pygame.font.Font('Data/font/font.ttf',int(size))
         text_data=font.render(text,False,color)
@@ -25,7 +40,9 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
-        player.life=300#change later
+        player.life=3#change later
+        player.life_image_frame=0
+        player.prev_life=player.life
         player.explode_timer=0
         player.stamina=1000
         player.state='idle'
@@ -1622,6 +1639,28 @@ while game_mode=='in_game':
             game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
         if player.hand=='rock':
             game_window.blit(pygame.transform.scale2x(little_rock.image),(display_size[0]-100,120))
+        if player.prev_life>player.life:
+            for life_count in range(player.prev_life-1):
+                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+            if player.life_image_frame>=len(life_death_image_list):
+                player.life_image_frame=0
+                player.prev_life=player.life
+            else:
+                game_window.blit(life_death_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life,24))
+                player.life_image_frame+=2*delta_time#chnage to 10 later?
+        elif player.prev_life<player.life:
+            for life_count in range(player.prev_life):
+                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+            if player.life_image_frame>=len(new_life_image_list):
+                player.life_image_frame=0
+                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*player.life+30,30))
+                player.prev_life=player.life
+            else:
+                game_window.blit(new_life_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life+30,30))
+                player.life_image_frame+=2*delta_time#chnage to 10 later?
+        else:
+            for life_count in range(player.prev_life):
+                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
         if player.state!='explode':
             if keys_pressed[pygame.K_d]:
                 player.direction='right'
