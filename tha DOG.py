@@ -11,7 +11,7 @@ game_mode='in_game'
 
 save_data={'world':0}
 
-game_settings={'fullscreen':False}
+game_settings={'fullscreen':False,'negative_screen':False}
 game_varibles={'current_world':save_data['world']}
 
 new_life_image_list=[]
@@ -596,6 +596,7 @@ class big_fat_guy(pygame.sprite.Sprite):
     hook_image_right=pygame.transform.flip(hook_image,True,False)
     def __init__(fat_guy,x,y):
         super().__init__()
+        fat_guy.start_fight=False
         fat_guy.image_frame=0
         fat_guy.direction='left'
         fat_guy.bat='left'
@@ -615,18 +616,27 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
     def update(fat_guy,delta_time):
+        if fat_guy.health<=0:
+            game_settings['negative_screen']=False
+            fat_guy.kill()
         for player in player_sprite_group:
-            if abs(player.pos.x-fat_guy.pos.x)>=400:#change later
-                fat_guy.state='rope'
-            if fat_guy.state!='rope':
-                if 300>abs(player.pos.x-fat_guy.pos.x)>200:
-                        fat_guy.state='run'
+            if fat_guy.start_fight:#whakc and stuff only if fight started
+                game_settings['negative_screen']=True
+                if abs(player.pos.x-fat_guy.pos.x)>=400:#change later
+                    fat_guy.state='rope'
+                if fat_guy.state!='rope':
+                    if 300>abs(player.pos.x-fat_guy.pos.x)>200:
+                            fat_guy.state='run'
+                    else:
+                            fat_guy.state='whack'
+                if player.pos.x>fat_guy.pos.x:
+                    fat_guy.direction='right'
                 else:
-                        fat_guy.state='whack'
-            if player.pos.x>fat_guy.pos.x:
-                fat_guy.direction='right'
+                    fat_guy.direction='left'
             else:
-                fat_guy.direction='left'
+                if player.rect.colliderect(fat_guy.body_rect):
+                    fat_guy.start_fight=True
+                    game.fat_guy_hit=True
             if fat_guy.state=='whack':
                 if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
                     fat_guy.image_frame=0
@@ -716,7 +726,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                 fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81))
                 fat_guy.image_frame+=10*delta_time
             for reactive_block in reactive_block_sprite_group:
-                if type(reactive_block)==little_rock:
+                if type(reactive_block)==little_rock and reactive_block.velocity.x>0:#change velocity cpa later?
                     if reactive_block.rect.colliderect(fat_guy.head_rect):
                         fat_guy.health-=10*delta_time
                     elif reactive_block.rect.colliderect(fat_guy.rect):
@@ -858,6 +868,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                     else:
                         for player_obj in pygame.sprite.spritecollide(fish_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                             fish_instance.player_bite=True
+                            player_obj.life-=1
                         if player.pos.x>fish_instance.pos.x:
                             fish_instance.velocity.x=35
                             fish_instance.direction='right'
@@ -1220,13 +1231,14 @@ class tutorial_block(pygame.sprite.Sprite):
 
 class game():
     def __init__(game):
-        game.offset=pygame.math.Vector2()
-        game.player_offset=pygame.math.Vector2()
+        game.offset=pygame.math.Vector2()#cam offset from player?
+        game.player_offset=pygame.math.Vector2()#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
         game.draw_rect=pygame.Rect(0,0,display_size[0]+30,display_size[1]+30)
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
         game.earthquake=False
         game.earthquake_timer=0
+        game.fat_guy_hit=False
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
             if player.state=='explode':
@@ -1240,30 +1252,35 @@ class game():
                     cam.earthqake_timer=0
                 else:
                     cam.earthquake_timer+=delta_time
-            if player_sprite.idle_timer>=2:
-                if cam.player_offset.x>=game_window.get_width()//2-50:
-                    cam.player_offset.x=game_window.get_width()//2-50
-                else:
-                    if cam.player_offset.x<=-(game_window.get_width()//2-50):
-                        cam.player_offset.x=-(game_window.get_width()//2-50)
-                    else:
-                        if player_sprite.direction=='right':
-                            cam.player_offset.x+=100*delta_time#pan speed for idle pan
-                        else:
-                            cam.player_offset.x-=100*delta_time#pan speed for idle pan
-            else:
-                if cam.player_offset.x>0:
-                    cam.player_offset.x-=100*delta_time#pan speed for idle pan
-                    if cam.player_offset.x<0:cam.player_offset.x=0
-                elif cam.player_offset.x<0:
-                    cam.player_offset.x+=100*delta_time#pan speed for idle pan
-                    if cam.player_offset.x>0:cam.player_offset.x=0
-            if player_sprite.pos.x<game_window.get_width()//2:
-                cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
-                cam.offset.x=0
-            else:
+            if not cam.fat_guy_hit and 32367>player_sprite.pos.x>30111:#fat_guy pan loc
+                cam.player_offset.x-=100*delta_time
+                if cam.player_offset.x<=-(game_window.get_width()//2-50):
+                    cam.player_offset.x=-(game_window.get_width()//2-50)
                 cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
-                #cam.player_offset.x=0
+            else:
+                if player_sprite.idle_timer>=2:
+                    if cam.player_offset.x>=game_window.get_width()//2-50:
+                        cam.player_offset.x=game_window.get_width()//2-50
+                    else:
+                        if cam.player_offset.x<=-(game_window.get_width()//2-50):
+                            cam.player_offset.x=-(game_window.get_width()//2-50)
+                        else:
+                            if player_sprite.direction=='right':
+                                cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                            else:
+                                cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                else:
+                    if cam.player_offset.x>0:
+                        cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                        if cam.player_offset.x<0:cam.player_offset.x=0
+                    elif cam.player_offset.x<0:
+                        cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                        if cam.player_offset.x>0:cam.player_offset.x=0
+                if player_sprite.pos.x<game_window.get_width()//2:
+                    cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
+                    cam.offset.x=0
+                else:
+                    cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
             if player_sprite.pos.y>game_window.get_height()-300:
                 cam.player_offset.y=player_sprite.pos.y-(game_window.get_height()-300)
                 cam.offset.y=player_sprite.pos.y-(game_window.get_height()-300)
@@ -1386,7 +1403,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111
+player_sprite_group.add(player(30111,560))#2067,560,30111
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1599,8 +1616,8 @@ while game_mode=='in_game':
                 [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                 water_dot_sprite_group)
     
-    #for player in player_sprite_group:
-    #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
+    for player in player_sprite_group:
+        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1640,6 +1657,11 @@ while game_mode=='in_game':
             game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
         if player.hand=='rock':
             game_window.blit(pygame.transform.scale2x(little_rock.image),(display_size[0]-100,120))
+        if game_settings['negative_screen']:#when hit fat_guy
+            white_screen=pygame.Surface(game_window.get_size())
+            white_screen.fill((255,255,255))
+            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
+            game_window=white_screen
         if player.prev_life>player.life:
             for life_count in range(player.prev_life-1):
                 game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
