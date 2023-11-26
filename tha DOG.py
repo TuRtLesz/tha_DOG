@@ -388,7 +388,7 @@ class player(pygame.sprite.Sprite):
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             #        player.pos.xy=player.rect.center
-        if player.jump:
+        if player.jump and player.state!='explode':
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
                     player.image_frame+=5*delta_time
@@ -637,6 +637,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                 if player.rect.colliderect(fat_guy.body_rect):
                     fat_guy.start_fight=True
                     game.fat_guy_hit=True
+                    player.velocity.xy=0,0
             if fat_guy.state=='whack':
                 if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
                     fat_guy.image_frame=0
@@ -870,15 +871,15 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                             fish_instance.player_bite=True
                             player_obj.life-=1
                         if player.pos.x>fish_instance.pos.x:
-                            fish_instance.velocity.x=35
+                            fish_instance.velocity.x=140
                             fish_instance.direction='right'
                         else:
-                            fish_instance.velocity.x=-35
+                            fish_instance.velocity.x=-140
                             fish_instance.direction='left'
                         if player.pos.y>fish_instance.pos.y:
-                            fish_instance.velocity.y=8
+                            fish_instance.velocity.y=35
                         else:
-                            fish_instance.velocity.y=-8
+                            fish_instance.velocity.y=-35
                         fish_instance.image_frame+=10*delta_time
                         if fish_instance.image_frame>=len(fish.fish_swim_imagelist_left)-1:
                             fish_instance.image_frame=0
@@ -898,10 +899,10 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                         fish_instance.image_frame=0
                     if fish_instance.direction=='left':
                         fish_instance.image=fish.fish_swim_imagelist_left[int(fish_instance.image_frame)]
-                        fish_instance.velocity.xy=-15,0
+                        fish_instance.velocity.xy=-20,0
                     elif fish_instance.direction=='right':
                         fish_instance.image=fish.fish_swim_imagelist_right[int(fish_instance.image_frame)]
-                        fish_instance.velocity.xy=15,0
+                        fish_instance.velocity.xy=20,0
                     if not fish_instance.water:
                         fish_instance.velocity.y=30
             for water_line in water_hitlines:
@@ -972,8 +973,9 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
         for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
+            if not bomb_instance.explode:
+                player.life-=1
             bomb_instance.explode=True
-            player.life-=1
             player.image_frame=0
             player.state='explode'
         if bomb_instance.explode:
@@ -1010,8 +1012,9 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.mask=pygame.mask.from_surface(bomb.image)
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
+                if not bomb.explode:
+                    player.life-=1
                 bomb.explode=True
-                player.life-=1
                 player.image_frame=0
                 player.state='explode'
             #if bomb.explode_dir==1:
@@ -1036,8 +1039,72 @@ class rock(pygame.sprite.Sprite):
         rock_instance.image=rock_instance.origin_image
         rock_instance.rect=rock_instance.image.get_rect(topleft=((x-1)*48,(y-1)*48))
         rock_instance.angle=0
+        rock_instance.roll=False
     def update(rock_instance,delta_time):
-        rock_instance.image=pygame.transform.rotate(rock_instance.image,rock_instance.angle)#add colision and stuff later
+        if rock_instance.angle<=-360:
+            rock_instance.angle+=360
+        rock_instance.image=pygame.transform.rotate(rock_instance.origin_image,rock_instance.angle)#add colision and stuff later
+        if rock_instance.roll:
+            rock_instance.rect.x+=100*delta_time
+            rock_instance.rect.y+=400*delta_time
+            rock_instance.angle-=40*delta_time
+            for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):
+                if block.id=='10':
+                    rock_instance.roll=False
+                    rock_instance.rect.midbottom=block.rect.midtop
+                else:
+                    if block.id=='145':
+                        if rock_instance.rect.left-block.rect.left<=17:
+                            rock_instance.rect.bottom=48-(3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom)-18 #y = 3.399023*x - 6.511401
+                    elif block.id=='174':
+                        if rock_instance.rect.left-block.rect.left>=14:
+                            rock_instance.rect.bottom=1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='177':
+                        if rock_instance.rect.left-block.rect.left<=32:
+                            rock_instance.rect.bottom=48-(-1.7*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='206':
+                        if rock_instance.rect.left-block.rect.left>=29:
+                            rock_instance.rect.bottom=48-(-2.38*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='149':
+                        if rock_instance.rect.left-block.rect.left<=11:
+                            rock_instance.rect.bottom=48-(-5.56*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='178':
+                        if rock_instance.rect.left-block.rect.left<=25:
+                            rock_instance.rect.bottom=48-(-3.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='207':
+                        if rock_instance.rect.left-block.rect.left>=22:
+                            rock_instance.rect.bottom=48-(-1.9*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='204' or block.id=='147':#45degreethingy
+                        rock_instance.rect.bottom=0.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    if block.id=='154':
+                        if rock_instance.rect.left-block.rect.left>=31:
+                            rock_instance.rect.bottom=3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18 #y = 3.399023*x - 6.511401
+                    elif block.id=='183':
+                        if rock_instance.rect.left-block.rect.left<=33:
+                            rock_instance.rect.bottom=-1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18#y = -1.655013*x + 54.31424
+                    elif block.id=='180':#y = -1.7*x + 74.49683
+                        if rock_instance.rect.left-block.rect.left>=16:
+                            rock_instance.rect.bottom=-1.7*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='209':#y = -2.38*x + 42.61518
+                        if rock_instance.rect.left-block.rect.left<=19:
+                            rock_instance.rect.bottom=-2.38*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='150':#y = -5.56*x + 265.5725
+                        if rock_instance.rect.left-block.rect.left>=37:
+                            rock_instance.rect.bottom=-5.56*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='179':#y = -3.5*x + 137.3384
+                        if rock_instance.rect.left-block.rect.left>=23:
+                            rock_instance.rect.bottom=-3.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='208':#y = -1.9*x + 47.14072
+                        if rock_instance.rect.left-block.rect.left<=26:
+                            rock_instance.rect.bottom=-1.9*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
+                    elif block.id=='211' or block.id=='152':
+                        rock_instance.rect.bottom=48-(0.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                    elif block.id=='203' or block.id=='176' or block.id=='205' or block.id=='181' or block.id=='210' or block.id=='212' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
+                        rock_instance.rect.bottom=block.rect.top
+        else:
+            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_group,dokill=False):
+                if type(reactive_block)==little_rock and reactive_block.velocity.x>0:
+                    rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
     water_resistance=pygame.math.Vector2(0,100)
@@ -1138,7 +1205,6 @@ class pressure_switch(pygame.sprite.Sprite):
     def update(switch_instance,delta_time):
         for trig_reactive_block in pygame.sprite.spritecollide(switch_instance,reactive_block_sprite_group,dokill=False):
             if type(trig_reactive_block)==rock:
-                rock.velocity.xy=0,0
                 switch_instance.image=switch_instance.switch_image_list[1]
                 for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
@@ -1403,7 +1469,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(30111,560))#2067,560,30111
+player_sprite_group.add(player(2067,560))#2067,560,30111
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1617,7 +1683,7 @@ while game_mode=='in_game':
                 water_dot_sprite_group)
     
     for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+player.state+str(player.life)+'\033c',end='')
+        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
     keys_pressed=pygame.key.get_pressed()
     for event in pygame.event.get():
         if event.type==pygame.QUIT:
@@ -1684,6 +1750,8 @@ while game_mode=='in_game':
         else:
             for life_count in range(player.prev_life):
                 game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+        if player.state=='dodge':#to prevetnt slidein after dodge
+            player.velocity.x=0
         if player.state!='explode':
             if keys_pressed[pygame.K_d]:
                 player.direction='right'
