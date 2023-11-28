@@ -9,10 +9,10 @@ pygame.display.set_icon(pygame.image.load('Data/icon/DOG.png').convert())
 clock=pygame.time.Clock()
 game_mode='in_game'
 
-save_data={'world':0}
+save_data={'world':0}#remove later
 
 game_settings={'fullscreen':False,'negative_screen':False}
-game_varibles={'current_world':save_data['world']}
+game_varibles={'current_world':save_data['world']}#remove later
 
 new_life_image_list=[]
 life_death_image_list=[]
@@ -179,6 +179,7 @@ class player(pygame.sprite.Sprite):
                             break
                 if player.dodge==False:
                     player.state='run'
+                    player.velocity.xy=0,0
             else:
                 if int(player.image_frame)>=len(player.dodge_image_list_left)-1:
                     player.state='run'
@@ -329,6 +330,7 @@ class player(pygame.sprite.Sprite):
         for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
+            game.draw_rect.centery=player.jump_height-300#?
             if block.id == '0' or block.id == '1' or block.id == '2':
                 player.rect.bottom=block.rect.top
                 player.pos.xy=player.rect.center
@@ -426,12 +428,12 @@ class dog(pygame.sprite.Sprite):
         dog_instance.velocity=pygame.math.Vector2(0,0)
         dog_instance.acceleration=pygame.math.Vector2(0,100)
         dog_instance.max_velocity=pygame.math.Vector2(250,100)
-        dog_instance.health=500
+        dog_instance.life=3
         dog_instance.state='idle'
         dog_instance.direction='right'
         dog_instance.prev_direction=dog_instance.direction
         dog_instance.lose_sight_timer=0
-        dog_instance.dodge_counter=2
+        dog_instance.dodge_counter=3
         dog_instance.image_frame=0
         dog_instance.image=dog.dog_run_image_list_right[0]
         dog_instance.rect=dog_instance.image.get_rect(topleft=(x*48,y*48-16))
@@ -468,7 +470,7 @@ class dog(pygame.sprite.Sprite):
                     dog_instance.direction='right'
             for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
                 if block.rect.clipline(dog_instance.vission_line[0],dog_instance.vission_line[1]):
-                    dog_instance.lose_sight_timer+=1*delta_time
+                    dog_instance.lose_sight_timer+=delta_time
                 else:
                     dog_instance.state='run'
                     if player.state!='grass':
@@ -601,7 +603,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.direction='left'
         fat_guy.bat='left'
         fat_guy.state='idle'
-        fat_guy.health=1000
+        fat_guy.life=40#tweak later
         fat_guy.hook_offset=pygame.math.Vector2()
         fat_guy.hook_throw=False
         fat_guy.player_caught=False
@@ -616,7 +618,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
     def update(fat_guy,delta_time):
-        if fat_guy.health<=0:
+        if fat_guy.life<=0:#add death animation
             game_settings['negative_screen']=False
             fat_guy.kill()
         for player in player_sprite_group:
@@ -729,9 +731,10 @@ class big_fat_guy(pygame.sprite.Sprite):
             for reactive_block in reactive_block_sprite_group:
                 if type(reactive_block)==little_rock and reactive_block.velocity.x>0:#change velocity cpa later?
                     if reactive_block.rect.colliderect(fat_guy.head_rect):
-                        fat_guy.health-=10*delta_time
+                        fat_guy.life-=2
                     elif reactive_block.rect.colliderect(fat_guy.rect):
-                        fat_guy.health-=5*delta_time
+                        fat_guy.life-=1
+                    reactive_block.velocity.x*=-1
 class rat(pygame.sprite.Sprite):
     rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
     rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
@@ -1017,6 +1020,10 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.explode=True
                 player.image_frame=0
                 player.state='explode'
+            for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
+                if bomb.explode:
+                    dog.life-=1
+                    dog.state='stunned'
             #if bomb.explode_dir==1:
             #    player.pos.x-=2050*delta_time
             #else:player.pos.x+=2050*delta_time
@@ -1111,15 +1118,11 @@ class little_rock(pygame.sprite.Sprite):
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.image=little_rock.image
-        rock_instance.angle=0
         rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.velocity=pygame.math.Vector2()
         rock_instance.acceleration=pygame.math.Vector2()
     def update(rock_instance,delta_time):
-        if rock_instance.angle>=360:
-            rock_instance.angle-=360
-        rock_instance.image=pygame.transform.rotate(little_rock.image,rock_instance.angle)
         for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
             if player.state=='pick' and player.hand=='':
                 player.hand='rock'
@@ -1130,6 +1133,7 @@ class little_rock(pygame.sprite.Sprite):
         if rock_instance.velocity.x>0:
             for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                 dog.state='stunned'
+                dog.life-=1
         for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
             rock_instance.velocity.xy=0,0
             rock_instance.acceleration.xy=0,0
@@ -1318,7 +1322,7 @@ class game():
                     cam.earthqake_timer=0
                 else:
                     cam.earthquake_timer+=delta_time
-            if not cam.fat_guy_hit and 32367>player_sprite.pos.x>30111:#fat_guy pan loc
+            if not cam.fat_guy_hit and player_sprite.pos.x>30111:#fat_guy pan loc
                 cam.player_offset.x-=100*delta_time
                 if cam.player_offset.x<=-(game_window.get_width()//2-50):
                     cam.player_offset.x=-(game_window.get_width()//2-50)
@@ -1355,7 +1359,7 @@ class game():
                 cam.player_offset.y=0
             cam.draw_rect.center=player_sprite.rect.center
             cam.draw_rect.centerx+=cam.player_offset.x
-            cam.draw_rect.centery+=player_sprite.rect.top-cam.player_offset.y-((display_size[1]//2)-300)-player_sprite.image.get_height()//2
+            #cam.draw_rect.centery+=player_sprite.rect.top-cam.player_offset.y-((display_size[1]//2)-300)-player_sprite.image.get_height()//2
             for sprite_group in below_player_sprite_group_list:
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
@@ -1469,7 +1473,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111
+player_sprite_group.add(player(30111,560))#2067,560,30111
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
@@ -1579,232 +1583,232 @@ for key in water_bodies:
     water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
 
 prevoius_time=time.perf_counter()
-
-while game_mode=='in_game':
-    if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
-        block_sprite_group.clear()
-        reactive_block_sprite_group.clear()
-        tree_sprite_group.clear()
-        for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
-            for block_number,block_id in enumerate(row):
-                if block_id!='-1':
-                    block_sprite_group.add(block(block_id,block_number,row_number))
-        for row_number,row in enumerate(world_maps['water_blocks'][game_varibles['current_world']]):
-            for block_number,block_id in enumerate(row):
-                if block_id=='0':
-                    water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
-        for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
-            for block_number,block_id in enumerate(row):    
-                if block_id=='0': 
-                    reactive_block_sprite_group.add(grass(block_number,row_number))
-                elif block_id=='1':
-                    reactive_block_sprite_group.add(apple(block_number,row_number))
-                elif block_id=='2':
-                    reactive_block_sprite_group.add(bomb(block_number,row_number))
-                elif block_id=='3':
-                    reactive_block_sprite_group.add(bomb_land(block_number,row_number))
-                elif block_id=='4':
-                    reactive_block_sprite_group.add(chain(block_number,row_number))
-                elif block_id=='5':
-                    reactive_block_sprite_group.add(rock(block_number,row_number))
-                elif block_id=='6':
-                    reactive_block_sprite_group.add(switch(block_number,row_number))
-                elif block_id=='7':
-                    reactive_block_sprite_group.add(flower(block_number,row_number))
-                elif block_id=='8':
-                    for x_pos in range(block_number*48,(block_number+1)*48,16):
-                        water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
-                elif block_id=='9':
-                    reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
-                elif block_id=='10':
-                    reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))
-                elif block_id=='11':
-                    reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
-        bomb_rect_list.clear()
-        bomb_rect_topright=[]
-        for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
-            for rect_number,block_id in enumerate(row):
-                if block_id=='0':
-                    bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
-                if block_id=='1':
-                    bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
-        for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
-            for tree_number,tree_id in enumerate(row):    
-                if tree_id!='-1': 
-                    tree_sprite_group.add(tree(tree_number,row_number))
-        for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
-            for mob_x,mob_id in enumerate(row):  
-                if mob_id=='0':
-                    rat_sprite_group.add(rat(mob_x,mob_y))
-                elif mob_id=='1':
-                    fish_sprite_group.add(fish(mob_x,mob_y,'right'))
-                elif mob_id=='2':
-                    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
-                elif mob_id=='3':
-                    dog_sprite_group.add(dog(mob_x,mob_y))
-                elif mob_id=='4':
-                    fish_sprite_group.add(fish(mob_x,mob_y,'left'))
-        for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_world']]):
-            for block_number,block_id in enumerate(row):    
-                if block_id=='0':
-                    tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
-        #water_hitline
-        water_bodies_list_counter=0
-        water_bodies={}
-        prev_water_dot_xpos=0
-        for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
-            if water_dot.dest_pos.x-prev_water_dot_xpos>17:
-                water_bodies_list_counter+=1
-            prev_water_dot_xpos=water_dot.dest_pos.x
-            try:
-                player.water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-            except:
-                water_bodies[water_bodies_list_counter]=[]
-                water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-        for key in water_bodies:
-            water_bodies_list=water_bodies[key]
-            water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
-        save_data['world']=game_varibles['current_world']
-    pygame.mouse.set_visible(False)
-    delta_time=time.perf_counter()-prevoius_time
-    prevoius_time=time.perf_counter()
-    display_window.fill((255,255,255))
-    game_window.fill((255,255,255))
-    for player in player_sprite_group:
-        if player.state!='aim':
-            game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
-                        delta_time,water_dot_sprite_group)
-        elif player.state=='aim' or player.state=='throw':
-            player.update(delta_time)
-            big_fat_guy_sprite_group.update(delta_time)
-    game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
-                player_sprite_group,
-                [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
-                water_dot_sprite_group)
-    
-    for player in player_sprite_group:
-        print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
-    keys_pressed=pygame.key.get_pressed()
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_F11:
-                if game_settings['fullscreen']==True:
-                    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                    game_settings['fullscreen']=False
-                elif game_settings['fullscreen']==False:
-                    display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
-                    game_settings['fullscreen']=True
-            if event.key==pygame.K_ESCAPE:
-                if game_settings['fullscreen']==True:
-                    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                    game_settings['fullscreen']=False
-            if event.key==pygame.K_w:
-                for player in player_sprite_group:
-                    player.jump=True
-                    player.image_frame=0
-        #elif event.type==pygame.KEYUP:
-        #    if event.key==pygame.K_w:
-        #        for player in player_sprite_group:
-        #            player.image_frame=0
-        #            #player.jump_counter=0
-    for player in player_sprite_group:
-        if player.prev_flower_count!=player.flower_count:
-            player.prev_flower_count=player.flower_count
-            player.flower_timer=4
-        text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
-        if player.flower_timer>2:
-            player.flower_timer-=2*delta_time
-            game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
-        else:
-            player.flower_timer=2
-            game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
-        if player.hand=='rock':
-            game_window.blit(pygame.transform.scale2x(little_rock.image),(display_size[0]-100,120))
-        if game_settings['negative_screen']:#when hit fat_guy
-            white_screen=pygame.Surface(game_window.get_size())
-            white_screen.fill((255,255,255))
-            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
-            game_window=white_screen
-        if player.prev_life>player.life:
-            for life_count in range(player.prev_life-1):
-                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
-            if player.life_image_frame>=len(life_death_image_list):
-                player.life_image_frame=0
-                player.prev_life=player.life
+while True:
+    while game_mode=='in_game':
+        if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
+            block_sprite_group.clear()
+            reactive_block_sprite_group.clear()
+            tree_sprite_group.clear()
+            for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
+                for block_number,block_id in enumerate(row):
+                    if block_id!='-1':
+                        block_sprite_group.add(block(block_id,block_number,row_number))
+            for row_number,row in enumerate(world_maps['water_blocks'][game_varibles['current_world']]):
+                for block_number,block_id in enumerate(row):
+                    if block_id=='0':
+                        water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
+            for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
+                for block_number,block_id in enumerate(row):    
+                    if block_id=='0': 
+                        reactive_block_sprite_group.add(grass(block_number,row_number))
+                    elif block_id=='1':
+                        reactive_block_sprite_group.add(apple(block_number,row_number))
+                    elif block_id=='2':
+                        reactive_block_sprite_group.add(bomb(block_number,row_number))
+                    elif block_id=='3':
+                        reactive_block_sprite_group.add(bomb_land(block_number,row_number))
+                    elif block_id=='4':
+                        reactive_block_sprite_group.add(chain(block_number,row_number))
+                    elif block_id=='5':
+                        reactive_block_sprite_group.add(rock(block_number,row_number))
+                    elif block_id=='6':
+                        reactive_block_sprite_group.add(switch(block_number,row_number))
+                    elif block_id=='7':
+                        reactive_block_sprite_group.add(flower(block_number,row_number))
+                    elif block_id=='8':
+                        for x_pos in range(block_number*48,(block_number+1)*48,16):
+                            water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+                    elif block_id=='9':
+                        reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
+                    elif block_id=='10':
+                        reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))
+                    elif block_id=='11':
+                        reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
+            bomb_rect_list.clear()
+            bomb_rect_topright=[]
+            for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
+                for rect_number,block_id in enumerate(row):
+                    if block_id=='0':
+                        bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
+                    if block_id=='1':
+                        bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
+            for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
+                for tree_number,tree_id in enumerate(row):    
+                    if tree_id!='-1': 
+                        tree_sprite_group.add(tree(tree_number,row_number))
+            for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
+                for mob_x,mob_id in enumerate(row):  
+                    if mob_id=='0':
+                        rat_sprite_group.add(rat(mob_x,mob_y))
+                    elif mob_id=='1':
+                        fish_sprite_group.add(fish(mob_x,mob_y,'right'))
+                    elif mob_id=='2':
+                        big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
+                    elif mob_id=='3':
+                        dog_sprite_group.add(dog(mob_x,mob_y))
+                    elif mob_id=='4':
+                        fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+            for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_world']]):
+                for block_number,block_id in enumerate(row):    
+                    if block_id=='0':
+                        tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
+            #water_hitline
+            water_bodies_list_counter=0
+            water_bodies={}
+            prev_water_dot_xpos=0
+            for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
+                if water_dot.dest_pos.x-prev_water_dot_xpos>17:
+                    water_bodies_list_counter+=1
+                prev_water_dot_xpos=water_dot.dest_pos.x
+                try:
+                    player.water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
+                except:
+                    water_bodies[water_bodies_list_counter]=[]
+                    water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
+            for key in water_bodies:
+                water_bodies_list=water_bodies[key]
+                water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
+            save_data['world']=game_varibles['current_world']
+        pygame.mouse.set_visible(False)
+        delta_time=time.perf_counter()-prevoius_time
+        prevoius_time=time.perf_counter()
+        display_window.fill((255,255,255))
+        game_window.fill((255,255,255))
+        for player in player_sprite_group:
+            if player.state!='aim':
+                game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
+                            delta_time,water_dot_sprite_group)
+            elif player.state=='aim' or player.state=='throw':
+                player.update(delta_time)
+                big_fat_guy_sprite_group.update(delta_time)
+        game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
+                    player_sprite_group,
+                    [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
+                    water_dot_sprite_group)
+        
+        for player in player_sprite_group:
+            print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
+        keys_pressed=pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_F11:
+                    if game_settings['fullscreen']==True:
+                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                        game_settings['fullscreen']=False
+                    elif game_settings['fullscreen']==False:
+                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
+                        game_settings['fullscreen']=True
+                if event.key==pygame.K_ESCAPE:
+                    if game_settings['fullscreen']==True:
+                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                        game_settings['fullscreen']=False
+                if event.key==pygame.K_w:
+                    for player in player_sprite_group:
+                        player.jump=True
+                        player.image_frame=0
+            #elif event.type==pygame.KEYUP:
+            #    if event.key==pygame.K_w:
+            #        for player in player_sprite_group:
+            #            player.image_frame=0
+            #            #player.jump_counter=0
+        for player in player_sprite_group:
+            if player.prev_flower_count!=player.flower_count:
+                player.prev_flower_count=player.flower_count
+                player.flower_timer=4
+            text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
+            if player.flower_timer>2:
+                player.flower_timer-=2*delta_time
+                game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
             else:
-                game_window.blit(life_death_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life,24))
-                player.life_image_frame+=9*delta_time#chnage to 10 later?
-        elif player.prev_life<player.life:
-            for life_count in range(player.prev_life):
-                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
-            if player.life_image_frame>=len(new_life_image_list):
-                player.life_image_frame=0
-                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*player.life+30,30))
-                player.prev_life=player.life
+                player.flower_timer=2
+                game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
+            if player.hand=='rock':
+                game_window.blit(pygame.transform.scale2x(little_rock.image),(display_size[0]-100,120))
+            if game_settings['negative_screen']:#when hit fat_guy
+                white_screen=pygame.Surface(game_window.get_size())
+                white_screen.fill((255,255,255))
+                white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
+                game_window=white_screen
+            if player.prev_life>player.life:
+                for life_count in range(player.prev_life-1):
+                    game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+                if player.life_image_frame>=len(life_death_image_list):
+                    player.life_image_frame=0
+                    player.prev_life=player.life
+                else:
+                    game_window.blit(life_death_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life,24))
+                    player.life_image_frame+=9*delta_time#chnage to 10 later?
+            elif player.prev_life<player.life:
+                for life_count in range(player.prev_life):
+                    game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+                if player.life_image_frame>=len(new_life_image_list):
+                    player.life_image_frame=0
+                    game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*player.life+30,30))
+                    player.prev_life=player.life
+                else:
+                    game_window.blit(new_life_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life+30,30))
+                    player.life_image_frame+=5*delta_time#chnage to 10 later?
             else:
-                game_window.blit(new_life_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life+30,30))
-                player.life_image_frame+=5*delta_time#chnage to 10 later?
+                for life_count in range(player.prev_life):
+                    game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
+            if player.state=='dodge':#to prevetnt slidein after dodge
+                player.velocity.x=0
+            if player.state!='explode'and player.state!='dodge':
+                if keys_pressed[pygame.K_d]:
+                    player.direction='right'
+                    if player.direction=='left':
+                        player.velocity.x=0
+                    if player.water:
+                        if player.state!='swim_fast':
+                            player.state='swim'
+                    else:
+                        if player.state!='sprint' and player.state!='dodge':
+                            player.state='run'
+                    if keys_pressed[pygame.K_LSHIFT]:
+                        if player.water:
+                            player.state='swim_fast'
+                        else:
+                            player.state='sprint'
+                    if keys_pressed[pygame.K_SPACE] and not player.water:
+                        player.state='dodge'
+                if keys_pressed[pygame.K_a]:
+                    player.direction='left'
+                    if player.direction=='right':
+                        player.velocity.x=0
+                    if player.water:
+                        if player.state!='swim_fast':
+                            player.state='swim'
+                    else:
+                        if player.state!='sprint' and player.state!='dodge':
+                            player.state='run'
+                    if keys_pressed[pygame.K_LSHIFT]:
+                        if player.water:
+                            player.state='swim_fast'
+                        else:
+                            player.state='sprint'
+                    if keys_pressed[pygame.K_SPACE] and not player.water:
+                        player.state='dodge'
+                if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
+                    if player.hand=='rock':
+                        player.state='aim'
+                    else:
+                        player.state='interact'
+                if keys_pressed[pygame.K_s]:
+                    player.state='pick'
+                if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
+                        if player.state=='aim' or player.state=='throw':
+                            player.state='throw'
+                        else:
+                            if player.state!='pant' and player.state!='explode':
+                                player.state='idle'
+        #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
+        if game_settings['fullscreen']:
+            display_window.blit(game_window,(0,0))
         else:
-            for life_count in range(player.prev_life):
-                game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
-        if player.state=='dodge':#to prevetnt slidein after dodge
-            player.velocity.x=0
-        if player.state!='explode':
-            if keys_pressed[pygame.K_d]:
-                player.direction='right'
-                if player.direction=='left':
-                    player.velocity.x=0
-                if player.water:
-                    if player.state!='swim_fast':
-                        player.state='swim'
-                else:
-                    if player.state!='sprint' and player.state!='dodge':
-                        player.state='run'
-                if keys_pressed[pygame.K_LSHIFT]:
-                    if player.water:
-                        player.state='swim_fast'
-                    else:
-                        player.state='sprint'
-                if keys_pressed[pygame.K_SPACE] and not player.water:
-                    player.state='dodge'
-            if keys_pressed[pygame.K_a]:
-                player.direction='left'
-                if player.direction=='right':
-                    player.velocity.x=0
-                if player.water:
-                    if player.state!='swim_fast':
-                        player.state='swim'
-                else:
-                    if player.state!='sprint' and player.state!='dodge':
-                        player.state='run'
-                if keys_pressed[pygame.K_LSHIFT]:
-                    if player.water:
-                        player.state='swim_fast'
-                    else:
-                        player.state='sprint'
-                if keys_pressed[pygame.K_SPACE] and not player.water:
-                    player.state='dodge'
-            if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
-                if player.hand=='rock':
-                    player.state='aim'
-                else:
-                    player.state='interact'
-            if keys_pressed[pygame.K_s]:
-                player.state='pick'
-            if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
-                    if player.state=='aim' or player.state=='throw':
-                        player.state='throw'
-                    else:
-                        if player.state!='pant' and player.state!='explode':
-                            player.state='idle'
-    #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-    if game_settings['fullscreen']:
-        display_window.blit(game_window,(0,0))
-    else:
-        display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
-    pygame.display.update()
-    #print(str(clock.get_fps()))
-    clock.tick()
+            display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
+        pygame.display.update()
+        #print(str(clock.get_fps()))
+        clock.tick()
