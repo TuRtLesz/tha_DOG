@@ -14,6 +14,45 @@ save_data={'world':0}#remove later
 game_settings={'fullscreen':False,'negative_screen':False}
 game_varibles={'current_world':save_data['world']}#remove later
 
+menu_image_frame=0
+exit_image=pygame.image.load('Data/menu_buttons/exit.png').convert()
+exit_image=pygame.transform.scale2x(exit_image)
+game_over_image=pygame.image.load('Data/menu_buttons/game_over.png').convert()
+game_over_image=pygame.transform.scale2x(game_over_image)
+paused_image=pygame.image.load('Data/menu_buttons/paused.png').convert()
+paused_image=pygame.transform.scale2x(paused_image)
+exit_game_complete_list=[]
+game_complete_list=[]
+play_list=[]
+retry_list=[]
+exit_game_complete_spritesheet=pygame.image.load('Data/menu_buttons/exit_game_complete.png').convert()
+game_complete_spritesheet=pygame.image.load('Data/menu_buttons/game_complete.png').convert()
+play_spritesheet=pygame.image.load('Data/menu_buttons/play.png').convert()
+retry_spritesheet=pygame.image.load('Data/menu_buttons/retry.png').convert()
+for x in range(0,2):
+    import_image=pygame.Surface((exit_game_complete_spritesheet.get_width()//2,exit_game_complete_spritesheet.get_height()),pygame.SRCALPHA)
+    import_image.blit(exit_game_complete_spritesheet,(0,0),(x*exit_game_complete_spritesheet.get_width()//2,0,exit_game_complete_spritesheet.get_width()//2,exit_game_complete_spritesheet.get_height()))
+    import_image=pygame.transform.scale2x(import_image)
+    exit_game_complete_list.append(import_image)
+for x in range(0,2):
+    import_image=pygame.Surface((game_complete_spritesheet.get_width()//2,game_complete_spritesheet.get_height()),pygame.SRCALPHA)
+    import_image.blit(game_complete_spritesheet,(0,0),(x*game_complete_spritesheet.get_width()//2,0,game_complete_spritesheet.get_width()//2,game_complete_spritesheet.get_height()))
+    import_image=pygame.transform.scale2x(import_image)
+    game_complete_list.append(import_image)
+for x in range(0,2):
+    import_image=pygame.Surface((play_spritesheet.get_width()//2,play_spritesheet.get_height()),pygame.SRCALPHA)
+    import_image.blit(play_spritesheet,(0,0),(x*play_spritesheet.get_width()//2,0,play_spritesheet.get_width()//2,play_spritesheet.get_height()))
+    import_image=pygame.transform.scale2x(import_image)
+    play_list.append(import_image)
+for x in range(0,2):
+    import_image=pygame.Surface((retry_spritesheet.get_width()//2,retry_spritesheet.get_height()),pygame.SRCALPHA)
+    import_image.blit(retry_spritesheet,(0,0),(x*retry_spritesheet.get_width()//2,0,retry_spritesheet.get_width()//2,retry_spritesheet.get_height()))
+    import_image=pygame.transform.scale2x(import_image)
+    retry_list.append(import_image)
+exit_rect=exit_image.get_rect(topleft=(display_size[0]//2-exit_image.get_width()//2,display_size[1]-200))
+exit_game_complete_rect=exit_game_complete_list[1].get_rect(topleft=(display_size[0]//2-(exit_game_complete_list[1].get_width()//2),display_size[1]-200))
+play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(play_list[1].get_width()//2),display_size[1]-200))
+retry_rect=retry_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 new_life_image_list=[]
 life_death_image_list=[]
 new_life_spritesheet=pygame.image.load('Data/life/new_life.png').convert_alpha()
@@ -124,6 +163,9 @@ class player(pygame.sprite.Sprite):
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
+        for check_point in check_point_list:
+            if player.pos.x>=check_point.right:
+                last_check_point=check_point
         player.water=False
         for water_rect in water_blocks_rect_list:
             if not player.water:
@@ -1439,7 +1481,7 @@ bomb_rect_list=[]
 water_blocks_rect_list=[]
 water_hitlines=[]
 
-world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]}}#importing worlds
+world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]},'check_points':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -1470,6 +1512,10 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['tut_blocks'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_checkpoints.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['check_points'][world_name].append(row)
 
 game=game()
 
@@ -1565,6 +1611,12 @@ for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_
             tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
         elif block_id=='13':
             tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
+check_point_list=[]
+last_check_point=None
+for row_number,row in enumerate(world_maps['check_points'][game_varibles['current_world']]):
+    for number,id in enumerate(row):    
+        if id!='-1': 
+            check_point_list.append(pygame.Rect(tree_number,row_number,48,48))
 #water_hitline
 water_bodies_list_counter=0
 water_bodies={}
@@ -1584,7 +1636,30 @@ for key in water_bodies:
 
 prevoius_time=time.perf_counter()
 while True:
-    while game_mode=='in_game':
+    delta_time=time.perf_counter()-prevoius_time
+    prevoius_time=time.perf_counter()
+    game_window.fill((255,255,255))
+    for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_F11:
+                    if game_settings['fullscreen']==True:
+                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                        game_settings['fullscreen']=False
+                    elif game_settings['fullscreen']==False:
+                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
+                        game_settings['fullscreen']=True
+                if event.key==pygame.K_ESCAPE:
+                    if game_settings['fullscreen']==True:
+                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                        game_settings['fullscreen']=False
+                if event.key==pygame.K_w:
+                    for player in player_sprite_group:
+                        player.jump=True
+                        player.image_frame=0
+    if game_mode=='in_game':
         if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
             block_sprite_group.clear()
             reactive_block_sprite_group.clear()
@@ -1670,11 +1745,9 @@ while True:
                 water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
             save_data['world']=game_varibles['current_world']
         pygame.mouse.set_visible(False)
-        delta_time=time.perf_counter()-prevoius_time
-        prevoius_time=time.perf_counter()
-        display_window.fill((255,255,255))
-        game_window.fill((255,255,255))
         for player in player_sprite_group:
+            if player.life<=0:
+                game_mode='game_over'
             if player.state!='aim':
                 game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
                             delta_time,water_dot_sprite_group)
@@ -1689,26 +1762,6 @@ while True:
         for player in player_sprite_group:
             print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
-        for event in pygame.event.get():
-            if event.type==pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type==pygame.KEYDOWN:
-                if event.key==pygame.K_F11:
-                    if game_settings['fullscreen']==True:
-                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                        game_settings['fullscreen']=False
-                    elif game_settings['fullscreen']==False:
-                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
-                        game_settings['fullscreen']=True
-                if event.key==pygame.K_ESCAPE:
-                    if game_settings['fullscreen']==True:
-                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                        game_settings['fullscreen']=False
-                if event.key==pygame.K_w:
-                    for player in player_sprite_group:
-                        player.jump=True
-                        player.image_frame=0
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
             #        for player in player_sprite_group:
@@ -1805,10 +1858,36 @@ while True:
                             if player.state!='pant' and player.state!='explode':
                                 player.state='idle'
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-        if game_settings['fullscreen']:
-            display_window.blit(game_window,(0,0))
-        else:
-            display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
-        pygame.display.update()
         #print(str(clock.get_fps()))
         clock.tick()
+    elif game_mode=='game_over':
+        game_window.blit(game_over_image,(display_size[0]//2-game_over_image.get_width()//2,100))
+        game_window.blit(exit_image,(exit_rect.topleft))
+        if round(menu_image_frame)>1:
+            menu_image_frame=0
+        else:
+            menu_image_frame+=5*delta_time
+        game_window.blit(retry_list[int(menu_image_frame)],(retry_rect.topleft))
+        if any(pygame.mouse.get_pressed()):
+            mouse_pos=pygame.mouse.get_pos()
+            if game_settings['fullscreen']:
+                if retry_rect.collidepoint(mouse_pos):
+                    game_mode='in_game'
+                elif exit_rect.collidepoint(mouse_pos):
+                    sys.exit()
+                    pygame.quit()
+            else:
+                if retry_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    game_mode='in_game'
+                elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    sys.exit()
+                    pygame.quit()
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+    if game_settings['fullscreen']:
+        display_window.blit(game_window,(0,0))
+    else:
+        display_window.blit(pygame.transform.smoothscale_by(game_window,0.5),(0,0))
+    pygame.display.update()
