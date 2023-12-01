@@ -99,6 +99,7 @@ class player(pygame.sprite.Sprite):
         player.explode_timer=0
         player.stamina=1000
         player.state='idle'
+        player.dodge_timer=10
         player.throw_angle=0
         player.throw_power=150
         player.idle_timer=0
@@ -189,6 +190,7 @@ class player(pygame.sprite.Sprite):
                 player.image=player.explode_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
         if player.state=='dodge':
+            player.dodge_timer=0
             if not player.dodge:
                 for fat_guy in pygame.sprite.spritecollide(player,big_fat_guy_sprite_group,dokill=False):
                     player.dodge=True
@@ -209,6 +211,7 @@ class player(pygame.sprite.Sprite):
                     player.state='run'
                     player.image_frame=0
                     player.dodge=False
+                    player.dodge_timer=10
                 if player.direction=='left':
                     player.velocity.x=-400
                     player.image=player.dodge_image_list_left[int(player.image_frame)]
@@ -216,6 +219,8 @@ class player(pygame.sprite.Sprite):
                     player.velocity.x=400
                     player.image=player.dodge_image_list_right[int(player.image_frame)]
                 player.image_frame+=10*delta_time
+        else:
+            player.dodge_timer+=delta_time
         if player.state=='pant':
             player.idle_timer+=delta_time
             player.stamina+=200*delta_time
@@ -501,10 +506,22 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.lose_sight_timer+=1*delta_time
                 for player_obj in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                     if player.state!='dodge':
-                        player_obj.life-=1
-                        player_obj.score-=250
-                        player_obj.velocity.xy=0,0
-                        dog_instance.state='bite'
+                        if player.dodge_timer>1:#dodge delay forgivness
+                            player_obj.life-=1
+                            player_obj.score-=250
+                            player_obj.velocity.xy=0,0
+                            dog_instance.state='bite'
+                        else:
+                            if dog_instance.dodge_counter>0:
+                                dog_instance.dodge_counter-=1
+                                player.state='dodge'
+                                player.dodge=True
+                                player.score+=500
+                            else:
+                                player_obj.life-=1
+                                player_obj.score-=250
+                                player_obj.velocity.xy=0,0
+                                dog_instance.state='bite'
                 for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                     dog_instance.state='chase_rat'
                     if rat.pos.x-dog_instance.pos.x>0:
@@ -1786,6 +1803,7 @@ while True:
                         player.score=0
                         player.hand=''
                         player.state='idle'
+                        player.flower_count=0
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     sys.exit()
