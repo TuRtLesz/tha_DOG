@@ -71,7 +71,7 @@ for x in range(0,2):
     retry_list.append(import_image)
 exit_rect=exit_image.get_rect(topleft=(display_size[0]//2-exit_image.get_width()//2,display_size[1]-200))
 exit_game_complete_rect=exit_game_complete_list[1].get_rect(topleft=(display_size[0]//2-(exit_game_complete_list[1].get_width()//2),display_size[1]-200))
-play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(play_list[1].get_width()//2),display_size[1]-200))
+play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 retry_rect=retry_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 new_life_image_list=[]
 life_death_image_list=[]
@@ -1578,98 +1578,18 @@ while True:
                     display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
                     game_settings['fullscreen']=True
             if event.key==pygame.K_ESCAPE:
-                if game_settings['fullscreen']==True:
-                    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                    game_settings['fullscreen']=False
+                if game_settings['mode']=='in_game':
+                    game_settings['mode']='paused'
+                elif game_settings['mode']=='paused':
+                    game_settings['mode']='in_game'
+                #if game_settings['fullscreen']==True:
+                #    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                #    game_settings['fullscreen']=False
             if event.key==pygame.K_w:
                 for player in player_sprite_group:
                     player.jump=True
                     player.image_frame=0
     if game_settings['mode']=='in_game':
-        #if game_varibles['current_world']!=save_data['world']:#loading map for new worlds
-        #    block_sprite_group.clear()
-        #    reactive_block_sprite_group.clear()
-        #    tree_sprite_group.clear()
-        #    for row_number,row in enumerate(world_maps['blocks'][game_varibles['current_world']]):
-        #        for block_number,block_id in enumerate(row):
-        #            if block_id!='-1':
-        #                block_sprite_group.add(block(block_id,block_number,row_number))
-        #    for row_number,row in enumerate(world_maps['water_blocks'][game_varibles['current_world']]):
-        #        for block_number,block_id in enumerate(row):
-        #            if block_id=='0':
-        #                water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
-        #    for row_number,row in enumerate(world_maps['reactive_blocks'][game_varibles['current_world']]):
-        #        for block_number,block_id in enumerate(row):    
-        #            if block_id=='0': 
-        #                reactive_block_sprite_group.add(grass(block_number,row_number))
-        #            elif block_id=='1':
-        #                reactive_block_sprite_group.add(apple(block_number,row_number))
-        #            elif block_id=='2':
-        #                reactive_block_sprite_group.add(bomb(block_number,row_number))
-        #            elif block_id=='3':
-        #                reactive_block_sprite_group.add(bomb_land(block_number,row_number))
-        #            elif block_id=='4':
-        #                reactive_block_sprite_group.add(chain(block_number,row_number))
-        #            elif block_id=='5':
-        #                reactive_block_sprite_group.add(rock(block_number,row_number))
-        #            elif block_id=='6':
-        #                reactive_block_sprite_group.add(switch(block_number,row_number))
-        #            elif block_id=='7':
-        #                reactive_block_sprite_group.add(flower(block_number,row_number))
-        #            elif block_id=='8':
-        #                for x_pos in range(block_number*48,(block_number+1)*48,16):
-        #                    water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
-        #            elif block_id=='9':
-        #                reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
-        #            elif block_id=='10':
-        #                reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))
-        #            elif block_id=='11':
-        #                reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
-        #    bomb_rect_list.clear()
-        #    bomb_rect_topright=[]
-        #    for row_number,row in enumerate(world_maps['bomb_rects'][game_varibles['current_world']]):  
-        #        for rect_number,block_id in enumerate(row):
-        #            if block_id=='0':
-        #                bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
-        #            if block_id=='1':
-        #                bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
-        #    for row_number,row in enumerate(world_maps['trees'][game_varibles['current_world']]):
-        #        for tree_number,tree_id in enumerate(row):    
-        #            if tree_id!='-1': 
-        #                tree_sprite_group.add(tree(tree_number,row_number))
-        #    for mob_y,row in enumerate(world_maps['mobs'][game_varibles['current_world']]):
-        #        for mob_x,mob_id in enumerate(row):  
-        #            if mob_id=='0':
-        #                rat_sprite_group.add(rat(mob_x,mob_y))
-        #            elif mob_id=='1':
-        #                fish_sprite_group.add(fish(mob_x,mob_y,'right'))
-        #            elif mob_id=='2':
-        #                big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
-        #            elif mob_id=='3':
-        #                dog_sprite_group.add(dog(mob_x,mob_y))
-        #            elif mob_id=='4':
-        #                fish_sprite_group.add(fish(mob_x,mob_y,'left'))
-        #    for row_number,row in enumerate(world_maps['tut_blocks'][game_varibles['current_world']]):
-        #        for block_number,block_id in enumerate(row):    
-        #            if block_id=='0':
-        #                tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
-        #    #water_hitline
-        #    water_bodies_list_counter=0
-        #    water_bodies={}
-        #    prev_water_dot_xpos=0
-        #    for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
-        #        if water_dot.dest_pos.x-prev_water_dot_xpos>17:
-        #            water_bodies_list_counter+=1
-        #        prev_water_dot_xpos=water_dot.dest_pos.x
-        #        try:
-        #            player.water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-        #        except:
-        #            water_bodies[water_bodies_list_counter]=[]
-        #            water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos.x,water_dot.pos))
-        #    for key in water_bodies:
-        #        water_bodies_list=water_bodies[key]
-        #        water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
-        #    save_data['world']=game_varibles['current_world']
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
             if player.life<=0:
@@ -1801,8 +1721,8 @@ while True:
                 if retry_rect.collidepoint(mouse_pos):
                     game_settings['mode']='in_game'
                 elif exit_rect.collidepoint(mouse_pos):
-                    sys.exit()
                     pygame.quit()
+                    sys.exit()
             else:
                 if retry_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     game_settings['mode']='in_game'
@@ -1815,10 +1735,29 @@ while True:
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     sys.exit()
                     pygame.quit()
-        for event in pygame.event.get():
-            if event.type==pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+    elif game_settings['mode']=='paused':
+        pygame.mouse.set_visible(True)
+        game_window.blit(paused_image,(display_size[0]//2-paused_image.get_width()//2,100))
+        game_window.blit(exit_image,(exit_rect.topleft))
+        if round(menu_image_frame)>1:
+            menu_image_frame=0
+        else:
+            menu_image_frame+=5*delta_time
+        game_window.blit(play_list[int(menu_image_frame)],(play_rect.topleft))
+        if any(pygame.mouse.get_pressed()):
+            mouse_pos=pygame.mouse.get_pos()
+            if game_settings['fullscreen']:
+                if exit_rect.collidepoint(mouse_pos):
+                    pygame.quit()
+                    sys.exit()
+                elif play_rect.collidepoint(mouse_pos):
+                    game_settings['mode']='in_game'
+            else:
+                if exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    pygame.quit()
+                    sys.exit()
+                elif play_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    game_settings['mode']='in_game'
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
