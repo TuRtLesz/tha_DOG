@@ -12,6 +12,33 @@ save_data={'high_score':0}#add lsat check point?
 
 game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game'}
 
+def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
+    sprite_list.clear()
+    for image_x in range(0,spritesheet_image.get_width(),spritesheet_image.get_width()//frames):
+        if alpha_sur:
+            sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()),pygame.SRCALPHA)
+        else:
+            sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()))
+        sprite_image.blit(spritesheet_image,(0,0),(image_x,0,sprite_image.get_width(),sprite_image.get_height()))
+        if image_scale!=1:
+            sprite_image=pygame.transform.scale_by(sprite_image,image_scale)
+        sprite_list.append(sprite_image)
+    return sprite_list
+def load_spritesheet_2dir(spritesheet_image,sprite_list,sprite_list_fliped,frames=2,image_scale=1):
+    sprite_list.clear()
+    sprite_list_fliped.clear()
+    for image_x in range(0,spritesheet_image.get_width(),spritesheet_image.get_width()//frames):
+        #if alpha_sur:
+        sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()),pygame.SRCALPHA)
+        #else:
+        #    sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()))
+        sprite_image.blit(spritesheet_image,(0,0),(image_x,0,sprite_image.get_width(),sprite_image.get_height()))
+        if image_scale!=1:
+            sprite_image=pygame.transform.scale_by(sprite_image,image_scale)
+        sprite_list.append(sprite_image)
+        sprite_list_fliped.append(pygame.transform.flip(sprite_image,True,False))
+    return sprite_list,sprite_list_fliped
+
 menu_image_frame=0
 exit_image=pygame.image.load('Data/menu_buttons/exit.png').convert()
 exit_image=pygame.transform.scale2x(exit_image)
@@ -24,7 +51,6 @@ game_complete_list=[]
 play_list=[]
 retry_list=[]
 exit_game_complete_spritesheet=pygame.image.load('Data/menu_buttons/exit_game_complete.png').convert()
-game_complete_spritesheet=pygame.image.load('Data/menu_buttons/game_complete.png').convert()
 play_spritesheet=pygame.image.load('Data/menu_buttons/play.png').convert()
 retry_spritesheet=pygame.image.load('Data/menu_buttons/retry.png').convert()
 for x in range(0,2):
@@ -32,11 +58,7 @@ for x in range(0,2):
     import_image.blit(exit_game_complete_spritesheet,(0,0),(x*exit_game_complete_spritesheet.get_width()//2,0,exit_game_complete_spritesheet.get_width()//2,exit_game_complete_spritesheet.get_height()))
     import_image=pygame.transform.scale2x(import_image)
     exit_game_complete_list.append(import_image)
-for x in range(0,2):
-    import_image=pygame.Surface((game_complete_spritesheet.get_width()//2,game_complete_spritesheet.get_height()),pygame.SRCALPHA)
-    import_image.blit(game_complete_spritesheet,(0,0),(x*game_complete_spritesheet.get_width()//2,0,game_complete_spritesheet.get_width()//2,game_complete_spritesheet.get_height()))
-    import_image=pygame.transform.scale2x(import_image)
-    game_complete_list.append(import_image)
+load_spritesheet(pygame.image.load('Data/menu_buttons/game_complete.png').convert(),game_complete_list,alpha_sur=False,image_scale=2)
 for x in range(0,2):
     import_image=pygame.Surface((play_spritesheet.get_width()//2,play_spritesheet.get_height()),pygame.SRCALPHA)
     import_image.blit(play_spritesheet,(0,0),(x*play_spritesheet.get_width()//2,0,play_spritesheet.get_width()//2,play_spritesheet.get_height()))
@@ -53,18 +75,8 @@ play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(play_list[1].get_wi
 retry_rect=retry_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 new_life_image_list=[]
 life_death_image_list=[]
-new_life_spritesheet=pygame.image.load('Data/life/new_life.png').convert_alpha()
-life_death_spritesheet=pygame.image.load('Data/life/life_death.png').convert_alpha()
-for image_x in range(0,new_life_spritesheet.get_width(),23):
-            import_image=pygame.Surface((23,15),pygame.SRCALPHA)
-            import_image.blit(new_life_spritesheet,(0,0),(image_x,0,23,15))
-            import_image=pygame.transform.scale2x(import_image)
-            new_life_image_list.append(import_image)
-for image_x in range(0,life_death_spritesheet.get_width(),27):
-            import_image=pygame.Surface((27,20),pygame.SRCALPHA)
-            import_image.blit(life_death_spritesheet,(0,0),(image_x,0,27,20))
-            import_image=pygame.transform.scale2x(import_image)
-            life_death_image_list.append(import_image)
+load_spritesheet(pygame.image.load('Data/life/new_life.png').convert_alpha(),new_life_image_list,5,image_scale=2)
+load_spritesheet(pygame.image.load('Data/life/life_death.png').convert_alpha(),life_death_image_list,6,image_scale=2)
 
 def text(text,color,size,text_pos):
         font=pygame.font.Font('Data/font/font.ttf',int(size))
@@ -111,48 +123,13 @@ class player(pygame.sprite.Sprite):
         player.dodge_image_list_left=[]
         player.explode_image_list_right=[]
         player.explode_image_list_left=[]
-        player.run_image_spritesheet=pygame.image.load('Data/player/player_run.png').convert_alpha()
-        player.swim_image_spritesheet=pygame.image.load('Data/player/player_swim.png').convert_alpha()
-        player.pant_image_spritesheet=pygame.image.load('Data/player/player_pant.png').convert_alpha()
-        player.jump_image_spritesheet=pygame.image.load('Data/player/player_jump.png').convert_alpha()
-        player.throw_image_spritesheet=pygame.image.load('Data/player/player_throw.png').convert_alpha()
-        player.dodge_image_spritesheet=pygame.image.load('Data/player/player_dodge.png').convert_alpha()
-        player.explode_image_spritesheet=pygame.image.load('Data/player/player_explode.png').convert_alpha()
-        for image_x in range(0,player.run_image_spritesheet.get_width(),107):
-            player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
-            player.import_image.blit(player.run_image_spritesheet,(0,0),(image_x,0,107,211))
-            player.run_image_list_right.append(player.import_image)
-            player.run_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.pant_image_spritesheet.get_width(),109):
-            player.import_image=pygame.Surface((109,210),pygame.SRCALPHA)
-            player.import_image.blit(player.pant_image_spritesheet,(0,0),(image_x,0,109,210))
-            player.pant_image_list_right.append(player.import_image)
-            player.pant_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.swim_image_spritesheet.get_width(),230):
-            player.import_image=pygame.Surface((230,211),pygame.SRCALPHA)
-            player.import_image.blit(player.swim_image_spritesheet,(0,0),(image_x,0,230,211))
-            player.swim_image_list_right.append(player.import_image)
-            player.swim_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.jump_image_spritesheet.get_width(),108):
-            player.import_image=pygame.Surface((108,212),pygame.SRCALPHA)
-            player.import_image.blit(player.jump_image_spritesheet,(0,0),(image_x,0,108,212))
-            player.jump_image_list_right.append(player.import_image)
-            player.jump_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.throw_image_spritesheet.get_width(),111):
-            player.import_image=pygame.Surface((111,210),pygame.SRCALPHA)
-            player.import_image.blit(player.throw_image_spritesheet,(0,0),(image_x,0,111,210))
-            player.throw_image_list_right.append(player.import_image)
-            player.throw_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.dodge_image_spritesheet.get_width(),240):
-            player.import_image=pygame.Surface((240,212),pygame.SRCALPHA)
-            player.import_image.blit(player.dodge_image_spritesheet,(0,0),(image_x,0,240,212))
-            player.dodge_image_list_right.append(player.import_image)
-            player.dodge_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
-        for image_x in range(0,player.explode_image_spritesheet.get_width(),109):
-            player.import_image=pygame.Surface((109,210),pygame.SRCALPHA)
-            player.import_image.blit(player.explode_image_spritesheet,(0,0),(image_x,0,109,210))
-            player.explode_image_list_right.append(player.import_image)
-            player.explode_image_list_left.append(pygame.transform.flip(player.import_image,True,False))
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_run.png').convert_alpha(),player.run_image_list_right,player.run_image_list_left,frames=21)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_swim.png').convert_alpha(),player.swim_image_list_right,player.swim_image_list_left,frames=17)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_pant.png').convert_alpha(),player.pant_image_list_right,player.pant_image_list_left,frames=7)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_jump.png').convert_alpha(),player.jump_image_list_right,player.jump_image_list_left,frames=11)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_throw.png').convert_alpha(),player.throw_image_list_right,player.throw_image_list_left,frames=7)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_dodge.png').convert_alpha(),player.dodge_image_list_right,player.dodge_image_list_left,frames=14)
+        load_spritesheet_2dir(pygame.image.load('Data/player/player_explode.png').convert_alpha(),player.explode_image_list_right,player.explode_image_list_left,frames=7)
         player.image=player.run_image_list_right[0]
         player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
         player.import_image.blit(player.image,(0,100))
@@ -456,14 +433,9 @@ class player(pygame.sprite.Sprite):
                         water_dot.force=30
 
 class dog(pygame.sprite.Sprite):
-    dog_run_image_sprite_sheet=pygame.image.load('Data/dog/dog_run.png').convert_alpha()
     dog_run_image_list_right=[]
     dog_run_image_list_left=[]
-    for image_x in range(0,dog_run_image_sprite_sheet.get_width(),116):
-            import_image=pygame.Surface((116,71),pygame.SRCALPHA)
-            import_image.blit(dog_run_image_sprite_sheet,(0,0),(image_x,0,116,71))
-            dog_run_image_list_left.append(import_image)
-            dog_run_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    load_spritesheet_2dir(pygame.image.load('Data/dog/dog_run.png').convert_alpha(),dog_run_image_list_left,dog_run_image_list_right,21)
     def __init__(dog_instance,x,y):
         super().__init__()
         dog_instance.velocity=pygame.math.Vector2(0,0)
@@ -607,34 +579,16 @@ class dog(pygame.sprite.Sprite):
         #for dog in dog_sprite_group:
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
 class big_fat_guy(pygame.sprite.Sprite):
-    whack_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha()
-    whack_sprite_sheet_right=pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert_alpha()
-    run_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha()
-    rope_sprite_sheet=pygame.image.load('Data/big_fat_guy/big_fat_guy_rope.png').convert_alpha()
     whack_image_list_left=[]
     run_image_list_left=[]
     rope_image_list_left=[]
     whack_image_list_right=[]
     run_image_list_right=[]
     rope_image_list_right=[]
-    for image_x in range(0,whack_sprite_sheet.get_width(),330):
-        import_image=pygame.Surface((330,322),pygame.SRCALPHA)
-        import_image.blit(whack_sprite_sheet,(0,0),(image_x,0,330,322))
-        whack_image_list_left.append(import_image)
-    for image_x in range(0,whack_sprite_sheet_right.get_width(),330):
-        import_image=pygame.Surface((330,322),pygame.SRCALPHA)
-        import_image.blit(whack_sprite_sheet_right,(0,0),(image_x,0,330,322))
-        whack_image_list_right.append(import_image)
-    for image_x in range(0,run_sprite_sheet.get_width(),251):
-        import_image=pygame.Surface((251,285),pygame.SRCALPHA)
-        import_image.blit(run_sprite_sheet,(0,0),(image_x,0,251,285))
-        run_image_list_left.append(import_image)
-        run_image_list_right.append(pygame.transform.flip(import_image,True,False))
-    for image_x in range(0,rope_sprite_sheet.get_width(),221):
-        import_image=pygame.Surface((221,285),pygame.SRCALPHA)
-        import_image.blit(rope_sprite_sheet,(0,0),(image_x,0,221,285))
-        rope_image_list_left.append(import_image)
-        rope_image_list_right.append(pygame.transform.flip(import_image,True,False))
+    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha(),whack_image_list_left,frames=32)
+    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert_alpha(),whack_image_list_right,frames=32)
+    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha(),run_image_list_left,run_image_list_right,frames=17)
+    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_rope.png').convert_alpha(),rope_image_list_left,rope_image_list_right,frames=20)
     hook_image=pygame.image.load('Data/big_fat_guy/hook.png').convert_alpha()
     hook_image_right=pygame.transform.flip(hook_image,True,False)
     def __init__(fat_guy,x,y):
@@ -777,22 +731,12 @@ class big_fat_guy(pygame.sprite.Sprite):
                         fat_guy.life-=1
                     reactive_block.velocity.x*=-1
 class rat(pygame.sprite.Sprite):
-    rat_run_sprite_sheet=pygame.image.load('Data/rat/rat_run.png').convert_alpha()
-    rat_dead_sprite_sheet=pygame.image.load('Data/rat/rat_death.png').convert_alpha()
     rat_run_right_list=[]
     rat_death_right_list=[]
     rat_run_left_list=[]
     rat_death_left_list=[]
-    for image_x in range(0,rat_run_sprite_sheet.get_width()//66):
-        image=pygame.Surface((66,37),pygame.SRCALPHA)
-        image.blit(rat_run_sprite_sheet,(0,0),(image_x*66,0,66,37))
-        rat_run_left_list.append(image)
-        rat_run_right_list.append(pygame.transform.flip(image,True,False))
-    for image_x in range(0,rat_dead_sprite_sheet.get_width()//66):
-        image=pygame.Surface((66,37),pygame.SRCALPHA)
-        image.blit(rat_dead_sprite_sheet,(0,0),(image_x*66,0,66,37))
-        rat_death_left_list.append(image)
-        rat_death_right_list.append(pygame.transform.flip(image,True,False))
+    load_spritesheet_2dir(pygame.image.load('Data/rat/rat_run.png').convert_alpha(),rat_run_left_list,rat_run_right_list,frames=4)
+    load_spritesheet_2dir(pygame.image.load('Data/rat/rat_death.png').convert_alpha(),rat_death_left_list,rat_death_right_list,frames=7)
     def __init__(rat_instance,x,y):
         super().__init__()
         rat_instance.image=rat.rat_run_left_list[0]
@@ -832,22 +776,12 @@ class rat(pygame.sprite.Sprite):
                 rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
             rat_instance.frame+=10*delta_time
 class fish(pygame.sprite.Sprite):#fishes are not the bad guys
-    fish_swim_spritesheet=pygame.image.load('Data/fish/fish_swim.png').convert_alpha()
-    fish_death_spritesheet=pygame.image.load('Data/fish/fish_death.png').convert_alpha()
     fish_swim_imagelist_right=[]
     fish_swim_imagelist_left=[]
     fish_death_imagelist_right=[]
     fish_death_imagelist_left=[]
-    for image_x in range(0,fish_swim_spritesheet.get_width()//49):
-        image=pygame.Surface((49,21),pygame.SRCALPHA)
-        image.blit(fish_swim_spritesheet,(0,0),(image_x*49,0,49,21))
-        fish_swim_imagelist_left.append(image)
-        fish_swim_imagelist_right.append(pygame.transform.flip(image,True,False))
-    for image_x in range(0,fish_death_spritesheet.get_width()//47):
-        image=pygame.Surface((47,19),pygame.SRCALPHA)
-        image.blit(fish_death_spritesheet,(0,0),(image_x*47,0,47,19))
-        fish_death_imagelist_left.append(image)
-        fish_death_imagelist_right.append(pygame.transform.flip(image,True,False))
+    load_spritesheet_2dir(pygame.image.load('Data/fish/fish_swim.png').convert_alpha(),fish_swim_imagelist_left,fish_swim_imagelist_right,frames=4)
+    load_spritesheet_2dir(pygame.image.load('Data/fish/fish_death.png').convert_alpha(),fish_death_imagelist_left,fish_death_imagelist_right,frames=3)
     def __init__(fish_instance,x,y,direction):
         super().__init__()
         fish_instance.death=False
@@ -1002,11 +936,7 @@ class flower(pygame.sprite.Sprite):
                 flower_instance.kill()
 class bomb(pygame.sprite.Sprite):
     image_list=[]
-    bomb_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha()
-    for image_x in range(0,bomb_sprite_sheet.get_width()//249):
-        image=pygame.Surface((249,248),pygame.SRCALPHA)
-        image.blit(bomb_sprite_sheet,(0,0),(image_x*249,0,249,248))
-        image_list.append(image)
+    load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
     def __init__(bomb_instance,x,y):
         super().__init__()
         bomb_instance.bomb_image_list=bomb.image_list
@@ -1032,11 +962,7 @@ class bomb(pygame.sprite.Sprite):
                 bomb_instance.image=bomb_instance.bomb_image_list[int(bomb_instance.frame)]
 class bomb_land(pygame.sprite.Sprite):
     image_list=[]
-    bomb_land_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/bomb_land.png').convert_alpha()
-    for image_x in range(0,bomb_land_sprite_sheet.get_width()//249):
-        image=pygame.Surface((249,201),pygame.SRCALPHA)
-        image.blit(bomb_land_sprite_sheet,(0,0),(image_x*249,0,249,201))
-        image_list.append(image)
+    load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb_land.png').convert_alpha(),image_list,frames=8)
     def __init__(bomb,x,y):
         super().__init__()
         bomb.bomb_image_list=bomb_land.image_list
@@ -1199,11 +1125,7 @@ class rock_pile(pygame.sprite.Sprite):
                 player.hand='rock'
 class switch(pygame.sprite.Sprite):
     image_list=[]
-    switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha()
-    for image_x in range(0,switch_sprite_sheet.get_width()//58):
-        image=pygame.Surface((58,40),pygame.SRCALPHA)
-        image.blit(switch_sprite_sheet,(0,0),(image_x*58,0,58,40))
-        image_list.append(image)
+    load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha(),image_list,frames=8)
     def __init__(switch_instance,x,y):
         super().__init__()
         switch_instance.switch_image_list=switch.image_list
@@ -1236,11 +1158,7 @@ class switch(pygame.sprite.Sprite):
                     switch_instance.frame+=5*delta_time
 class pressure_switch(pygame.sprite.Sprite):
     image_list=[]
-    switch_sprite_sheet=pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha()
-    for image_x in range(0,switch_sprite_sheet.get_width()//42):
-        image=pygame.Surface((42,20),pygame.SRCALPHA)
-        image.blit(switch_sprite_sheet,(0,0),(image_x*42,0,42,20))
-        image_list.append(image)
+    load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha(),image_list)
     def __init__(switch_instance,x,y):
         super().__init__()
         switch_instance.switch_image_list=pressure_switch.image_list
