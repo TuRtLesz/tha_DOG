@@ -46,6 +46,9 @@ game_over_image=pygame.image.load('Data/menu_buttons/game_over.png').convert()
 game_over_image=pygame.transform.scale2x(game_over_image)
 paused_image=pygame.image.load('Data/menu_buttons/paused.png').convert()
 paused_image=pygame.transform.scale2x(paused_image)
+high_score_image=pygame.image.load('Data/menu_buttons/high_score.png').convert_alpha()
+score_image=pygame.Surface((72,28),pygame.SRCALPHA)
+score_image.blit(high_score_image,(0,0),(62,0,72,28))
 exit_game_complete_list=[]
 game_complete_list=[]
 play_list=[]
@@ -86,6 +89,7 @@ def text(text,color,size,text_pos):
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
+        player.score=0
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
@@ -137,8 +141,9 @@ class player(pygame.sprite.Sprite):
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
-        player.last_check_point=None
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
+        if player.score<0:
+            player.score=0
         for check_point in check_point_list:
             if player.pos.x>=check_point.right:
                 player.last_check_point=check_point
@@ -193,6 +198,7 @@ class player(pygame.sprite.Sprite):
                             if dog.dodge_counter>0:
                                 dog.dodge_counter-=1
                                 player.dodge=True
+                                player.score+=500
                         else:
                             break
                 if player.dodge==False:
@@ -329,7 +335,7 @@ class player(pygame.sprite.Sprite):
         #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
-        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode':
+        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick':
             player.velocity+=player.arc_eq_acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
@@ -612,6 +618,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.pos=pygame.math.Vector2(fat_guy.body_rect.center)
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
+        fat_guy.whack_rect=pygame.Rect(fat_guy.rect.left,fat_guy.rect.top,102,48)#whack impact rect
     def update(fat_guy,delta_time):
         if fat_guy.life<=0:#add death animation
             game_settings['negative_screen']=False
@@ -747,9 +754,6 @@ class rat(pygame.sprite.Sprite):
         rat_instance.velocity=pygame.math.Vector2(-10,0)
         rat_instance.pos=pygame.math.Vector2(rat_instance.rect.center)
     def update(rat_instance,delta_time):
-        for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
-                rat_instance.dead=True
         if rat_instance.dead:
             if rat_instance.frame>len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
@@ -759,6 +763,10 @@ class rat(pygame.sprite.Sprite):
                 rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
+            for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
+                    rat_instance.dead=True
+                    player.score-=200
             for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='41':#rat_hole
                     rat_instance.velocity.x=-70
@@ -848,6 +856,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                         for player_obj in pygame.sprite.spritecollide(fish_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                             fish_instance.player_bite=True
                             player_obj.life-=1
+                            player_obj.score-=100
                         if player.pos.x>fish_instance.pos.x:
                             fish_instance.velocity.x=140
                             fish_instance.direction='right'
@@ -922,6 +931,7 @@ class apple(pygame.sprite.Sprite):
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
             player.life+=1
+            player.score+=200
             apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
@@ -933,7 +943,9 @@ class flower(pygame.sprite.Sprite):
         for player in pygame.sprite.spritecollide(flower_instance,player_sprite_group,dokill=False):
             if player.state=='pick':
                 player.flower_count+=1
+                player.score+=600
                 flower_instance.kill()
+                player.state='idle'
 class bomb(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
@@ -947,11 +959,13 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
         for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-            if not bomb_instance.explode:
-                player.life-=1
-            bomb_instance.explode=True
-            player.image_frame=0
-            player.state='explode'
+            if player.state!='dodge':
+                if not bomb_instance.explode:
+                    player.life-=1
+                    player.score-=300
+                bomb_instance.explode=True
+                player.image_frame=0
+                player.state='explode'
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -984,6 +998,7 @@ class bomb_land(pygame.sprite.Sprite):
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
                 if not bomb.explode:
                     player.life-=1
+                    player.score-=500
                 bomb.explode=True
                 player.image_frame=0
                 player.state='explode'
@@ -1094,13 +1109,14 @@ class little_rock(pygame.sprite.Sprite):
             if player.state=='pick' and player.hand=='':
                 player.hand='rock'
                 rock_instance.kill()
+            if rock_instance.velocity.x>0:
+                for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
+                    dog.state='stunned'
+                    dog.life-=1
+                    player.score+=200
         rock_instance.velocity+=rock_instance.acceleration*delta_time
         rock_instance.pos+=rock_instance.velocity*delta_time
         rock_instance.rect.center=rock_instance.pos.xy
-        if rock_instance.velocity.x>0:
-            for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
-                dog.state='stunned'
-                dog.life-=1
         for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
             rock_instance.velocity.xy=0,0
             rock_instance.acceleration.xy=0,0
@@ -1155,7 +1171,7 @@ class switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
                 else:
                     switch_instance.image=switch_instance.switch_image_list[round(switch_instance.frame)]
-                    switch_instance.frame+=5*delta_time
+                    switch_instance.frame+=10*delta_time
 class pressure_switch(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha(),image_list)
@@ -1436,7 +1452,7 @@ for world_name in range(0,1):
 
 game=game()
 
-player_sprite_group.add(player(30111,560))#2067,560,30111
+player_sprite_group.add(player(2067,560))#2067,560,30111
 
 #loading map
 for row_number,row in enumerate(world_maps['blocks'][0]):
@@ -1494,22 +1510,6 @@ for row_number,row in enumerate(world_maps['check_points'][0]):
     for number,id in enumerate(row):    
         if id!='-1': 
             check_point_list.append(pygame.Rect(number*48,row_number*48,48,48))
-#water_hitline
-water_bodies_list_counter=0
-water_bodies={}
-prev_water_dot_xpos=0
-for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodiesS
-    if abs(water_dot.dest_pos.x-prev_water_dot_xpos)>17:
-        water_bodies_list_counter+=1
-    prev_water_dot_xpos=water_dot.dest_pos.x
-    try:
-        water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos))
-    except:
-        water_bodies[water_bodies_list_counter]=[]
-        water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot.dest_pos))
-for key in water_bodies:
-    water_bodies_list=water_bodies[key]
-    water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
 
 def map_load():
     reactive_block_sprite_group.empty()
@@ -1557,6 +1557,23 @@ def map_load():
                 dog_sprite_group.add(dog(mob_x,mob_y))
             elif mob_id=='4':
                 fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+    #water_hitline
+    water_bodies_list_counter=0
+    water_bodies={}
+    prev_water_dot_xpos=0
+    for water_dot_obj in water_dot_sprite_group:#making seprate lists for serpate water bodiesS
+        if abs(water_dot_obj.dest_pos.x-prev_water_dot_xpos)>17:
+            water_bodies_list_counter+=1
+        prev_water_dot_xpos=water_dot_obj.dest_pos.x
+        try:
+            water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot_obj.dest_pos))
+        except:
+            water_bodies[water_bodies_list_counter]=[]
+            water_bodies[water_bodies_list_counter].append(pygame.math.Vector2(water_dot_obj.dest_pos))
+    for key in water_bodies:
+        water_bodies_list=water_bodies[key]
+        water_hitlines.append((water_bodies_list[0],water_bodies_list[-1]))
+    return water_hitlines
 
 map_load()
 
@@ -1695,7 +1712,7 @@ while True:
                         player.state='aim'
                     else:
                         player.state='interact'
-                if keys_pressed[pygame.K_s]:
+                if keys_pressed[pygame.K_s] and not player.water:
                     player.state='pick'
                 if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
                         if player.state=='aim' or player.state=='throw':
@@ -1720,6 +1737,12 @@ while True:
             if game_settings['fullscreen']:
                 if retry_rect.collidepoint(mouse_pos):
                     game_settings['mode']='in_game'
+                    for player in player_sprite_group:
+                        player.rect.midbottom=player.last_check_point.midbottom
+                        player.pos.xy=player.rect.center
+                        player.life=3
+                        player.state='idle'
+                    map_load()
                 elif exit_rect.collidepoint(mouse_pos):
                     pygame.quit()
                     sys.exit()
@@ -1727,9 +1750,14 @@ while True:
                 if retry_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     game_settings['mode']='in_game'
                     for player in player_sprite_group:
-                        player.rect.midbottom=player.last_check_point.midbottom
+                        try:
+                            player.rect.midbottom=player.last_check_point.midbottom
+                        except:
+                            player.rect.center=(2067,560)
                         player.pos.xy=player.rect.center
                         player.life=3
+                        player.score=0
+                        player.hand=''
                         player.state='idle'
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
@@ -1758,6 +1786,13 @@ while True:
                     sys.exit()
                 elif play_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     game_settings['mode']='in_game'
+    elif game_settings['mode']=='game_complete':
+        if player.score>save_data['high_score']:
+            save_data['high_score']=player.score
+    game_window.blit(high_score_image,(10,10))
+    text(str(save_data['high_score']),(0,0,0),40,(156,5))
+    game_window.blit(score_image,(10,50))
+    text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
