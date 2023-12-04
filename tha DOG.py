@@ -93,7 +93,7 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
-        player.life=3#change later
+        player.life=300#change later
         player.life_image_frame=0
         player.prev_life=player.life
         player.explode_timer=0
@@ -1010,6 +1010,11 @@ class bomb(pygame.sprite.Sprite):
                 bomb_instance.explode=True
                 player.image_frame=0
                 player.state='explode'
+        else:
+            for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_group,dokill=False):
+                if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
+                    bomb_instance.explode=True
+                    reactive_block.velocity.x=0
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -1021,22 +1026,20 @@ class bomb(pygame.sprite.Sprite):
 class bomb_land(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb_land.png').convert_alpha(),image_list,frames=8)
-    def __init__(bomb,x,y):
+    def __init__(bomb_instance,x,y):
         super().__init__()
-        bomb.bomb_image_list=bomb_land.image_list
-        bomb.image=bomb.bomb_image_list[0]
-        bomb.rect=bomb.image.get_rect(topleft=((x-2)*48,(y-2)*48))
-        bomb.frame=0
-        bomb.mask=pygame.mask.from_surface(bomb.image)
-        bomb.explode=False
-        #bomb.explode_dir=numpy.random.randint(3)
+        bomb_instance.image=bomb_land.image_list[0]
+        bomb_instance.rect=bomb_instance.image.get_rect(topleft=((x-2)*48,(y-2)*48))
+        bomb_instance.frame=0
+        bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
+        bomb_instance.explode=False
     def update(bomb,delta_time):
         if bomb.explode:
             bomb.frame+=4*delta_time
-            if bomb.frame>len(bomb.bomb_image_list)-1:
+            if bomb.frame>len(bomb_land.image_list)-1:
                 bomb.kill()
             else:
-                bomb.image=bomb.bomb_image_list[int(bomb.frame)]
+                bomb.image=bomb_land.image_list[int(bomb.frame)]
                 bomb.mask=pygame.mask.from_surface(bomb.image)
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
@@ -1046,15 +1049,15 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.explode=True
                 player.image_frame=0
                 player.state='explode'
+            else:
+                for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_group,dokill=False):
+                    if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
+                        bomb.explode=True
+                        reactive_block.velocity.x=0
             for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
                 if bomb.explode:
                     dog.life-=1
                     dog.state='stunned'
-            #if bomb.explode_dir==1:
-            #    player.pos.x-=2050*delta_time
-            #else:player.pos.x+=2050*delta_time
-            #player.pos.y-=2000*delta_time
-            #player.rect.center=player.pos.xy
                 
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
@@ -1081,7 +1084,7 @@ class rock(pygame.sprite.Sprite):
             rock_instance.rect.x+=100*delta_time
             rock_instance.rect.y+=400*delta_time
             rock_instance.angle-=40*delta_time
-            for block in pygame.sprite.spritecollide(rock_instance,block_sprite_group,dokill=False):
+            for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='10':
                     rock_instance.roll=False
                     rock_instance.rect.midbottom=block.rect.midtop
@@ -1666,8 +1669,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
         
-        for player in player_sprite_group:
-            print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
+        #for player in player_sprite_group:
+        #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
@@ -1817,6 +1820,11 @@ while True:
         else:
             menu_image_frame+=5*delta_time
         game_window.blit(play_list[int(menu_image_frame)],(play_rect.topleft))
+        if game_settings['negative_screen']:#when hit fat_guy
+            white_screen=pygame.Surface(game_window.get_size())
+            white_screen.fill((255,255,255))
+            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
+            game_window=white_screen
         if any(pygame.mouse.get_pressed()):
             mouse_pos=pygame.mouse.get_pos()
             if game_settings['fullscreen']:
