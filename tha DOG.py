@@ -669,6 +669,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                 if int(fat_guy.image_frame)>=len(big_fat_guy.death_image_list_left)-1:
                     game_settings['negative_screen']=False
                     fat_guy.state='dead'
+                    for player in player_sprite_group:player.score+=2500
                 else:
                     if fat_guy.direction=='left':
                         fat_guy.rect.topleft=fat_guy.body_rect.x-195,fat_guy.body_rect.y-81
@@ -812,6 +813,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                         if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:#change velocity cpa later?
                             if reactive_block.rect.colliderect(fat_guy.head_rect):
                                 fat_guy.life-=2
+                                player.score+=750
                                 reactive_block.kill()#make it reflect later?
                                 if fat_guy.life<=0:
                                     fat_guy.image_frame=0
@@ -821,6 +823,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                                         fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
                             elif reactive_block.rect.colliderect(fat_guy.body_rect):
                                 fat_guy.life-=1
+                                player.score+=450
                                 reactive_block.kill()#make it reflect later?
                                 if fat_guy.life<=0:
                                     fat_guy.image_frame=0
@@ -1387,8 +1390,8 @@ class game():
             if cam.earthquake:
                 cam.screen_shake.xy=(numpy.random.randint(-15,15),numpy.random.randint(-15,15))
                 if cam.earthquake_timer>=30:#1/2 min
-                    cam.earthquake=False
                     cam.earthqake_timer=0
+                    cam.earthquake=False
                 else:
                     cam.earthquake_timer+=delta_time
             if not cam.fat_guy_hit and player_sprite.pos.x>30111:#fat_guy pan loc
