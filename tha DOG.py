@@ -93,7 +93,7 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
-        player.life=300#change later
+        player.life=40#change later
         player.life_image_frame=0
         player.prev_life=player.life
         player.explode_timer=0
@@ -618,10 +618,6 @@ class dog(pygame.sprite.Sprite):
             else:
                 dog_instance.image=dog.dog_run_image_list_right[12]
             for player in player_sprite_group:
-                if dog_instance.direction=='left':
-                    dog_instance.rect.right=player.rect.centerx
-                else:
-                    dog_instance.rect.left=player.rect.centerx
                 if player.velocity.x!=0:
                     dog_instance.state='stunned'
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
@@ -654,6 +650,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.life=2#tweak later
         fat_guy.hook_offset=pygame.math.Vector2()
         fat_guy.hook_throw=False
+        fat_guy.whack_hit=False
         fat_guy.player_caught=False
         fat_guy.player_collide=False
         if fat_guy.direction=='left':
@@ -672,11 +669,12 @@ class big_fat_guy(pygame.sprite.Sprite):
                 if int(fat_guy.image_frame)>=len(big_fat_guy.death_image_list_left)-1:
                     game_settings['negative_screen']=False
                     fat_guy.state='dead'
-                    game.earthquake=False
                 else:
                     if fat_guy.direction=='left':
+                        fat_guy.rect.topleft=fat_guy.body_rect.x-195,fat_guy.body_rect.y-81
                         fat_guy.image=big_fat_guy.death_image_list_left[int(fat_guy.image_frame)]
                     else:
+                        fat_guy.rect.topleft=fat_guy.body_rect.x-77,fat_guy.body_rect.y-81
                         fat_guy.image=big_fat_guy.death_image_list_right[int(fat_guy.image_frame)]
                     fat_guy.image_frame+=7*delta_time
             else:
@@ -703,11 +701,34 @@ class big_fat_guy(pygame.sprite.Sprite):
                         if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
                             fat_guy.image_frame=0
                             game.earthquake=True
+                            fat_guy.whack_hit=False
                         if fat_guy.bat=='left':
                             if fat_guy.image_frame==0:
                                 fat_guy.image_frame=11
                             elif fat_guy.image_frame>=26:
                                 fat_guy.bat='right'
+                        if int(fat_guy.image_frame)>=26 and not fat_guy.whack_hit:#fatguy impact rect
+                            if fat_guy.direction=='left':
+                                if int(fat_guy.image_frame)==26:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+36,fat_guy.rect.y+79
+                                elif int(fat_guy.image_frame)==27:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+23,fat_guy.rect.y+169
+                                elif int(fat_guy.image_frame)==28:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+26,fat_guy.rect.y+232
+                                elif int(fat_guy.image_frame)==29 or int(fat_guy.image_frame)==30 or int(fat_guy.image_frame)==31:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+21,fat_guy.rect.y+274
+                            else:
+                                if int(fat_guy.image_frame)==26:#330
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+294,fat_guy.rect.y+79
+                                elif int(fat_guy.image_frame)==27:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+307,fat_guy.rect.y+169
+                                elif int(fat_guy.image_frame)==28:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+304,fat_guy.rect.y+232
+                                elif int(fat_guy.image_frame)==29 or int(fat_guy.image_frame)==30 or int(fat_guy.image_frame)==31:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+309,fat_guy.rect.y+274
+                            if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge':
+                                player.life-=2
+                                fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
                             fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
                             fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
@@ -1365,7 +1386,7 @@ class game():
                 cam.screen_shake.xy=(0,0)
             if cam.earthquake:
                 cam.screen_shake.xy=(numpy.random.randint(-15,15),numpy.random.randint(-15,15))
-                if cam.earthquake_timer>=30:#1 min
+                if cam.earthquake_timer>=30:#1/2 min
                     cam.earthquake=False
                     cam.earthqake_timer=0
                 else:
@@ -1655,30 +1676,34 @@ while True:
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     game_window.fill((255,255,255))
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif event.type==pygame.KEYDOWN:
-            if event.key==pygame.K_F11:
-                if game_settings['fullscreen']==True:
-                    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                    game_settings['fullscreen']=False
-                elif game_settings['fullscreen']==False:
-                    display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
-                    game_settings['fullscreen']=True
-            if event.key==pygame.K_ESCAPE:
-                if game_settings['mode']=='in_game':
-                    game_settings['mode']='paused'
-                elif game_settings['mode']=='paused':
-                    game_settings['mode']='in_game'
-                #if game_settings['fullscreen']==True:
-                #    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                #    game_settings['fullscreen']=False
-            if event.key==pygame.K_w:
-                for player in player_sprite_group:
+    for player in player_sprite_group:
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_F11:
+                    if game_settings['fullscreen']==True:
+                        display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                        game_settings['fullscreen']=False
+                    elif game_settings['fullscreen']==False:
+                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
+                        game_settings['fullscreen']=True
+                if event.key==pygame.K_ESCAPE:
+                    if game_settings['mode']=='in_game':
+                        game_settings['mode']='paused'
+                    elif game_settings['mode']=='paused':
+                        game_settings['mode']='in_game'
+                    #if game_settings['fullscreen']==True:
+                    #    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
+                    #    game_settings['fullscreen']=False
+                if event.key==pygame.K_w:
                     player.jump=True
                     player.image_frame=0
+        game_window.blit(high_score_image,(10,10))
+        text(str(save_data['high_score']),(0,0,0),40,(156,5))
+        game_window.blit(score_image,(10,50))
+        text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -1822,6 +1847,7 @@ while True:
             else:
                 if retry_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     game_settings['mode']='in_game'
+                    game.earthquake=False
                     for player in player_sprite_group:
                         try:
                             player.rect.midbottom=player.last_check_point.midbottom
@@ -1868,10 +1894,6 @@ while True:
     elif game_settings['mode']=='game_complete':
         if player.score>save_data['high_score']:
             save_data['high_score']=player.score
-    game_window.blit(high_score_image,(10,10))
-    text(str(save_data['high_score']),(0,0,0),40,(156,5))
-    game_window.blit(score_image,(10,50))
-    text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
