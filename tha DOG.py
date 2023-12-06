@@ -100,13 +100,11 @@ class player(pygame.sprite.Sprite):
         player.explode_timer=0
         player.stamina=1000
         player.state='idle'
-        player.dodge_timer=10
         player.throw_angle=0
         player.throw_power=150
         player.idle_timer=0
         player.water=False
         player.jump=False
-        player.dodge=False
         player.jump_counter=0
         player.direction='right'
         player.hand=''
@@ -144,8 +142,6 @@ class player(pygame.sprite.Sprite):
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
-        if player.score<0:
-            player.score=0
         for check_point in check_point_list:
             if player.pos.x>=check_point.right:
                 player.last_check_point=check_point
@@ -191,37 +187,17 @@ class player(pygame.sprite.Sprite):
                 player.image=player.explode_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
         if player.state=='dodge':
-            player.dodge_timer=0
-            if not player.dodge:
-                for fat_guy in pygame.sprite.spritecollide(player,big_fat_guy_sprite_group,dokill=False):
-                    player.dodge=True
-                else:
-                    for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False):
-                        if not player.dodge:
-                            if dog.dodge_counter>0:
-                                dog.dodge_counter-=1
-                                player.dodge=True
-                                player.score+=500
-                        else:
-                            break
-                if player.dodge==False:
-                    player.state='run'
-                    player.velocity.xy=0,0
-            else:
-                if int(player.image_frame)>=len(player.dodge_image_list_left)-1:
-                    player.state='run'
-                    player.image_frame=0
-                    player.dodge=False
-                    player.dodge_timer=10
-                if player.direction=='left':
-                    player.velocity.x=-400
-                    player.image=player.dodge_image_list_left[int(player.image_frame)]
-                elif player.direction=='right':
-                    player.velocity.x=400
-                    player.image=player.dodge_image_list_right[int(player.image_frame)]
-                player.image_frame+=10*delta_time
-        else:
-            player.dodge_timer+=delta_time
+            if int(player.image_frame)>=len(player.dodge_image_list_left)-1:
+                player.state='run'
+                player.image_frame=0
+                player.dodge=False
+            if player.direction=='left':
+                player.velocity.x=-400
+                player.image=player.dodge_image_list_left[int(player.image_frame)]
+            elif player.direction=='right':
+                player.velocity.x=400
+                player.image=player.dodge_image_list_right[int(player.image_frame)]
+            player.image_frame+=10*delta_time
         if player.state=='pant':
             player.idle_timer+=delta_time
             player.stamina+=200*delta_time
@@ -455,6 +431,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.prev_direction=dog_instance.direction
         dog_instance.lose_sight_timer=0
         dog_instance.dodge_counter=3
+        dog_instance.player_dodge=False
         dog_instance.image_frame=0
         dog_instance.image=dog.dog_run_image_list_right[0]
         dog_instance.rect=dog_instance.image.get_rect(topleft=(x*48,y*48-16))
@@ -501,24 +478,28 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.lose_sight_timer=0
                         if player.state=='grass':
                             dog_instance.lose_sight_timer+=1*delta_time
-                for player_obj in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                    if player.state!='dodge':
-                        if player.dodge_timer>1:#dodge delay forgivness
-                            player_obj.life-=1
-                            player_obj.score-=250
-                            player_obj.velocity.xy=0,0
-                            dog_instance.state='bite'
-                        else:
-                            if dog_instance.dodge_counter>0:
-                                dog_instance.dodge_counter-=1
-                                player.state='dodge'
-                                player.dodge=True
-                                player.score+=500
-                            else:
-                                player_obj.life-=1
-                                player_obj.score-=250
-                                player_obj.velocity.xy=0,0
+                    if player.rect.colliderect(dog_instance.rect):
+                        if not dog_instance.player_dodge:
+                            if player.state!='dodge':
+                                player.life-=1
+                                player.score-=250
+                                player.velocity.xy=0,0
+                                player.state='idle'
                                 dog_instance.state='bite'
+                            else:
+                                if dog_instance.dodge_counter>0:
+                                    dog_instance.dodge_counter-=1
+                                    player.score+=500
+                                else:
+                                    player.life-=1
+                                    player.score-=250
+                                    player.velocity.xy=0,0
+                                    player.state='idle'
+                                    dog_instance.state='bite'
+                            dog_instance.player_dodge=True
+                            break
+                    else:
+                        dog_instance.player_dodge=False
                 for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                     dog_instance.state='chase_rat'
                     if rat.pos.x-dog_instance.pos.x>0:
@@ -859,7 +840,6 @@ class rat(pygame.sprite.Sprite):
             for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
                     rat_instance.dead=True
-                    player.score-=200
             for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='41':#rat_hole
                     rat_instance.velocity.x=-70
@@ -1052,13 +1032,12 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
         for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-            if player.state!='dodge':
-                if not bomb_instance.explode:
-                    player.life-=1
-                    player.score-=300
-                bomb_instance.explode=True
-                player.image_frame=0
-                player.state='explode'
+            if not bomb_instance.explode:
+                player.life-=1
+                player.score-=300
+            bomb_instance.explode=True
+            player.image_frame=0
+            player.state='explode'
         #else:
         #    for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_group,dokill=False):
         #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
@@ -1092,12 +1071,13 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.mask=pygame.mask.from_surface(bomb.image)
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-                if not bomb.explode:
-                    player.life-=1
-                    player.score-=500
-                bomb.explode=True
-                player.image_frame=0
-                player.state='explode'
+                if player.state!='dodge':
+                    if not bomb.explode:
+                        player.life-=1
+                        player.score-=500
+                    bomb.explode=True
+                    player.image_frame=0
+                    player.state='explode'
             #else:
             #    for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_group,dokill=False):
             #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
@@ -1205,7 +1185,7 @@ class little_rock(pygame.sprite.Sprite):
             if player.state=='pick' and player.hand=='':
                 player.hand='rock'
                 rock_instance.kill()
-            if rock_instance.velocity.x>0:
+            if rock_instance.velocity.x!=0:
                 for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                     dog.state='stunned'
                     dog.life-=1
@@ -1267,7 +1247,7 @@ class switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
                 else:
                     switch_instance.image=switch_instance.switch_image_list[round(switch_instance.frame)]
-                    switch_instance.frame+=10*delta_time
+                    switch_instance.frame+=15*delta_time
 class pressure_switch(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha(),image_list)
@@ -1698,9 +1678,11 @@ while True:
                 if event.key==pygame.K_w:
                     player.jump=True
                     player.image_frame=0
+                    player.state='sprint'
         game_window.blit(high_score_image,(10,10))
         text(str(save_data['high_score']),(0,0,0),40,(156,5))
         game_window.blit(score_image,(10,50))
+        if player.score<0:player.score=0
         text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
@@ -1718,8 +1700,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
         
-        for player in player_sprite_group:
-            print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
+        #for player in player_sprite_group:
+        #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
@@ -1766,13 +1748,11 @@ while True:
             else:
                 for life_count in range(player.prev_life):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
-            if player.state=='dodge':#to prevetnt slidein after dodge
-                player.velocity.x=0
             if player.state!='explode'and player.state!='dodge':
                 if keys_pressed[pygame.K_d]:
-                    player.direction='right'
                     if player.direction=='left':
                         player.velocity.x=0
+                    player.direction='right'
                     if player.water:
                         if player.state!='swim_fast':
                             player.state='swim'
@@ -1787,9 +1767,9 @@ while True:
                     if keys_pressed[pygame.K_SPACE] and not player.water:
                         player.state='dodge'
                 if keys_pressed[pygame.K_a]:
-                    player.direction='left'
                     if player.direction=='right':
                         player.velocity.x=0
+                    player.direction='left'
                     if player.water:
                         if player.state!='swim_fast':
                             player.state='swim'
