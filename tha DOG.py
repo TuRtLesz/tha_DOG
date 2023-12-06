@@ -1358,7 +1358,7 @@ class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
         super().__init__()
         tut_block.image_list=[]
-        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert_alpha()
+        tut_block.spirte_sheet=pygame.image.load('Data/blocks/tut_blocks/{name}.png').convert_alpha()
         for image_x in range(0,tut_block.spirte_sheet.get_width()//x_image_len):
             image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()),pygame.SRCALPHA)
             final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2),pygame.SRCALPHA)
@@ -1514,163 +1514,145 @@ bomb_rect_list=[]
 water_blocks_rect_list=[]
 water_hitlines=[]
 
-world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]},'check_points':{0:[]},'fat_guy_effects':{0:[]}}#importing worlds
-for world_name in range(0,1):
-    with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['reactive_blocks'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_blocks.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['blocks'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_bomb_rects.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['bomb_rects'][world_name].append(row)#transfose bombrect-map list here
-    world_maps['bomb_rects'][world_name]=[[row[i] for row in world_maps['bomb_rects'][world_name]] for i in range(len(world_maps['bomb_rects'][world_name][0]))]
-    with open(f'Data/worlds/{world_name}/{world_name}_trees.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['trees'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_mobs.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['mobs'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_water_blocks.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['water_blocks'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_tut_blocks.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['tut_blocks'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_checkpoints.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['check_points'][world_name].append(row)
-    with open(f'Data/worlds/{world_name}/{world_name}_fat_guy_effects.csv') as map:
-        world_reader=csv.reader(map,delimiter=',')
-        for row in world_reader:
-            world_maps['fat_guy_effects'][world_name].append(row)
-
-game=game()
-
-player_sprite_group.add(player(30111,560))#2067,560,30111
-
 #loading map
-for row_number,row in enumerate(world_maps['blocks'][0]):
-    for block_number,block_id in enumerate(row):
-        if block_id!='-1':
-            block_sprite_group.add(block(block_id,block_number,row_number))
-for row_number,row in enumerate(world_maps['water_blocks'][0]):
-    for block_number,block_id in enumerate(row):
-        if block_id=='0':
-            water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
+with open('Data/worlds/0/0_blocks.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    for row_number,row in enumerate(world_reader):
+        for block_number,block_id in enumerate(row):
+            if block_id!='-1':
+                block_sprite_group.add(block(block_id,block_number,row_number))
+bomb_rect_load_list=[]
+with open('Data/worlds/0/0_bomb_rects.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    for row in world_reader:
+        bomb_rect_load_list.append(row)#transfose bombrect-map list here
+bomb_rect_load_list=[[row[i] for row in bomb_rect_load_list] for i in range(len(bomb_rect_load_list[0]))]
 bomb_rect_list.clear()
 bomb_rect_topright=[]
-for row_number,row in enumerate(world_maps['bomb_rects'][0]):  
+for row_number,row in enumerate(bomb_rect_load_list):  
     for rect_number,block_id in enumerate(row):
         if block_id=='0':
             bomb_rect_topright=[(rect_number-1)*48,(row_number-1)*48]
         if block_id=='1':
             bomb_rect_list.append(pygame.Rect(bomb_rect_topright[1],bomb_rect_topright[0],((row_number+1)*48)-bomb_rect_topright[1],((rect_number+1)*48)-bomb_rect_topright[0]))
-for row_number,row in enumerate(world_maps['trees'][0]):
-    for tree_number,tree_id in enumerate(row):    
-        if tree_id!='-1': 
-            tree_sprite_group.add(tree(tree_number,row_number))
-for row_number,row in enumerate(world_maps['tut_blocks'][0]):
-    for block_number,block_id in enumerate(row):    
-        if block_id=='0':
-            tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
-        elif block_id=='1':
-            tutorial_block_sprite_group.add(tutorial_block(151,'move_left',block_number,row_number))
-        elif block_id=='2':
-            tutorial_block_sprite_group.add(tutorial_block(221,'move_up',block_number,row_number))
-        elif block_id=='3':
-            tutorial_block_sprite_group.add(tutorial_block(183,'pick_up',block_number,row_number))
-        elif block_id=='4':
-            tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
-        elif block_id=='5':
-            tutorial_block_sprite_group.add(tutorial_block(381,'rock_throw',block_number,row_number))
-        elif block_id=='6':
-            tutorial_block_sprite_group.add(tutorial_block(158,'sniff',block_number,row_number))
-        elif block_id=='7':
-            tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
-        elif block_id=='8':
-            tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
-        elif block_id=='9':
-            tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
-        elif block_id=='10':
-            tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
-        elif block_id=='11':
-            tutorial_block_sprite_group.add(tutorial_block(100,'shiny',block_number,row_number))
-        elif block_id=='12':
-            tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
-        elif block_id=='13':
-            tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
-check_point_list=[]
-for row_number,row in enumerate(world_maps['check_points'][0]):
-    for number,id in enumerate(row):    
-        if id!='-1': 
-            check_point_list.append(pygame.Rect(number*48,row_number*48,48,48))
+with open('Data/worlds/0/0_trees.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    for row_number,row in enumerate(world_reader):
+        for tree_number,tree_id in enumerate(row):    
+            if tree_id!='-1': 
+                tree_sprite_group.add(tree(tree_number,row_number))
+with open('Data/worlds/0/0_water_blocks.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    for row_number,row in enumerate(world_reader):
+        for block_number,block_id in enumerate(row):
+            if block_id=='0':
+                water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
+with open('Data/worlds/0/0_tut_blocks.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    for row_number,row in enumerate(world_reader):
+        for block_number,block_id in enumerate(row):    
+            if block_id=='0':
+                tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
+            elif block_id=='1':
+                tutorial_block_sprite_group.add(tutorial_block(151,'move_left',block_number,row_number))
+            elif block_id=='2':
+                tutorial_block_sprite_group.add(tutorial_block(221,'move_up',block_number,row_number))
+            elif block_id=='3':
+                tutorial_block_sprite_group.add(tutorial_block(183,'pick_up',block_number,row_number))
+            elif block_id=='4':
+                tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
+            elif block_id=='5':
+                tutorial_block_sprite_group.add(tutorial_block(381,'rock_throw',block_number,row_number))
+            elif block_id=='6':
+                tutorial_block_sprite_group.add(tutorial_block(158,'sniff',block_number,row_number))
+            elif block_id=='7':
+                tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
+            elif block_id=='8':
+                tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
+            elif block_id=='9':
+                tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
+            elif block_id=='10':
+                tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
+            elif block_id=='11':
+                tutorial_block_sprite_group.add(tutorial_block(100,'shiny',block_number,row_number))
+            elif block_id=='12':
+                tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
+            elif block_id=='13':
+                tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
+with open('Data/worlds/0/0_checkpoints.csv') as map:
+    world_reader=csv.reader(map,delimiter=',')
+    check_point_list=[]
+    for row_number,row in enumerate(world_reader):
+        for number,id in enumerate(row):    
+            if id!='-1': 
+                check_point_list.append(pygame.Rect(number*48,row_number*48,48,48))
+
+game=game()
+
+player_sprite_group.add(player(30111,560))#2067,560,30111
 
 def map_load():
     reactive_block_sprite_group.empty()
-    for row_number,row in enumerate(world_maps['reactive_blocks'][0]):
-        for block_number,block_id in enumerate(row):    
-            if block_id=='0': 
-                reactive_block_sprite_group.add(grass(block_number,row_number))
-            elif block_id=='1':
-                reactive_block_sprite_group.add(apple(block_number,row_number))
-            elif block_id=='2':
-                reactive_block_sprite_group.add(bomb(block_number,row_number))
-            elif block_id=='3':
-                reactive_block_sprite_group.add(bomb_land(block_number,row_number))
-            elif block_id=='4':
-                reactive_block_sprite_group.add(chain(block_number,row_number))
-            elif block_id=='5':
-                reactive_block_sprite_group.add(rock(block_number,row_number))
-            elif block_id=='6':
-                reactive_block_sprite_group.add(switch(block_number,row_number))
-            elif block_id=='7':
-                reactive_block_sprite_group.add(flower(block_number,row_number))
-            elif block_id=='8':
-                for x_pos in range(block_number*48,(block_number+1)*48,16):
-                    water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
-            elif block_id=='9':
-                reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
-            elif block_id=='10':
-                reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))#x*48,(y+1)*48-12
-            elif block_id=='11':
-                reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
+    with open('Data/worlds/0/0_reactive_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row_number,row in enumerate(world_reader):
+            for block_number,block_id in enumerate(row):    
+                if block_id=='0': 
+                    reactive_block_sprite_group.add(grass(block_number,row_number))
+                elif block_id=='1':
+                    reactive_block_sprite_group.add(apple(block_number,row_number))
+                elif block_id=='2':
+                    reactive_block_sprite_group.add(bomb(block_number,row_number))
+                elif block_id=='3':
+                    reactive_block_sprite_group.add(bomb_land(block_number,row_number))
+                elif block_id=='4':
+                    reactive_block_sprite_group.add(chain(block_number,row_number))
+                elif block_id=='5':
+                    reactive_block_sprite_group.add(rock(block_number,row_number))
+                elif block_id=='6':
+                    reactive_block_sprite_group.add(switch(block_number,row_number))
+                elif block_id=='7':
+                    reactive_block_sprite_group.add(flower(block_number,row_number))
+                elif block_id=='8':
+                    for x_pos in range(block_number*48,(block_number+1)*48,16):
+                        water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+                elif block_id=='9':
+                    reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
+                elif block_id=='10':
+                    reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))#x*48,(y+1)*48-12
+                elif block_id=='11':
+                    reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
     rat_sprite_group.empty()
     fish_sprite_group.empty()
     big_fat_guy_sprite_group.empty()
     dog_sprite_group.empty()
     fish_sprite_group.empty()
-    for mob_y,row in enumerate(world_maps['mobs'][0]):
-        for mob_x,mob_id in enumerate(row):  
-            if mob_id=='0':
-                rat_sprite_group.add(rat(mob_x,mob_y))
-            elif mob_id=='1':
-                fish_sprite_group.add(fish(mob_x,mob_y,'right'))
-            elif mob_id=='2':
-                big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
-            elif mob_id=='3':
-                dog_sprite_group.add(dog(mob_x,mob_y))
-            elif mob_id=='4':
-                fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+    with open('Data/worlds/0/0_mobs.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for mob_y,row in enumerate(world_reader):
+            for mob_x,mob_id in enumerate(row):  
+                if mob_id=='0':
+                    rat_sprite_group.add(rat(mob_x,mob_y))
+                elif mob_id=='1':
+                    fish_sprite_group.add(fish(mob_x,mob_y,'right'))
+                elif mob_id=='2':
+                    big_fat_guy_sprite_group.add(big_fat_guy(mob_x,mob_y))
+                elif mob_id=='3':
+                    dog_sprite_group.add(dog(mob_x,mob_y))
+                elif mob_id=='4':
+                    fish_sprite_group.add(fish(mob_x,mob_y,'left'))
     for fat_guy in big_fat_guy_sprite_group:
         for player in player_sprite_group:
-            for row_number,row in enumerate(world_maps['fat_guy_effects'][0]):
-                for x,id in enumerate(row):    
-                    if id=='0': 
-                        player.fat_guy_pan=x*48
-                    elif id=='1':
-                        fat_guy.left_rope_limit=x*48
-                    elif id=='2':
-                        fat_guy.right_rope_limit=x*48
+            with open('Data/worlds/0/0_fat_guy_effects.csv') as map:
+                world_reader=csv.reader(map,delimiter=',')
+                for row_number,row in enumerate(world_reader):
+                    for x,id in enumerate(row):    
+                        if id=='0': 
+                            player.fat_guy_pan=x*48
+                        elif id=='1':
+                            fat_guy.left_rope_limit=x*48
+                        elif id=='2':
+                            fat_guy.right_rope_limit=x*48
     #water_hitline
     water_bodies_list_counter=0
     water_bodies={}
