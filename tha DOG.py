@@ -363,38 +363,33 @@ class player(pygame.sprite.Sprite):
             game.draw_rect.centery=player.jump_height-300#?
             if block.id == '0' or block.id == '1' or block.id == '2':
                 player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
+            elif block.id=='68':
+                if block.rect.x<player.rect.x:
+                    player.rect.left=block.rect.right
+                elif block.rect.x>player.rect.x:
+                    player.rect.right=block.rect.left
+                player.rect.bottom=block.rect.top
             elif block.id == '10':
                 player.rect.bottom=block.rect.top+4
-                player.pos.xy=player.rect.center
             elif block.id == '12':
                 player.rect.bottom=block.rect.top+30
-                player.pos.xy=player.rect.center
             elif block.id == '13':
                 player.rect.bottom=block.rect.top+30
-                player.pos.xy=player.rect.center
             elif block.id == '70':
                 player.rect.bottom=block.rect.top
-                player.pos.xy=player.rect.center
             #if pygame.sprite.collide_mask(player,block):
             elif block.id == '3':#ramps
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
-                player.pos.xy=player.rect.center
             elif block.id == '4':
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
-                player.pos.xy=player.rect.center
             elif block.id == '5':
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
-                player.pos.xy=player.rect.center
             elif block.id == '92':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-                player.pos.xy=player.rect.center
             elif block.id == '93':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-                player.pos.xy=player.rect.center
             elif block.id == '94':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
-                player.pos.xy=player.rect.center
             #rock
             #elif block.id == '6':#top curve right
             #    if player.pos.x-block.rect.x>18:
@@ -420,6 +415,7 @@ class player(pygame.sprite.Sprite):
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             #        player.pos.xy=player.rect.center
+            player.pos.xy=player.rect.center
         if player.jump and player.state!='explode':
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
@@ -1063,11 +1059,11 @@ class bomb(pygame.sprite.Sprite):
                 bomb_instance.explode=True
                 player.image_frame=0
                 player.state='explode'
-        else:
-            for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_group,dokill=False):
-                if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
-                    bomb_instance.explode=True
-                    reactive_block.velocity.x=0
+        #else:
+        #    for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_group,dokill=False):
+        #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
+        #            bomb_instance.explode=True
+        #            reactive_block.velocity.x=0
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -1102,11 +1098,11 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.explode=True
                 player.image_frame=0
                 player.state='explode'
-            else:
-                for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_group,dokill=False):
-                    if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
-                        bomb.explode=True
-                        reactive_block.velocity.x=0
+            #else:
+            #    for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_group,dokill=False):
+            #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
+            #            bomb.explode=True
+            #            reactive_block.velocity.x=0
             for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
                 if bomb.explode:
                     dog.life-=1
@@ -1358,7 +1354,7 @@ class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
         super().__init__()
         tut_block.image_list=[]
-        tut_block.spirte_sheet=pygame.image.load('Data/blocks/tut_blocks/{name}.png').convert_alpha()
+        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert_alpha()
         for image_x in range(0,tut_block.spirte_sheet.get_width()//x_image_len):
             image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()),pygame.SRCALPHA)
             final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2),pygame.SRCALPHA)
@@ -1589,7 +1585,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(30111,560))#2067,560,30111
+player_sprite_group.add(player(2067,560))#2067,560,30111
 
 def map_load():
     reactive_block_sprite_group.empty()
