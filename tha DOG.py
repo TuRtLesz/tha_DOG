@@ -89,6 +89,7 @@ def text(text,color,size,text_pos):
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
         super().__init__()
+        player.fat_guy_pan=0
         player.score=0
         player.velocity=pygame.math.Vector2(0,0)
         player.arc_eq_acceleration=pygame.math.Vector2(0,0)
@@ -642,6 +643,8 @@ class big_fat_guy(pygame.sprite.Sprite):
     hook_image_right=pygame.transform.flip(hook_image,True,False)
     def __init__(fat_guy,x,y):
         super().__init__()
+        fat_guy.right_rope_limit=0
+        fat_guy.left_rope_limit=0
         fat_guy.start_fight=False
         fat_guy.image_frame=0
         fat_guy.direction='left'
@@ -682,10 +685,10 @@ class big_fat_guy(pygame.sprite.Sprite):
                 for player in player_sprite_group:
                     if fat_guy.start_fight:#whakc and stuff only if fight started
                         game_settings['negative_screen']=True
-                        if abs(player.pos.x-fat_guy.pos.x)>=400:#change later
+                        if player.pos.x<=fat_guy.left_rope_limit or player.pos.x>=fat_guy.right_rope_limit:#change later
                             fat_guy.state='rope'
                         if fat_guy.state!='rope':
-                            if 300>abs(player.pos.x-fat_guy.pos.x)>200:
+                            if abs(player.pos.x-fat_guy.body_rect.centerx)>142:
                                     fat_guy.state='run'
                             else:
                                     fat_guy.state='whack'
@@ -1394,7 +1397,7 @@ class game():
                     cam.earthquake=False
                 else:
                     cam.earthquake_timer+=delta_time
-            if not cam.fat_guy_hit and player_sprite.pos.x>30111:#fat_guy pan loc
+            if not cam.fat_guy_hit and player_sprite.pos.x>player.fat_guy_pan:#fat_guy pan loc
                 cam.player_offset.x-=100*delta_time
                 if cam.player_offset.x<=-(game_window.get_width()//2-50):
                     cam.player_offset.x=-(game_window.get_width()//2-50)
@@ -1511,7 +1514,7 @@ bomb_rect_list=[]
 water_blocks_rect_list=[]
 water_hitlines=[]
 
-world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]},'check_points':{0:[]}}#importing worlds
+world_maps={'reactive_blocks':{0:[]},'water_blocks':{0:[]},'blocks':{0:[]},'bomb_rects':{0:[]},'trees':{0:[]},'mobs':{0:[]},'tut_blocks':{0:[]},'check_points':{0:[]},'fat_guy_effects':{0:[]}}#importing worlds
 for world_name in range(0,1):
     with open(f'Data/worlds/{world_name}/{world_name}_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -1546,6 +1549,10 @@ for world_name in range(0,1):
         world_reader=csv.reader(map,delimiter=',')
         for row in world_reader:
             world_maps['check_points'][world_name].append(row)
+    with open(f'Data/worlds/{world_name}/{world_name}_fat_guy_effects.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row in world_reader:
+            world_maps['fat_guy_effects'][world_name].append(row)
 
 game=game()
 
@@ -1654,6 +1661,16 @@ def map_load():
                 dog_sprite_group.add(dog(mob_x,mob_y))
             elif mob_id=='4':
                 fish_sprite_group.add(fish(mob_x,mob_y,'left'))
+    for fat_guy in big_fat_guy_sprite_group:
+        for player in player_sprite_group:
+            for row_number,row in enumerate(world_maps['fat_guy_effects'][0]):
+                for x,id in enumerate(row):    
+                    if id=='0': 
+                        player.fat_guy_pan=x*48
+                    elif id=='1':
+                        fat_guy.left_rope_limit=x*48
+                    elif id=='2':
+                        fat_guy.right_rope_limit=x*48
     #water_hitline
     water_bodies_list_counter=0
     water_bodies={}
@@ -1723,8 +1740,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
         
-        #for player in player_sprite_group:
-        #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
+        for player in player_sprite_group:
+            print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
