@@ -1,6 +1,7 @@
 import pygame,sys,time,csv,numpy
 from scipy.interpolate import interp1d
 pygame.init()
+pygame.mixer.init()
 display_size=[pygame.display.Info().current_w,pygame.display.Info().current_h]
 game_window=pygame.Surface((display_size[0],display_size[1]))
 display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
@@ -141,6 +142,7 @@ class player(pygame.sprite.Sprite):
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
         player.pos=pygame.math.Vector2(player.rect.center)
+        player.rock_throw_sound=pygame.mixer.Sound('Data/player/rock_throw.wav')
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
         for check_point in check_point_list:
             if player.pos.x>=check_point.right:
@@ -254,6 +256,7 @@ class player(pygame.sprite.Sprite):
                 print(player.rock_obj.velocity)
                 reactive_block_sprite_group.add(player.rock_obj)
                 player.state='idle'
+                player.rock_throw_sound.play()
             else:
                 if player.direction=='left':
                     player.image=player.throw_image_list_left[int(player.image_frame)]
@@ -1218,12 +1221,14 @@ class rock_pile(pygame.sprite.Sprite):
 class switch(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/switch.png').convert_alpha(),image_list,frames=8)
+    switch_rotate_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/switch_rotate.wav')
     def __init__(switch_instance,x,y):
         super().__init__()
         switch_instance.switch_image_list=switch.image_list
         switch_instance.image=switch_instance.switch_image_list[0]
         switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
         switch_instance.frame=0
+        switch_instance.prev_frame=0
         switch_instance.connected=False
     def update(switch_instance,delta_time):
         for player in pygame.sprite.spritecollide(switch_instance,player_sprite_group,dokill=False):
@@ -1247,20 +1252,28 @@ class switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
                 else:
                     switch_instance.image=switch_instance.switch_image_list[round(switch_instance.frame)]
+                    if int(switch_instance.frame)!=switch_instance.prev_frame and int(switch_instance.frame)%2==0:
+                        switch.switch_rotate_sound.play()
+                    switch_instance.prev_frame=int(switch_instance.frame)
                     switch_instance.frame+=15*delta_time
 class pressure_switch(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/pressure_switch.png').convert_alpha(),image_list)
+    switch_press_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/switch_press.wav')
     def __init__(switch_instance,x,y):
         super().__init__()
         switch_instance.switch_image_list=pressure_switch.image_list
         switch_instance.image=switch_instance.switch_image_list[0]
         switch_instance.rect=switch_instance.image.get_rect(bottomright=((x+1)*48+3,(y+1)*48+3))
         switch_instance.connected=False
+        switch_instance.clicked=False
     def update(switch_instance,delta_time):
         for trig_reactive_block in pygame.sprite.spritecollide(switch_instance,reactive_block_sprite_group,dokill=False):
             if type(trig_reactive_block)==rock:
                 switch_instance.image=switch_instance.switch_image_list[1]
+                if not switch_instance.clicked:
+                    pressure_switch.switch_press_sound.play()
+                    switch_instance.clicked=True
                 for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
                             for reative_block in reactive_block_sprite_group:
@@ -1657,6 +1670,7 @@ while True:
     for player in player_sprite_group:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
+                pygame.mixer.quit()
                 pygame.quit()
                 sys.exit()
             elif event.type==pygame.KEYDOWN:
@@ -1820,6 +1834,7 @@ while True:
                         player.state='idle'
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos):
+                    pygame.mixer.quit()
                     pygame.quit()
                     sys.exit()
             else:
@@ -1839,8 +1854,9 @@ while True:
                         player.flower_count=0
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
-                    sys.exit()
+                    pygame.mixer.quit()
                     pygame.quit()
+                    sys.exit()
     elif game_settings['mode']=='paused':
         pygame.mouse.set_visible(True)
         game_window.blit(paused_image,(display_size[0]//2-paused_image.get_width()//2,100))
@@ -1859,12 +1875,14 @@ while True:
             mouse_pos=pygame.mouse.get_pos()
             if game_settings['fullscreen']:
                 if exit_rect.collidepoint(mouse_pos):
+                    pygame.mixer.quit()
                     pygame.quit()
                     sys.exit()
                 elif play_rect.collidepoint(mouse_pos):
                     game_settings['mode']='in_game'
             else:
                 if exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    pygame.mixer.quit()
                     pygame.quit()
                     sys.exit()
                 elif play_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
