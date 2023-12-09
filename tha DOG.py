@@ -193,6 +193,11 @@ class player(pygame.sprite.Sprite):
                 player.state='run'
                 player.image_frame=0
                 player.dodge=False
+                if player.direction=='left':
+                    player.rect.x-=12
+                else:
+                    player.rect.x+=12
+                player.pos.xy=player.rect.center
             if player.direction=='left':
                 player.velocity.x=-400
                 player.image=player.dodge_image_list_left[int(player.image_frame)]
