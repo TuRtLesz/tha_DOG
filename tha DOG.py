@@ -797,7 +797,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                             fat_guy.image=big_fat_guy.rope_image_list_right[int(fat_guy.image_frame)]
                         fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-98,fat_guy.body_rect.top-81))
                         fat_guy.image_frame+=10*delta_time
-                    for reactive_block in reactive_block_sprite_group:
+                    for reactive_block in reactive_block_sprite_instance_group:
                         if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:#change velocity cpa later?
                             if reactive_block.rect.colliderect(fat_guy.head_rect):
                                 fat_guy.life-=2
@@ -1047,7 +1047,7 @@ class bomb(pygame.sprite.Sprite):
             player.image_frame=0
             player.state='explode'
         #else:
-        #    for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_group,dokill=False):
+        #    for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_instance_group,dokill=False):
         #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
         #            bomb_instance.explode=True
         #            reactive_block.velocity.x=0
@@ -1087,7 +1087,7 @@ class bomb_land(pygame.sprite.Sprite):
                     player.image_frame=0
                     player.state='explode'
             #else:
-            #    for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_group,dokill=False):
+            #    for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False):
             #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
             #            bomb.explode=True
             #            reactive_block.velocity.x=0
@@ -1175,15 +1175,18 @@ class rock(pygame.sprite.Sprite):
                     elif block.id=='203' or block.id=='176' or block.id=='205' or block.id=='181' or block.id=='210' or block.id=='212' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
                         rock_instance.rect.bottom=block.rect.top
         else:
-            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_group,dokill=False):
+            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock and reactive_block.velocity.x>0:
                     rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha()
+    mask=pygame.mask.from_surface(image)
     water_resistance=pygame.math.Vector2(0,100)
     def __init__(rock_instance,x,y):
         super().__init__()
+        rock_instance.life=3
         rock_instance.image=little_rock.image
+        rock_instance.mask=little_rock.mask
         rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.velocity=pygame.math.Vector2()
@@ -1193,11 +1196,19 @@ class little_rock(pygame.sprite.Sprite):
             if player.state=='pick' and player.hand=='':
                 player.hand='rock'
                 rock_instance.kill()
+        for player in player_sprite_group:
             if rock_instance.velocity.x!=0:
                 for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                     dog.state='stunned'
                     dog.life-=1
+                    rock_instance.velocity.x=0
+                    rock_instance.life-=1
                     player.score+=200
+            if rock_instance.velocity.y!=0:
+                for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_mask):
+                    if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
+                        reactive_block.explode=True
+                        rock_instance.life-=1
         rock_instance.velocity+=rock_instance.acceleration*delta_time
         rock_instance.pos+=rock_instance.velocity*delta_time
         rock_instance.rect.center=rock_instance.pos.xy
@@ -1242,7 +1253,7 @@ class switch(pygame.sprite.Sprite):
                     switch_instance.image=switch_instance.switch_image_list[len(switch_instance.switch_image_list)-1]
                     for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
-                            for reative_block in reactive_block_sprite_group:
+                            for reative_block in reactive_block_sprite_instance_group:
                                 if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                     if bomb_rect.collidepoint(reative_block.rect.center):
                                         switch_instance.connected=True
@@ -1273,7 +1284,7 @@ class pressure_switch(pygame.sprite.Sprite):
         switch_instance.connected=False
         switch_instance.clicked=False
     def update(switch_instance,delta_time):
-        for trig_reactive_block in pygame.sprite.spritecollide(switch_instance,reactive_block_sprite_group,dokill=False):
+        for trig_reactive_block in pygame.sprite.spritecollide(switch_instance,reactive_block_sprite_instance_group,dokill=False):
             if type(trig_reactive_block)==rock:
                 switch_instance.image=switch_instance.switch_image_list[1]
                 if not switch_instance.clicked:
@@ -1281,7 +1292,7 @@ class pressure_switch(pygame.sprite.Sprite):
                     switch_instance.clicked=True
                 for bomb_rect in bomb_rect_list:
                         if bomb_rect.colliderect(switch_instance.rect):
-                            for reative_block in reactive_block_sprite_group:
+                            for reative_block in reactive_block_sprite_instance_group:
                                 if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                     if bomb_rect.collidepoint(reative_block.rect.center):
                                         switch_instance.connected=True
@@ -1478,6 +1489,11 @@ class game():
         for block in block_sprite_group:
             if block.rect.colliderect(update_instance.update_rect):
                 block_sprite_instance_group.add(block)
+        reactive_block_sprite_instance_group.empty()
+        for reactive_block in reactive_block_sprite_group:
+            if reactive_block.rect.colliderect(update_instance.update_rect):
+                reactive_block.update(delta_time)
+                reactive_block_sprite_instance_group.add(reactive_block)
         for sprite_group in update_sprite_group_list:
             for sprite in sprite_group:
                 if update_instance.update_rect.colliderect(sprite.rect):
@@ -1499,6 +1515,7 @@ tree_sprite_group=pygame.sprite.Group()
 bubble_sprite_group=pygame.sprite.Group()
 
 block_sprite_instance_group=pygame.sprite.Group()
+reactive_block_sprite_instance_group=pygame.sprite.Group()
 
 water_dot_sprite_group=pygame.sprite.Group()
 
@@ -1709,12 +1726,12 @@ while True:
             if player.life<=0:
                 game_settings['mode']='game_over'
             if player.state!='aim':
-                game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,reactive_block_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
+                game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
                             delta_time,water_dot_sprite_group)
             elif player.state=='aim' or player.state=='throw':
                 player.update(delta_time)
                 big_fat_guy_sprite_group.update(delta_time)
-        game.draw(delta_time,[reactive_block_sprite_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
+        game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,bubble_sprite_group],
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
