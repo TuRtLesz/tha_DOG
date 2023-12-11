@@ -1208,6 +1208,8 @@ class little_rock(pygame.sprite.Sprite):
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
     mask=pygame.mask.from_surface(image_list[0])
     water_resistance=pygame.math.Vector2(0,100)
+    water_jump_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/little_rock_water.wav')
+    
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.life=3
@@ -1237,21 +1239,32 @@ class little_rock(pygame.sprite.Sprite):
                         if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
                             reactive_block.explode=True
                             rock_instance.life-=1
-            rock_instance.velocity+=rock_instance.acceleration*delta_time
-            rock_instance.pos+=rock_instance.velocity*delta_time
-            rock_instance.rect.center=rock_instance.pos.xy
-            for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
-                rock_instance.velocity.xy=0,0
-                rock_instance.acceleration.xy=0,0
-                if block.id=='0' or block.id=='1' or block.id=='2':
-                    rock_instance.rect.bottom=block.rect.top+24
-                rock_instance.pos.xy=rock_instance.rect.center
-            for water_line in water_hitlines:
-                if rock_instance.rect.clipline(water_line)!=():
-                    rock_instance.acceleration.y=300
-                    if rock_instance.velocity.y>little_rock.water_resistance.y:
-                        rock_instance.velocity-=little_rock.water_resistance
-                        rock_instance.velocity.y=-rock_instance.velocity.y
+                rock_instance.velocity+=rock_instance.acceleration*delta_time
+                rock_instance.pos+=rock_instance.velocity*delta_time
+                rock_instance.rect.center=rock_instance.pos.xy
+                for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
+                    rock_instance.velocity.xy=0,0
+                    rock_instance.acceleration.xy=0,0
+                    if block.id=='0' or block.id=='1' or block.id=='2':
+                        rock_instance.rect.bottom=block.rect.top+24
+                    rock_instance.pos.xy=rock_instance.rect.center
+                for water_line in water_hitlines:
+                    if rock_instance.rect.clipline(water_line)!=():
+                        rock_instance.acceleration.y=300
+                        if rock_instance.velocity.y>little_rock.water_resistance.y:
+                            rock_instance.velocity-=little_rock.water_resistance
+                            rock_instance.velocity.y=-rock_instance.velocity.y
+                            rock_instance.water_jump_sound_channel=pygame.mixer.find_channel()
+                            if rock_instance.water_jump_sound==None:
+                                rock_instance.water_jump_sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels+1)
+                            if abs(rock_instance.rect.x-player.pos.x)<=50:
+                                rock_instance.water_jump_sound_channel.set_volume(1,1)
+                            else:
+                                if player.pos.x>rock_instance.rect.x:
+                                    rock_instance.water_jump_sound_channel.set_volume(0.9,0.1)#set volue acoddin to how close rokc slpashlater
+                                else:
+                                    rock_instance.water_jump_sound_channel.set_volume(0.1,0.9)#set volue acoddin to how close rokc slpashlater
+                            rock_instance.water_jump_sound_channel.play(little_rock.water_jump_sound)
         else:
             if int(rock_instance.image_frame)>=len(little_rock.image_list):
                 rock_instance.kill()
