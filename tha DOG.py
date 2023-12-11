@@ -136,11 +136,9 @@ class player(pygame.sprite.Sprite):
         load_spritesheet_2dir(pygame.image.load('Data/player/player_dodge.png').convert_alpha(),player.dodge_image_list_right,player.dodge_image_list_left,frames=14)
         load_spritesheet_2dir(pygame.image.load('Data/player/player_explode.png').convert_alpha(),player.explode_image_list_right,player.explode_image_list_left,frames=7)
         player.image=player.run_image_list_right[0]
-        player.import_image=pygame.Surface((107,211),pygame.SRCALPHA)
-        player.import_image.blit(player.image,(0,100))
-        player.player_grass_image=player.import_image
         player.rect=player.image.get_rect()
         player.rect.center=spawn_x,spawn_y
+        player.mask=pygame.mask.from_surface(player.image)
         player.pos=pygame.math.Vector2(player.rect.center)
         player.rock_throw_sound=pygame.mixer.Sound('Data/player/rock_throw.wav')
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
@@ -215,8 +213,6 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
-        elif player.state=='grass':
-            player.image=player.player_grass_image
         elif player.state=='aim':#make projetile path here
             print(player.throw_angle,player.throw_power)
             player.idle_timer+=delta_time
@@ -329,6 +325,7 @@ class player(pygame.sprite.Sprite):
             player.velocity+=player.arc_eq_acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
+            player.mask=pygame.mask.from_surface(player.image)
         else:
             player.velocity.x=0
         if not player.jump or abs(player.pos.y-player.jump_height)>=150:
@@ -486,8 +483,8 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.lose_sight_timer=0
                         if player.state=='grass':
                             dog_instance.lose_sight_timer+=1*delta_time
-                    if player.rect.colliderect(dog_instance.rect):
-                        if not dog_instance.player_dodge:
+                    for player in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                        if not dog_instance.player_dodge and player.state!='grass':
                             if player.state!='dodge':
                                 player.life-=1
                                 player.score-=250
@@ -543,6 +540,7 @@ class dog(pygame.sprite.Sprite):
                         dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                 elif dog_instance.state=='stop_rat':
                     dog_instance.state='idle'#edit later
+                dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
                 if dog_instance.velocity.x>=dog_instance.max_velocity.x:
                     dog_instance.velocity.x=dog_instance.max_velocity.x
                 if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
@@ -996,13 +994,19 @@ class block(pygame.sprite.Sprite):
 
 class grass(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/grass.png').convert_alpha()
+    mask=pygame.mask.from_surface(image)
     def __init__(grass_instance,x,y):
         super().__init__()
         grass_instance.image=grass.image
+        grass_instance.mask=grass.mask
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
-        for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False):
+        for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             player.state='grass'   
+            if player.direction=='left':
+                player.image=player.pant_image_list_left[-1]
+            else:
+                player.image=player.pant_image_list_right[-1]
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
@@ -1746,7 +1750,7 @@ while True:
                     water_dot_sprite_group)
         
         #for player in player_sprite_group:
-        #    print(str(player.pos),str(player.arc_eq_acceleration),str(player.velocity),str(player.stamina)+'\033c',end='')
+        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
