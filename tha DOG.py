@@ -109,6 +109,7 @@ class player(pygame.sprite.Sprite):
         player.jump_counter=0
         player.direction='right'
         player.hand=''
+        player.dog_collide=False
         player.jump_height=spawn_y
         player.prev_flower_count=0
         player.flower_count=0
@@ -152,6 +153,18 @@ class player(pygame.sprite.Sprite):
                     player.water=True
             else:
                 break
+        for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                if not player.dog_collide:
+                    if player.state!='grass' and player.state!='dodge' and dog.state!='bite':
+                        player.life-=1
+                        player.score-=250
+                        player.velocity.xy=0,0
+                        player.state='idle'
+                        dog.state='bite'
+                    else:
+                        if player.state=='dodge':
+                            player.score+=500
+                    player.dog_collide=True
         if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
@@ -191,6 +204,7 @@ class player(pygame.sprite.Sprite):
                 player.state='run'
                 player.image_frame=0
                 player.dodge=False
+                player.dog_collide=False
                 if player.direction=='left':
                     player.rect.x-=12
                 else:
@@ -321,7 +335,7 @@ class player(pygame.sprite.Sprite):
         #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
-        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick':
+        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick' and player.state!='grass':
             player.velocity+=player.arc_eq_acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
@@ -437,14 +451,12 @@ class dog(pygame.sprite.Sprite):
         dog_instance.state='idle'
         dog_instance.direction='right'
         dog_instance.prev_direction=dog_instance.direction
-        dog_instance.lose_sight_timer=0
         dog_instance.dodge_counter=3
-        dog_instance.player_dodge=False
+        dog_instance.player_collide=False
         dog_instance.image_frame=0
         dog_instance.image=dog.dog_run_image_list_right[0]
         dog_instance.rect=dog_instance.image.get_rect(topleft=(x*48,y*48-16))
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
-        dog_instance.vission_line=[list(dog_instance.rect.topright),[0,0]]
         dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
         dog_instance.stun_timer=0
     def update(dog_instance,delta_time):
@@ -478,45 +490,27 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.velocity.x=-100
                             dog_instance.prev_direction=dog_instance.direction
                     for player in player_sprite_group:
-                        if player.rect.x-dog_instance.rect.centerx<0:
-                            dog_instance.vission_line=[(dog_instance.rect.topright),(player.rect.topright)]
-                            if player.state!='grass':
-                                dog_instance.direction='left'
-                        elif player.rect.x-dog_instance.rect.centerx>0:
-                            dog_instance.vission_line=[(dog_instance.rect.topleft),(player.rect.topleft)]
-                            if player.state!='grass':
-                                dog_instance.direction='right'
-                        for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
-                            if block.rect.clipline(dog_instance.vission_line[0],dog_instance.vission_line[1]):
-                                dog_instance.lose_sight_timer+=delta_time
-                            else:
+                        if player.state!='grass':
+                            if dog_instance.state!='stomp_rat' or dog_instance.state!='chase_rat':
                                 dog_instance.state='run'
-                                if player.state!='grass':
-                                    dog_instance.lose_sight_timer=0
-                            if player.state=='grass':
-                                dog_instance.lose_sight_timer+=1*delta_time
-                        for player in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                            if not dog_instance.player_dodge and player.state!='grass':
-                                if player.state!='dodge':
-                                    player.life-=1
-                                    player.score-=250
-                                    player.velocity.xy=0,0
-                                    player.state='idle'
-                                    dog_instance.state='bite'
-                                else:
-                                    if dog_instance.dodge_counter>0:
-                                        dog_instance.dodge_counter-=1
-                                        player.score+=500
-                                    else:
-                                        player.life-=1
-                                        player.score-=250
-                                        player.velocity.xy=0,0
-                                        player.state='idle'
-                                        dog_instance.state='bite'
-                                dog_instance.player_dodge=True
-                                break
-                        else:
-                            dog_instance.player_dodge=False
+                            if player.rect.x-dog_instance.rect.centerx<0:
+                                dog_instance.direction='left'
+                            elif player.rect.x-dog_instance.rect.centerx>0:
+                                dog_instance.direction='right'
+                        #for player in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                        #    if not dog_instance.player_collide:
+                        #        if player.state!='grass' and player.state!='dodge':
+                        #            player.life-=1
+                        #            player.score-=250
+                        #            player.velocity.xy=0,0
+                        #            player.state='idle'
+                        #            dog_instance.state='bite'
+                        #        else:
+                        #            if player.state=='dodge':
+                        #                player.score+=500
+                        #    dog_instance.player_collide=True
+                        #else:
+                        #    dog_instance.player_collide=False
                     for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                         dog_instance.state='chase_rat'
                         if rat.pos.x-dog_instance.pos.x>0:
@@ -526,8 +520,6 @@ class dog(pygame.sprite.Sprite):
                         if rat.rect.colliderect(dog_instance.rect):
                             rat.dead=True
                             dog_instance.state='stomp_rat'
-                    if dog_instance.lose_sight_timer>=4 and dog_instance.state!='chase_rat':
-                        dog_instance.state='idle'
                     if dog_instance.state=='run':
                         dog_instance.max_velocity.y=100
                         dog_instance.image_frame+=10*delta_time
@@ -606,6 +598,7 @@ class dog(pygame.sprite.Sprite):
                     if dog_instance.stun_timer>=5:
                         dog_instance.state='idle'
                         dog_instance.stun_timer=0
+                        for player in player_sprite_group:player.dog_collide=False
                     else:
                         dog_instance.stun_timer+=delta_time
             else:
@@ -1783,8 +1776,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
         
-        #for player in player_sprite_group:
-        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        for player in player_sprite_group:
+            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
@@ -1877,7 +1870,7 @@ while True:
                         if player.state=='aim' or player.state=='throw':
                             player.state='throw'
                         else:
-                            if player.state!='pant' and player.state!='explode':
+                            if player.state!='pant' and player.state!='explode' and player.state!='grass':
                                 player.state='idle'
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
         #print(str(clock.get_fps()))
