@@ -154,17 +154,17 @@ class player(pygame.sprite.Sprite):
             else:
                 break
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                if not player.dog_collide:
-                    if player.state!='grass' and player.state!='dodge' and dog.state!='bite':
-                        player.life-=1
-                        player.score-=250
-                        player.velocity.xy=0,0
-                        player.state='idle'
-                        dog.state='bite'
-                    else:
-                        if player.state=='dodge':
-                            player.score+=500
-                    player.dog_collide=True
+            if not player.dog_collide:
+                if player.state!='grass' and player.state!='dodge' and dog.state!='bite':
+                    player.life-=1
+                    player.score-=250
+                    player.velocity.xy=0,0
+                    player.state='idle'
+                    dog.state='bite'
+                else:
+                    if player.state=='dodge':
+                        player.score+=500
+                player.dog_collide=True
         if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
@@ -356,7 +356,7 @@ class player(pygame.sprite.Sprite):
             player.jump_height=player.pos.y
             player.jump_counter=0
             game.draw_rect.centery=player.jump_height-300#?
-            if block.id == '0' or block.id == '1' or block.id == '2':
+            if block.id=='0' or block.id=='1' or block.id=='2' or block.id=='64' or block.id=='65' or block.id == '66' or block.id == '116' or block.id == '117' or block.id == '118':
                 player.rect.bottom=block.rect.top
             elif block.id=='68':
                 if block.rect.x<player.rect.x:
@@ -364,39 +364,49 @@ class player(pygame.sprite.Sprite):
                 elif block.rect.x>player.rect.x:
                     player.rect.right=block.rect.left
                 player.rect.bottom=block.rect.top
-            elif block.id == '10':
+            elif block.id=='10':
                 player.rect.bottom=block.rect.top+4
-            elif block.id == '12':
+            elif block.id=='12':
                 player.rect.bottom=block.rect.top+30
-            elif block.id == '13':
+            elif block.id=='13':
                 player.rect.bottom=block.rect.top+30
-            elif block.id == '70':
+            elif block.id=='70':
                 player.rect.bottom=block.rect.top
             #if pygame.sprite.collide_mask(player,block):
-            elif block.id == '3':#ramps
+            elif block.id=='3':#ramps
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
-            elif block.id == '4':
+            elif block.id=='4':
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
-            elif block.id == '5':
+            elif block.id=='5':
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
-            elif block.id == '92':
+            elif block.id=='92':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-            elif block.id == '93':
+            elif block.id=='93':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-            elif block.id == '94':
+            elif block.id=='94':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             #rock
-            #elif block.id == '6':#top curve right
-            #    if player.pos.x-block.rect.x>18:
-            #        player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
-            #        player.pos.xy=player.rect.center
-            #elif block.id == '7':
-            #    player.rect.bottom=block.rect.top+23
-            #    player.pos.xy=player.rect.center
-            #elif block.id == '8':#top curve left
-            #    if player.pos.x-block.rect.x<=23:
-            #        player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
-            #        player.pos.xy=player.rect.center
+            elif block.id=='35' or block.id=='87':
+                if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
+                    player.rect.right=block.rect.left+53
+                    player.velocity.xy=0,0
+                    player.state='idle'
+            elif block.id=='37' or block.id=='91':
+                if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='left':
+                    player.rect.left=block.rect.right-53
+                    player.velocity.xy=0,0
+                    player.state='idle'
+            elif block.id=='7' or block.id=='59':
+                if block.rect.collidepoint(player.rect.centerx,player.rect.bottom):
+                    player.rect.bottom=block.rect.top+26
+            elif block.id == '6' or block.id == '58':#top curve right
+                if player.pos.x-block.rect.x>18:
+                    player.rect.bottom=block.rect.top+26
+                    #player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
+            elif block.id == '8':#top curve left
+                if player.pos.x-block.rect.x<=23:
+                    player.rect.bottom=block.rect.top+26
+                    #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
             #elif block.id == '35':#sideleft
             #    if pygame.sprite.collide_mask(player,block):
             #        if player.rect.bottom!=block.rect.bottom+1:
@@ -405,13 +415,11 @@ class player(pygame.sprite.Sprite):
             #        else:
             #            if player.state=='run_right':
             #                player.rect.right=block.rect.left+48
-            #        player.pos.xy=player.rect.center
             #elif block.id == '37':#side right
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
-            #        player.pos.xy=player.rect.center
             player.pos.xy=player.rect.center
-        if player.jump and player.state!='explode':
+        if player.jump:
             if abs(player.pos.y-player.jump_height)<150:
                 if player.jump_counter<=0:
                     player.image_frame+=5*delta_time
@@ -1752,9 +1760,10 @@ while True:
                     #    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
                     #    game_settings['fullscreen']=False
                 if event.key==pygame.K_w:
-                    player.jump=True
-                    player.image_frame=0
-                    player.state='sprint'
+                    if player.state!='explode' and player.state!='dodge':
+                        player.jump=True
+                        player.image_frame=0
+                        player.state='sprint'
         game_window.blit(high_score_image,(10,10))
         text(str(save_data['high_score']),(0,0,0),40,(156,5))
         game_window.blit(score_image,(10,50))
