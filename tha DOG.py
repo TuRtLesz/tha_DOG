@@ -1433,7 +1433,7 @@ class game():
         game.player_offset=pygame.math.Vector2()#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
         game.draw_rect=pygame.Rect(0,0,display_size[0]+30,display_size[1]+30)
-        game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+200)
+        game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+400)
         game.earthquake=False
         game.earthquake_timer=0
         game.fat_guy_hit=False
