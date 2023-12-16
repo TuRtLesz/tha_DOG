@@ -25,14 +25,14 @@ def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image
             sprite_image=pygame.transform.scale_by(sprite_image,image_scale)
         sprite_list.append(sprite_image)
     return sprite_list
-def load_spritesheet_2dir(spritesheet_image,sprite_list,sprite_list_fliped,frames=2,image_scale=1):
+def load_spritesheet_2dir(spritesheet_image,sprite_list,sprite_list_fliped,frames=2,image_scale=1,alpha_sur=True):
     sprite_list.clear()
     sprite_list_fliped.clear()
     for image_x in range(0,spritesheet_image.get_width(),spritesheet_image.get_width()//frames):
-        #if alpha_sur:
-        sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()),pygame.SRCALPHA)
-        #else:
-        #    sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()))
+        if alpha_sur:
+            sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()),pygame.SRCALPHA)
+        else:
+            sprite_image=pygame.Surface((spritesheet_image.get_width()//frames,spritesheet_image.get_height()))
         sprite_image.blit(spritesheet_image,(0,0),(image_x,0,sprite_image.get_width(),sprite_image.get_height()))
         if image_scale!=1:
             sprite_image=pygame.transform.scale_by(sprite_image,image_scale)
@@ -715,11 +715,11 @@ class big_fat_guy(pygame.sprite.Sprite):
     rope_image_list_right=[]
     death_image_list_left=[]
     death_image_list_right=[]
-    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert_alpha(),whack_image_list_left,frames=32)
-    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert_alpha(),whack_image_list_right,frames=32)
-    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert_alpha(),run_image_list_left,run_image_list_right,frames=17)
-    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_rope.png').convert_alpha(),rope_image_list_left,rope_image_list_right,frames=20)
-    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_death.png').convert_alpha(),death_image_list_left,death_image_list_right,frames=14)
+    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack.png').convert(),whack_image_list_left,frames=32,alpha_sur=False)
+    load_spritesheet(pygame.image.load('Data/big_fat_guy/big_fat_guy_whack_right.png').convert(),whack_image_list_right,frames=32,alpha_sur=False)
+    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_run.png').convert(),run_image_list_left,run_image_list_right,frames=17,alpha_sur=False)
+    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_rope.png').convert(),rope_image_list_left,rope_image_list_right,frames=20,alpha_sur=False)
+    load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_death.png').convert(),death_image_list_left,death_image_list_right,frames=14,alpha_sur=False)
     hook_image=pygame.image.load('Data/big_fat_guy/hook.png').convert_alpha()
     hook_image_right=pygame.transform.flip(hook_image,True,False)
     def __init__(fat_guy,x,y):
@@ -1077,11 +1077,11 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
         fish_instance.rect.center=fish_instance.pos
 
 class block(pygame.sprite.Sprite):
-    sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert_alpha()
+    sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert()
     block_list=[]
     for block_y in range(0,sprite_sheet.get_height()//48):
         for block_x in range(0,sprite_sheet.get_width()//48):
-            image=pygame.Surface((48,48),pygame.SRCALPHA)
+            image=pygame.Surface((48,48))
             image.blit(sprite_sheet,(0,0),(block_x*48,block_y*48,48,48))
             block_list.append(image)
     def __init__(block_instance,block_id,x,y):
@@ -1431,7 +1431,7 @@ class pressure_switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
 
 class tree(pygame.sprite.Sprite):
-    tree_image=pygame.image.load('Data/tree.png').convert_alpha()
+    tree_image=pygame.image.load('Data/tree.png').convert()
     def __init__(tree_instance,x,y):
         super().__init__()
         tree_instance.image=tree.tree_image
@@ -1487,10 +1487,10 @@ class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
         super().__init__()
         tut_block.image_list=[]
-        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert_alpha()
+        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert()
         for image_x in range(0,tut_block.spirte_sheet.get_width()//x_image_len):
-            image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()),pygame.SRCALPHA)
-            final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2),pygame.SRCALPHA)
+            image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()))
+            final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2))
             image.blit(tut_block.spirte_sheet,(0,0),(image_x*x_image_len,0,x_image_len,tut_block.spirte_sheet.get_height()))
             final_image=pygame.transform.scale2x(image,final_image)
             tut_block.image_list.append(final_image)
