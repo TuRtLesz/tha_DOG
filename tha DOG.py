@@ -1129,6 +1129,24 @@ class flower(pygame.sprite.Sprite):
                 player.score+=600
                 flower_instance.kill()
                 player.state='idle'
+class spike(pygame.sprite.Sprite):
+    image_1=pygame.image.load('Data/blocks/reactive_blocks/spike_1.png').convert_alpha()
+    mask_1=pygame.mask.from_surface(image_1)
+    image_2=pygame.image.load('Data/blocks/reactive_blocks/spike_2.png').convert_alpha()
+    mask_2=pygame.mask.from_surface(image_2)
+    def __init__(spike_instance,x,y,variant):
+        if variant==1:
+            spike_instance.image=spike.image_1
+            spike_instance.image.get_retc(topleft=(x*48,y*48))
+        else:
+            spike_instance.image=spike.image_2
+            spike_instance.image.get_retc(topleft=(x*48,y*48))
+    def update(spike_instance,delta_time):
+        for player in pygame.sprite.spritecollide(spike_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+            player.rect.right=spike_instance.rect.left
+            player.pos.x=player.rect.centerx
+            player.life-=1
+            player.score-=350
 class bomb(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
@@ -1758,6 +1776,10 @@ def map_load():
                     reactive_block_sprite_group.add(little_rock(block_number*48,(row_number+1)*48-12))#x*48,(y+1)*48-12
                 elif block_id=='11':
                     reactive_block_sprite_group.add(rock_pile(block_number*48,(row_number+2)*48-39))
+                elif block_id=='12':
+                    reactive_block_sprite_group.add(spike(block_number,row_number,1))
+                elif block_id=='13':
+                    reactive_block_sprite_group.add(spike(block_number,row_number,2))
     rat_sprite_group.empty()
     fish_sprite_group.empty()
     big_fat_guy_sprite_group.empty()
