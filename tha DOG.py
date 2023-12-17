@@ -1512,10 +1512,10 @@ class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
         super().__init__()
         tut_block.image_list=[]
-        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert()
+        tut_block.spirte_sheet=pygame.image.load(f'Data/blocks/tut_blocks/{name}.png').convert_alpha()
         for image_x in range(0,tut_block.spirte_sheet.get_width()//x_image_len):
-            image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()))
-            final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2))
+            image=pygame.Surface((x_image_len,tut_block.spirte_sheet.get_height()),pygame.SRCALPHA)
+            final_image=pygame.Surface((x_image_len*2,tut_block.spirte_sheet.get_height()*2),pygame.SRCALPHA)
             image.blit(tut_block.spirte_sheet,(0,0),(image_x*x_image_len,0,x_image_len,tut_block.spirte_sheet.get_height()))
             final_image=pygame.transform.scale2x(image,final_image)
             tut_block.image_list.append(final_image)
