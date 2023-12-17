@@ -1450,9 +1450,16 @@ class pressure_switch(pygame.sprite.Sprite):
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert()
-    def __init__(tree_instance,x,y):
+    cut_tree_image=pygame.image.load('Data/cut_tree.png').convert()
+    dry_tree_image=pygame.image.load('Data/dry_tree.png').convert()
+    def __init__(tree_instance,x,y,variant):
         super().__init__()
-        tree_instance.image=tree.tree_image
+        if variant=='0':
+            tree_instance.image=tree.tree_image
+        elif variant=='1':
+            tree_instance.image=tree.cut_tree_image
+        elif variant=='2':
+            tree_instance.image=tree.dry_tree_image
         tree_instance.rect=tree_instance.image.get_rect(bottomleft=((x+1)*48,(y+1)*48))
 class bubble(pygame.sprite.Sprite):
     bubble_image=pygame.image.load('Data/bubble.png').convert_alpha()
@@ -1694,7 +1701,7 @@ with open('Data/worlds/0/0_trees.csv') as map:
     for row_number,row in enumerate(world_reader):
         for tree_number,tree_id in enumerate(row):    
             if tree_id!='-1': 
-                tree_sprite_group.add(tree(tree_number,row_number))
+                tree_sprite_group.add(tree(tree_number,row_number,tree_id))
 with open('Data/worlds/0/0_water_blocks.csv') as map:
     world_reader=csv.reader(map,delimiter=',')
     for row_number,row in enumerate(world_reader):
