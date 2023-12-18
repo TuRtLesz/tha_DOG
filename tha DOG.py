@@ -199,9 +199,11 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.explode_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
+        if player.state=='grass':player.stamina+=200*delta_time
         if player.state=='dodge':
             if int(player.image_frame)>=len(player.dodge_image_list_left)-1:
                 player.state='run'
+                player.stamina-=100
                 player.image_frame=0
                 player.dodge=False
                 player.dog_collide=False
@@ -1115,6 +1117,7 @@ class apple(pygame.sprite.Sprite):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
             player.life+=1
             player.score+=200
+            player.stamina=1000
             apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
@@ -1874,11 +1877,6 @@ while True:
                         player.jump=True
                         player.image_frame=0
                         player.state='sprint'
-        game_window.blit(high_score_image,(10,10))
-        text(str(save_data['high_score']),(0,0,0),40,(156,5))
-        game_window.blit(score_image,(10,50))
-        if player.score<0:player.score=0
-        text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -1959,8 +1957,14 @@ while True:
                             player.state='swim_fast'
                         else:
                             player.state='sprint'
-                    if keys_pressed[pygame.K_SPACE] and not player.water:
-                        player.state='dodge'
+                    if keys_pressed[pygame.K_SPACE]:
+                        if not player.water:
+                            if player.stamina>=100:
+                                player.state='dodge'
+                            else:
+                                player.state='run'
+                        else:
+                            player.state='swim'
                 if keys_pressed[pygame.K_a]:
                     if player.direction=='right':
                         player.velocity.x=0
@@ -1976,8 +1980,14 @@ while True:
                             player.state='swim_fast'
                         else:
                             player.state='sprint'
-                    if keys_pressed[pygame.K_SPACE] and not player.water:
-                        player.state='dodge'
+                    if keys_pressed[pygame.K_SPACE]:
+                        if not player.water:
+                            if player.stamina>=100:
+                                player.state='dodge'
+                            else:
+                                player.state='run'
+                        else:
+                            player.state='swim'
                 if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
                     if player.hand=='rock':
                         player.state='aim'
@@ -1991,6 +2001,10 @@ while True:
                         else:
                             if player.state!='pant' and player.state!='explode' and player.state!='grass':
                                 player.state='idle'
+        pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
+        if player.stamina>0:
+            pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
+            pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x+(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
         #print(str(clock.get_fps()))
         clock.tick()
@@ -2071,6 +2085,11 @@ while True:
     elif game_settings['mode']=='game_complete':
         if player.score>save_data['high_score']:
             save_data['high_score']=player.score
+    game_window.blit(high_score_image,(10,10))
+    text(str(save_data['high_score']),(0,0,0),40,(156,5))
+    game_window.blit(score_image,(10,50))
+    if player.score<0:player.score=0
+    text(str(player.score),(0,0,0),40,(92,45))
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
