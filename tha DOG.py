@@ -1452,9 +1452,9 @@ class pressure_switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
 
 class tree(pygame.sprite.Sprite):
-    tree_image=pygame.image.load('Data/tree.png').convert()
-    cut_tree_image=pygame.image.load('Data/cut_tree.png').convert()
-    dry_tree_image=pygame.image.load('Data/dry_tree.png').convert()
+    tree_image=pygame.image.load('Data/tree.png').convert_alpha()
+    cut_tree_image=pygame.image.load('Data/cut_tree.png').convert_alpha()
+    dry_tree_image=pygame.image.load('Data/dry_tree.png').convert_alpha()
     def __init__(tree_instance,x,y,variant):
         super().__init__()
         if variant=='0':
@@ -2023,10 +2023,17 @@ while True:
                 if retry_rect.collidepoint(mouse_pos):
                     game_settings['mode']='in_game'
                     for player in player_sprite_group:
-                        player.rect.midbottom=player.last_check_point.midbottom
+                        try:
+                            player.rect.midbottom=player.last_check_point.midbottom
+                        except:
+                            player.rect.center=(2067,560)
                         player.pos.xy=player.rect.center
                         player.life=3
+                        player.score=0
+                        player.hand=''
                         player.state='idle'
+                        player.flower_count=0
+                        player.stamina=1000
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos):
                     pygame.mixer.quit()
@@ -2047,6 +2054,7 @@ while True:
                         player.hand=''
                         player.state='idle'
                         player.flower_count=0
+                        player.stamina=1000
                     map_load()
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
