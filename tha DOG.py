@@ -642,8 +642,9 @@ class ostrich(pygame.sprite.Sprite):
     load_spritesheet_2dir(pygame.image.load('Data/ostrich/ostrich_run.png').convert_alpha(),run_image_list_left,run_image_list_right,9)
     load_spritesheet_2dir(pygame.image.load('Data/ostrich/ostrich_death.png').convert_alpha(),death_image_list_left,death_image_list_right,5)
     def __init__(ostrich_instance,x,y,direction):
+        super().__init__()
         ostrich_instance.image=ostrich.run_image_list_left[0]
-        ostrich_instance.rect=ostrich_instance.image.get_rect(topbottom=(x*48,y*48))
+        ostrich_instance.rect=ostrich_instance.image.get_rect(midbottom=(x*48,(y+1)*48))
         ostrich_instance.velocity=pygame.math.Vector2()
         ostrich_instance.acceleration=pygame.math.Vector2()
         if direction=='left':
