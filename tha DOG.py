@@ -213,10 +213,10 @@ class player(pygame.sprite.Sprite):
                     player.rect.x+=12
                 player.pos.xy=player.rect.center
             if player.direction=='left':
-                player.velocity.x=-400
+                player.velocity.x=-550
                 player.image=player.dodge_image_list_left[int(player.image_frame)]
             elif player.direction=='right':
-                player.velocity.x=400
+                player.velocity.x=550
                 player.image=player.dodge_image_list_right[int(player.image_frame)]
             player.image_frame+=10*delta_time
         if player.state=='pant':
@@ -433,6 +433,8 @@ class player(pygame.sprite.Sprite):
                         player.image=player.jump_image_list_left[round(player.image_frame)] 
                     player.stamina-=50*delta_time
                     player.pos.y-=300*delta_time
+                    if player.velocity.x<100:
+                        player.velocity.x=150
                     player.rect.center=player.pos
                 else:
                     player.jump=False
@@ -1307,7 +1309,6 @@ class little_rock(pygame.sprite.Sprite):
     mask=pygame.mask.from_surface(image_list[0])
     water_resistance=pygame.math.Vector2(0,100)
     water_jump_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/little_rock_water.wav')
-    
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.life=3
@@ -1329,6 +1330,7 @@ class little_rock(pygame.sprite.Sprite):
                     for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                         dog.state='stunned'
                         dog.life-=1
+                        dog.image_frame=0
                         rock_instance.velocity.x=0
                         rock_instance.life-=1
                         player.score+=200
