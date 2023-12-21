@@ -1547,7 +1547,7 @@ class game():
         game.offset=pygame.math.Vector2()#cam offset from player?
         game.player_offset=pygame.math.Vector2()#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
-        game.draw_rect=pygame.Rect(0,0,display_size[0]+30,display_size[1]+30)
+        game.draw_rect=pygame.Rect(0,0,display_size[0]+40,display_size[1]+40)
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+400)
         game.earthquake=False
         game.earthquake_timer=0
@@ -1561,13 +1561,17 @@ class game():
                 cam.screen_shake.xy=(0,0)
                 if cam.spike_shake_timer>0:
                     cam.spike_shake_timer-=delta_time
-                    cam.screen_shake.xy=(numpy.random.randint(-15,15),0)#numpy.random.randint(-10,10))
+                    cam.screen_shake.x=numpy.random.randint(-15,15)#numpy.random.randint(-10,10))
             if cam.earthquake:
-                cam.screen_shake.xy=(0,numpy.random.randint(-15,15))
                 if cam.earthquake_timer>=30:#1/2 min
                     cam.earthqake_timer=0
                     cam.earthquake=False
+                    cam.screen_shake.xy=(0,0)
                 else:
+                    if cam.earthqake_timer==0:
+                        cam.screen_shake.y=20
+                    else:
+                        cam.screen_shake.y=numpy.random.randint(-15,15)
                     cam.earthquake_timer+=delta_time
             if not cam.fat_guy_hit and player_sprite.pos.x>player.fat_guy_pan:#fat_guy pan loc
                 cam.player_offset.x-=100*delta_time
