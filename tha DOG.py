@@ -925,6 +925,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     else:
                                         fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
 class rat(pygame.sprite.Sprite):
+    death_sound=pygame.mixer.Sound('Data/rat/rat_death.wav')
     rat_run_right_list=[]
     rat_death_right_list=[]
     rat_run_left_list=[]
@@ -943,6 +944,7 @@ class rat(pygame.sprite.Sprite):
     def update(rat_instance,delta_time):
         if rat_instance.dead:
             if rat_instance.frame>len(rat.rat_death_right_list)-1:
+                rat.death_sound.play()
                 rat_instance.kill()
             if rat_instance.velocity.x>0:
                 rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
@@ -1772,7 +1774,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(75984,960))#2067,560,30111
+player_sprite_group.add(player(2067,960))#2067,560,30111
 
 def map_load():
     reactive_block_sprite_group.empty()
