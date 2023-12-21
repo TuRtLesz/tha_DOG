@@ -433,8 +433,10 @@ class player(pygame.sprite.Sprite):
                         player.image=player.jump_image_list_left[round(player.image_frame)] 
                     player.stamina-=50*delta_time
                     player.pos.y-=300*delta_time
-                    if player.velocity.x<100:
+                    if player.velocity.x<100 and player.direction=='right':
                         player.velocity.x=150
+                    elif player.velocity.x<-100 and player.direction=='left':
+                        player.velocity.x=-150
                     player.rect.center=player.pos
                 else:
                     player.jump=False
@@ -693,10 +695,12 @@ class ostrich(pygame.sprite.Sprite):
                     for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_instance_group,dokill=False):
                         if type(reactive_block)==bomb:
                             ostrich_instance.life=0
+                            ostrich_instance.image_frame=0
                             player.score+=250
                         elif type(reactive_block)==little_rock:
                             ostrich_instance.stun_timer=4
                             ostrich_instance.life-=1
+                            if ostrich_instance.life<0:ostrich_instance.image_frame=0
                             player.score+=450
             else:
                 if ostrich_instance.stun_timer<0:
@@ -1141,18 +1145,22 @@ class spike(pygame.sprite.Sprite):
     image_2=pygame.image.load('Data/blocks/reactive_blocks/spike_2.png').convert_alpha()
     mask_2=pygame.mask.from_surface(image_2)
     def __init__(spike_instance,x,y,variant):
+        super().__init__()
+        spike_instance.player_collide=False
         if variant==1:
             spike_instance.image=spike.image_1
-            spike_instance.image.get_retc(topleft=(x*48,y*48))
+            spike_instance.rect=spike_instance.image.get_rect(topleft=(x*48,((y+1)*48)-28))
         else:
             spike_instance.image=spike.image_2
-            spike_instance.image.get_retc(topleft=(x*48,y*48))
+            spike_instance.rect=spike_instance.image.get_rect(topleft=(x*48,((y+1)*48)-22))
     def update(spike_instance,delta_time):
         for player in pygame.sprite.spritecollide(spike_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            player.rect.right=spike_instance.rect.left
-            player.pos.x=player.rect.centerx
-            player.life-=1
-            player.score-=350
+            if not spike_instance.player_collide:
+                spike_instance.rect.top=player.rect.bottom
+                player.life-=1
+                player.score-=350
+                game.spike_shake_timer=1
+                spike_instance.player_collide=True
 class bomb(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
@@ -1543,6 +1551,7 @@ class game():
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+400)
         game.earthquake=False
         game.earthquake_timer=0
+        game.spike_shake_timer=0
         game.fat_guy_hit=False
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
@@ -1550,8 +1559,11 @@ class game():
                 cam.screen_shake.xy=(numpy.random.randint(-10,10),numpy.random.randint(-10,10))
             else:
                 cam.screen_shake.xy=(0,0)
+                if cam.spike_shake_timer>0:
+                    cam.spike_shake_timer-=delta_time
+                    cam.screen_shake.xy=(numpy.random.randint(-15,15),0)#numpy.random.randint(-10,10))
             if cam.earthquake:
-                cam.screen_shake.xy=(numpy.random.randint(-15,15),numpy.random.randint(-15,15))
+                cam.screen_shake.xy=(0,numpy.random.randint(-15,15))
                 if cam.earthquake_timer>=30:#1/2 min
                     cam.earthqake_timer=0
                     cam.earthquake=False
@@ -1756,7 +1768,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111
+player_sprite_group.add(player(75984,960))#2067,560,30111
 
 def map_load():
     reactive_block_sprite_group.empty()
