@@ -636,6 +636,59 @@ class dog(pygame.sprite.Sprite):
 
         #for dog in dog_sprite_group:
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
+class bird(pygame.sprite.Sprite):
+    fly_image_list_left=[]
+    death_image_list_left=[]
+    fly_image_list_right=[]
+    death_image_list_right=[]
+    load_spritesheet_2dir(pygame.image.load('Data/bird/bird_fly.png').convert_alpha(),fly_image_list_left,fly_image_list_right,3)
+    load_spritesheet_2dir(pygame.image.load('Data/bird/bird_death.png').convert_alpha(),death_image_list_left,death_image_list_right,5)
+    def __init__(bird_instance,x,y):
+        bird_instance.velocity=pygame.math.Vector2()
+        bird_instance.rect=bird_instance.image.get_rect(center=(x*48,y*48))
+        bird_instance.dead=False
+        bird_instance.image_frame=0
+    def update(bird_instance,delta_time):
+        if bird_instance.dead:
+            for block in pygame.sprite.spritecollide(bird_instance,block_sprite_instance_group,dokill=False):
+                if int(bird_instance.image_frame)>len(bird.death_image_list_left):
+                    bird_instance.kill()
+                else:
+                    bird_instance.rect.bottom=block.rect.top
+                    bird_instance.image_frame+=15*delta_time
+            else:
+                if int(bird_instance.image_frame)>=2:
+                    bird_instance.image_frame=2
+                else:
+                    bird_instance.image_frame+=15*delta_time
+                    if int(bird_instance.image_frame)>=2:
+                        bird_instance.image_frame=2
+            if bird_instance.velocity<0:
+                bird_instance.image=bird.death_image_list_left[int(bird_instance.image_frame)]
+            else:
+                bird_instance.image=bird.death_image_list_left[int(bird_instance.image_frame)]
+        else:
+            for player in player_sprite_group:
+                for reactive_block in pygame.sprite.spritecollide(bird_instance,reactive_block_sprite_instance_group,dokill=False):
+                    if type(reactive_block)==little_rock:
+                        player.score+=550
+                        bird_instance.dead=True
+                if player.rect.centerx-bird_instance.rect.centerx<-200:
+                    bird_instance.velocity.x=-350
+                    if player.rect.centerx-bird_instance.rect.centerx<-100:
+                        if bird_instance.rect.centery<player.rect.centery:
+                            bird_instance.velocity.y=250
+                        else:
+                            bird_instance.velocity.y=-250
+                    else:bird_instance.velocity.y=0
+                elif player.rect.centerx-bird_instance.rect.centerx>200:
+                    bird_instance.velocity.x=350
+                    if player.rect.centerx-bird_instance.rect.centerx>100:
+                        if bird_instance.rect.centery<player.rect.centery:
+                            bird_instance.velocity.y=250
+                        else:
+                            bird_instance.velocity.y=-250
+                    else:bird_instance.velocity.y=0
 class ostrich(pygame.sprite.Sprite):
     run_image_list_left=[]
     death_image_list_left=[]
@@ -1311,7 +1364,7 @@ class rock(pygame.sprite.Sprite):
                     elif block.id=='203' or block.id=='176' or block.id=='205' or block.id=='181' or block.id=='210' or block.id=='212' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
                         rock_instance.rect.bottom=block.rect.top
         else:
-            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_group,dokill=False):
+            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock and reactive_block.velocity.x>0:
                     rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
@@ -1467,6 +1520,7 @@ class nest(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reavtive_blocks/nest.png').convert_alpha(),image_list,7)
     def __init__(nest_instance,x,y):
+        super().__init__()
         nest_instance.timer=10
         nest_instance.fall=False
         nest_instance.image=nest.image_list[0]
@@ -1482,9 +1536,10 @@ class nest(pygame.sprite.Sprite):
                     nest_instance.bird_count-=1
                 else:
                     nest_instance.timer+=delta_time
-            for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_group,dokill=False):
+            for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock:
                     nest_instance.fall=True
+                    for player in player_sprite_group:player.score+=650
         else:
             for block in pygame.sprite.spritecollide(nest_instance.block_sprite_instance_group,dokill=False):
                 nest.rect.bottom=block.rect.top
@@ -1937,12 +1992,12 @@ while True:
             if player.life<=0:
                 game_settings['mode']='game_over'
             if player.state!='aim':
-                game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
+                game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
                             delta_time,water_dot_sprite_group)
             elif player.state=='aim' or player.state=='throw':
                 player.update(delta_time)
                 big_fat_guy_sprite_group.update(delta_time)
-        game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bubble_sprite_group],
+        game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,bubble_sprite_group],
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
                     water_dot_sprite_group)
