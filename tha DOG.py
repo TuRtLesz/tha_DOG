@@ -1774,7 +1774,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,960))#2067,560,30111
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960
 
 def map_load():
     reactive_block_sprite_group.empty()
