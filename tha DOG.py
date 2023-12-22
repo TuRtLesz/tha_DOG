@@ -1463,6 +1463,38 @@ class pressure_switch(pygame.sprite.Sprite):
                                     if bomb_rect.colliderect(fish.rect):
                                         fish.death=True
                                         fish.image_frame=0
+class nest(pygame.sprite.Sprite):
+    image_list=[]
+    load_spritesheet(pygame.image.load('Data/blocks/reavtive_blocks/nest.png').convert_alpha(),image_list,7)
+    def __init__(nest_instance,x,y):
+        nest_instance.timer=10
+        nest_instance.fall=False
+        nest_instance.image=nest.image_list[0]
+        nest_instance.image_frame=0
+        nest_instance.bird_count=5#no of birds in a nest
+        nest_instance.rect=nest_instance.image.get_rect(topleft=(x*48,y*48))
+    def update(nest_instance,delta_time):
+        if nest_instance.bird_count>0:
+            if not nest_instance.fall:
+                if nest_instance.timer>=10:
+                    nest_instance.timer=0
+                    bird_sprite_group.add(bird(nest_instance.rect.center))
+                    nest_instance.bird_count-=1
+                else:
+                    nest_instance.timer+=delta_time
+            for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_group,dokill=False):
+                if type(reactive_block)==little_rock:
+                    nest_instance.fall=True
+        else:
+            for block in pygame.sprite.spritecollide(nest_instance.block_sprite_instance_group,dokill=False):
+                nest.rect.bottom=block.rect.top
+                if int(nest_instance.image_frame)+1>=7:
+                    nest_instance.kill()
+                else:
+                    nest_instance.image=nest.image_list[int(nest_instance.image_frame)]
+                    nest_instance.image_frame+=10*delta_time
+            else:
+                nest_instance.rect.y+=100*delta_time
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
@@ -1681,6 +1713,7 @@ fish_sprite_group=pygame.sprite.Group()
 rat_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 ostrich_sprite_group=pygame.sprite.Group()
+bird_sprite_group=pygame.sprite.Group()
 big_fat_guy_sprite_group=pygame.sprite.Group()
 
 block_sprite_group=pygame.sprite.Group()
