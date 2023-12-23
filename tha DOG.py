@@ -1518,7 +1518,7 @@ class pressure_switch(pygame.sprite.Sprite):
                                         fish.image_frame=0
 class nest(pygame.sprite.Sprite):
     image_list=[]
-    load_spritesheet(pygame.image.load('Data/blocks/reavtive_blocks/nest.png').convert_alpha(),image_list,7)
+    load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/nest.png').convert_alpha(),image_list,7)
     def __init__(nest_instance,x,y):
         super().__init__()
         nest_instance.timer=10
