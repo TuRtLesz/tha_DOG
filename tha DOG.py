@@ -1365,7 +1365,7 @@ class rock(pygame.sprite.Sprite):
                         rock_instance.rect.bottom=block.rect.top
         else:
             for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
-                if type(reactive_block)==little_rock and reactive_block.velocity.x>0:
+                if type(reactive_block)==little_rock:
                     rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
     image_list=[]
@@ -1756,8 +1756,8 @@ class game():
         reactive_block_sprite_instance_group.empty()
         for reactive_block in reactive_block_sprite_group:
             if reactive_block.rect.colliderect(update_instance.update_rect):
-                reactive_block.update(delta_time)
                 reactive_block_sprite_instance_group.add(reactive_block)
+        for reactive_instance_block in reactive_block_sprite_instance_group:reactive_instance_block.update(delta_time)
         for water_dot in water_dot_sprite_group:
             if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
                 water_dot.update()
