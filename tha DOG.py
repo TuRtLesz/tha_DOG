@@ -644,8 +644,10 @@ class bird(pygame.sprite.Sprite):
     load_spritesheet_2dir(pygame.image.load('Data/bird/bird_fly.png').convert_alpha(),fly_image_list_left,fly_image_list_right,3)
     load_spritesheet_2dir(pygame.image.load('Data/bird/bird_death.png').convert_alpha(),death_image_list_left,death_image_list_right,5)
     def __init__(bird_instance,x,y):
+        super().__init__()
         bird_instance.velocity=pygame.math.Vector2()
-        bird_instance.rect=bird_instance.image.get_rect(center=(x*48,y*48))
+        bird_instance.image=bird.fly_image_list_left[0]
+        bird_instance.rect=bird_instance.image.get_rect(center=(x,y))
         bird_instance.dead=False
         bird_instance.image_frame=0
     def update(bird_instance,delta_time):
@@ -1532,7 +1534,7 @@ class nest(pygame.sprite.Sprite):
             if not nest_instance.fall:
                 if nest_instance.timer>=10:
                     nest_instance.timer=0
-                    bird_sprite_group.add(bird(nest_instance.rect.center))
+                    bird_sprite_group.add(bird(nest_instance.rect.centerx,nest_instance.rect.centery))
                     nest_instance.bird_count-=1
                 else:
                     nest_instance.timer+=delta_time
@@ -1862,7 +1864,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960
+player_sprite_group.add(player(102912,560))#2067,560,30111,75984,960
 
 def map_load():
     reactive_block_sprite_group.empty()
@@ -1899,6 +1901,8 @@ def map_load():
                     reactive_block_sprite_group.add(spike(block_number,row_number,1))
                 elif block_id=='13':
                     reactive_block_sprite_group.add(spike(block_number,row_number,2))
+                elif block_id=='14':
+                    reactive_block_sprite_group.add(nest(block_number,row_number))
     rat_sprite_group.empty()
     fish_sprite_group.empty()
     big_fat_guy_sprite_group.empty()
