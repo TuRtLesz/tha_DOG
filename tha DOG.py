@@ -653,20 +653,17 @@ class bird(pygame.sprite.Sprite):
     def update(bird_instance,delta_time):
         if bird_instance.dead:
             for block in pygame.sprite.spritecollide(bird_instance,block_sprite_instance_group,dokill=False):
-                if int(bird_instance.image_frame)>len(bird.death_image_list_left):
-                    bird_instance.kill()
-                else:
-                    bird_instance.rect.bottom=block.rect.top
-                    bird_instance.image_frame+=15*delta_time
+                bird_instance.kill()
             else:
-                if int(bird_instance.image_frame)>=2:
-                    bird_instance.image_frame=2
+                if int(bird_instance.image_frame)>=len(bird.death_image_list_left):
+                    bird_instance.image_frame=len(bird.death_image_list_left)
                 else:
-                    bird_instance.image_frame+=15*delta_time
+                    bird_instance.image_frame+=10*delta_time
                     if int(bird_instance.image_frame)>=2:
                         bird_instance.image_frame=2
-            if bird_instance.velocity<0:
-                bird_instance.image=bird.death_image_list_left[int(bird_instance.image_frame)]
+                bird_instance.rect.centery+=100*delta_time
+            if bird_instance.velocity.x<0:
+                bird_instance.image=bird.death_image_list_right[int(bird_instance.image_frame)]
             else:
                 bird_instance.image=bird.death_image_list_left[int(bird_instance.image_frame)]
         else:
@@ -683,7 +680,8 @@ class bird(pygame.sprite.Sprite):
                         else:
                             bird_instance.velocity.y=-250
                     else:bird_instance.velocity.y=0
-                elif player.rect.centerx-bird_instance.rect.centerx>200:
+                else:bird_instance.velocity.y=0
+                if player.rect.centerx-bird_instance.rect.centerx>200:
                     bird_instance.velocity.x=350
                     if player.rect.centerx-bird_instance.rect.centerx>100:
                         if bird_instance.rect.centery<player.rect.centery:
@@ -691,6 +689,15 @@ class bird(pygame.sprite.Sprite):
                         else:
                             bird_instance.velocity.y=-250
                     else:bird_instance.velocity.y=0
+                else:bird_instance.velocity.y=0
+                bird_instance.rect.center+=bird_instance.velocity*delta_time
+                if int(bird_instance.image_frame)>=len(bird.fly_image_list_left):
+                    bird_instance.image_frame=0
+                if bird_instance.velocity.x>0:
+                    bird_instance.image=bird.fly_image_list_right[int(bird_instance.image_frame)]
+                else:
+                    bird_instance.image=bird.fly_image_list_left[int(bird_instance.image_frame)]
+                bird_instance.image_frame+=10*delta_time
 class ostrich(pygame.sprite.Sprite):
     run_image_list_left=[]
     death_image_list_left=[]
@@ -1541,10 +1548,10 @@ class nest(pygame.sprite.Sprite):
             for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock:
                     nest_instance.fall=True
-                    for player in player_sprite_group:player.score+=650
+                    for player in player_sprite_group:player.score+=650 
         else:
-            for block in pygame.sprite.spritecollide(nest_instance.block_sprite_instance_group,dokill=False):
-                nest.rect.bottom=block.rect.top
+            for block in pygame.sprite.spritecollide(nest_instance,block_sprite_instance_group,dokill=False):
+                nest_instance.rect.bottom=block.rect.top
                 if int(nest_instance.image_frame)+1>=7:
                     nest_instance.kill()
                 else:
