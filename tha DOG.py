@@ -1288,6 +1288,9 @@ class bomb_land(pygame.sprite.Sprite):
             for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
                 dog.image_frame=0
                 dog.life=0
+            for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False):
+                if type(reactive_block)==bomb_land:
+                    reactive_block.explode=True
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
                 if player.state!='dodge':
