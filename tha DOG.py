@@ -729,11 +729,13 @@ class ostrich(pygame.sprite.Sprite):
                     for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
                         if block.id=='87' or block.id=='35':
                             if ostrich_instance.acceleration.x==10:
-                                ostrich_instance.acceleration.x=0
+                                ostrich_instance.velocity.x=0
+                                ostrich_instance.acceleration.x=-10
                                 ostrich_instance.image_frame=0
                         elif block.id=='37' or block.id=='91':
                             if ostrich_instance.acceleration.x==-10:
-                                ostrich_instance.acceleration.x=0
+                                ostrich_instance.velocity.x=0
+                                ostrich_instance.acceleration.x=10
                                 ostrich_instance.image_frame=0
                     if int(ostrich_instance.image_frame)>=len(ostrich.run_image_list_left):
                         ostrich_instance.image_frame=0
@@ -752,8 +754,15 @@ class ostrich(pygame.sprite.Sprite):
                             player.state='idle'
                             ostrich_instance.stun_timer=2
                     for dog in pygame.sprite.spritecollide(ostrich_instance,dog_sprite_group,dokill=False):
-                        dog.life=0
-                        player.score+=50
+                        if dog.life>0:
+                            if ostrich_instance.acceleration.x<0 and ostrich_instance.rect.centerx-dog.rect.centerx>0:
+                                dog.image_frame=0
+                                dog.life=0
+                                player.score+=50
+                            elif ostrich_instance.acceleration.x>0 and ostrich_instance.rect.centerx-dog.rect.centerx<0:
+                                dog.image_frame=0
+                                dog.life=0
+                                player.score+=50
                     for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_instance_group,dokill=False):
                         if type(reactive_block)==bomb:
                             ostrich_instance.life=0
@@ -1183,7 +1192,7 @@ class apple(pygame.sprite.Sprite):
     def __init__(apple_instance,x,y):
         super().__init__()
         apple_instance.image=apple.image
-        apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,y*48))
+        apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,(y*48)+22))
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
             player.life+=1
@@ -1275,6 +1284,9 @@ class bomb_land(pygame.sprite.Sprite):
             else:
                 bomb.image=bomb_land.image_list[int(bomb.frame)]
                 bomb.mask=pygame.mask.from_surface(bomb.image)
+            for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
+                dog.image_frame=0
+                dog.life=0
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
                 if player.state!='dodge':
@@ -1289,10 +1301,6 @@ class bomb_land(pygame.sprite.Sprite):
             #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
             #            bomb.explode=True
             #            reactive_block.velocity.x=0
-            for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
-                if bomb.explode:
-                    dog.life-=1
-                    dog.state='stunned'
                 
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
@@ -1666,7 +1674,7 @@ class game():
                     cam.earthquake=False
                     cam.screen_shake.xy=(0,0)
                 else:
-                    if cam.earthqake_timer==0:
+                    if cam.earthquake_timer==0:
                         cam.screen_shake.y=20
                     else:
                         cam.screen_shake.y=numpy.random.randint(-15,15)
@@ -1871,7 +1879,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(102912,560))#2067,560,30111,75984,960
+player_sprite_group.add(player(109968,560))#2067,560,30111,75984,960
 
 def map_load():
     reactive_block_sprite_group.empty()
