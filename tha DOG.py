@@ -155,7 +155,7 @@ class player(pygame.sprite.Sprite):
                 break
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             if not player.dog_collide:
-                if player.state!='grass' and player.state!='dodge' and dog.state!='bite':
+                if player.state!='grass' and player.state!='dodge' and dog.state!='bite' and dog.state!='stunned':
                     player.life-=1
                     player.score-=250
                     player.velocity.xy=0,0
@@ -1117,15 +1117,15 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                             player_obj.life-=1
                             player_obj.score-=100
                         if player.pos.x>fish_instance.pos.x:
-                            fish_instance.velocity.x=140
+                            fish_instance.velocity.x=150
                             fish_instance.direction='right'
                         else:
-                            fish_instance.velocity.x=-140
+                            fish_instance.velocity.x=-150
                             fish_instance.direction='left'
                         if player.pos.y>fish_instance.pos.y:
-                            fish_instance.velocity.y=35
+                            fish_instance.velocity.y=50
                         else:
-                            fish_instance.velocity.y=-35
+                            fish_instance.velocity.y=-50
                         fish_instance.image_frame+=10*delta_time
                         if fish_instance.image_frame>=len(fish.fish_swim_imagelist_left)-1:
                             fish_instance.image_frame=0
@@ -1211,6 +1211,7 @@ class flower(pygame.sprite.Sprite):
                 player.flower_count+=1
                 player.score+=600
                 flower_instance.kill()
+                player.stamina=500
                 player.state='idle'
 class spike(pygame.sprite.Sprite):
     image_1=pygame.image.load('Data/blocks/reactive_blocks/spike_1.png').convert_alpha()
@@ -1879,7 +1880,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(109968,560))#2067,560,30111,75984,960
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load():
     reactive_block_sprite_group.empty()
