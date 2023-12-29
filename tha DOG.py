@@ -93,7 +93,7 @@ class player(pygame.sprite.Sprite):
         player.fat_guy_pan=0
         player.score=0
         player.velocity=pygame.math.Vector2(0,0)
-        player.arc_eq_acceleration=pygame.math.Vector2(0,0)
+        player.acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
         player.life=40#change later
         player.life_image_frame=0
@@ -286,10 +286,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':    
-                player.arc_eq_acceleration.x=50
+                player.acceleration.x=50
                 player.image=player.run_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.arc_eq_acceleration.x=-50
+                player.acceleration.x=-50
                 player.image=player.run_image_list_left[round(player.image_frame)]
         elif player.state=='sprint':
             player.max_velocity.x=350
@@ -298,10 +298,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':
-                player.arc_eq_acceleration.x=100
+                player.acceleration.x=100
                 player.image=player.run_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.arc_eq_acceleration.x=-100
+                player.acceleration.x=-100
                 player.image=player.run_image_list_left[round(player.image_frame)]
         elif player.state=='swim_fast':
             if player.stamina<=0:
@@ -313,10 +313,10 @@ class player(pygame.sprite.Sprite):
                 if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                     player.image_frame=6
                 if player.direction=='right':
-                    player.arc_eq_acceleration.x=100
+                    player.acceleration.x=100
                     player.image=player.swim_image_list_right[round(player.image_frame)]
                 elif player.direction=='left':
-                    player.arc_eq_acceleration.x=-100
+                    player.acceleration.x=-100
                     player.image=player.swim_image_list_left[round(player.image_frame)]
         if player.state=='swim':
             player.max_velocity.x=150
@@ -324,10 +324,10 @@ class player(pygame.sprite.Sprite):
             if round(player.image_frame)>=len(player.swim_image_list_right)-1:
                 player.image_frame=6
             if player.direction=='right':    
-                player.arc_eq_acceleration.x=50
+                player.acceleration.x=50
                 player.image=player.swim_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
-                player.arc_eq_acceleration.x=-50
+                player.acceleration.x=-50
                 player.image=player.swim_image_list_left[round(player.image_frame)]
         if player.velocity.x>=player.max_velocity.x:
             player.velocity.x=player.max_velocity.x
@@ -338,7 +338,7 @@ class player(pygame.sprite.Sprite):
         if player.stamina<=0:
             player.stamina=0
         if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick' and player.state!='grass':
-            player.velocity+=player.arc_eq_acceleration*delta_time
+            player.velocity+=player.acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
             player.mask=pygame.mask.from_surface(player.image)
@@ -1297,7 +1297,7 @@ class bomb_land(pygame.sprite.Sprite):
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
                 if player.state!='dodge':
                     if not bomb.explode:
-                        player.life-=1
+                        player.life-=2
                         player.score-=500
                     bomb.explode=True
                     player.image_frame=0
