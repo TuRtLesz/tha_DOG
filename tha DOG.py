@@ -1195,9 +1195,9 @@ class apple(pygame.sprite.Sprite):
         apple_instance.rect=apple_instance.image.get_rect(topleft=(x*48,(y*48)+22))
     def update(apple_instance,delta_time):
         for player in pygame.sprite.spritecollide(apple_instance,player_sprite_group,dokill=False):#recover heath here
-            player.life+=1
+            player.life+=2
             player.score+=200
-            player.stamina=1000
+            player.stamina+=1000
             apple_instance.kill()
 class flower(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/flower.png').convert_alpha()
@@ -1211,7 +1211,7 @@ class flower(pygame.sprite.Sprite):
                 player.flower_count+=1
                 player.score+=600
                 flower_instance.kill()
-                player.stamina=500
+                player.stamina+=500
                 player.state='idle'
 class spike(pygame.sprite.Sprite):
     image_1=pygame.image.load('Data/blocks/reactive_blocks/spike_1.png').convert_alpha()
@@ -1277,7 +1277,7 @@ class bomb_land(pygame.sprite.Sprite):
         bomb_instance.frame=0
         bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
         bomb_instance.explode=False
-        bomb_instance.radius=90
+        bomb_instance.radius=30
     def update(bomb,delta_time):
         if bomb.explode:
             bomb.frame+=4*delta_time
