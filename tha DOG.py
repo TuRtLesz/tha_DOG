@@ -1277,6 +1277,7 @@ class bomb_land(pygame.sprite.Sprite):
         bomb_instance.frame=0
         bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
         bomb_instance.explode=False
+        bomb_instance.radius=90
     def update(bomb,delta_time):
         if bomb.explode:
             bomb.frame+=4*delta_time
@@ -1286,9 +1287,10 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.image=bomb_land.image_list[int(bomb.frame)]
                 bomb.mask=pygame.mask.from_surface(bomb.image)
             for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
-                dog.image_frame=0
-                dog.life=0
-            for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False):
+                if dog.life>0:
+                    dog.image_frame=0
+                    dog.life=0
+            for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
                 if type(reactive_block)==bomb_land:
                     reactive_block.explode=True
         else:
