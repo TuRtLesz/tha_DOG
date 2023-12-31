@@ -691,6 +691,11 @@ class bird(pygame.sprite.Sprite):
                     else:bird_instance.velocity.y=0
                 else:bird_instance.velocity.y=0
                 bird_instance.rect.center+=bird_instance.velocity*delta_time
+                if player.rect.colliderect(bird_instance.rect) and player.state!='dodge':
+                    player.score-=100
+                    player.life-=1
+                    bird_instance.dead=True
+                    bird_instance.image_frame=0
                 if int(bird_instance.image_frame)>=len(bird.fly_image_list_left):
                     bird_instance.image_frame=0
                 if bird_instance.velocity.x>0:
