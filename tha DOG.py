@@ -1187,11 +1187,12 @@ class grass(pygame.sprite.Sprite):
         grass_instance.rect=grass_instance.image.get_rect(topleft=(x*48,y*48-23))
     def update(grass_instance,delta_time):
         for player in pygame.sprite.spritecollide(grass_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            player.state='grass'   
-            if player.direction=='left':
-                player.image=player.pant_image_list_left[-1]
-            else:
-                player.image=player.pant_image_list_right[-1]
+            if player.state!='throw':
+                player.state='grass'   
+                if player.direction=='left':
+                    player.image=player.pant_image_list_left[-1]
+                else:
+                    player.image=player.pant_image_list_right[-1]
 class apple(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/apple.png').convert_alpha()
     def __init__(apple_instance,x,y):
