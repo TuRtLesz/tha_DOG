@@ -193,7 +193,6 @@ class player(pygame.sprite.Sprite):
                     player.explode_timer=0
                 else:
                     player.explode_timer+=delta_time
-                #player.state='idle'
             if player.direction=='right':
                 player.image=player.explode_image_list_right[round(player.image_frame)]
             elif player.direction=='left':
@@ -229,7 +228,6 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
-        elif player.state=='aim':#make projetile path here
             print(player.throw_angle,player.throw_power)
             player.idle_timer+=delta_time
             if player.image_frame>=3:
@@ -282,7 +280,7 @@ class player(pygame.sprite.Sprite):
                 player.image_frame+=10*delta_time
         elif player.state=='run':
             player.max_velocity.x=200
-            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':    
@@ -294,7 +292,7 @@ class player(pygame.sprite.Sprite):
         elif player.state=='sprint':
             player.max_velocity.x=350
             player.stamina-=100*delta_time
-            player.image_frame+=(abs(player.velocity.x)//10)*delta_time#change later?
+            player.image_frame+=(abs(player.velocity.x)//10)*delta_time
             if round(player.image_frame)>=len(player.run_image_list_right)-1:
                 player.image_frame=5
             if player.direction=='right':
@@ -374,7 +372,6 @@ class player(pygame.sprite.Sprite):
                 player.rect.bottom=block.rect.top+30
             elif block.id=='70':
                 player.rect.bottom=block.rect.top
-            #if pygame.sprite.collide_mask(player,block):
             elif block.id=='3':#ramps
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
             elif block.id=='4':
@@ -511,20 +508,6 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.direction='left'
                             elif player.rect.x-dog_instance.rect.centerx>0:
                                 dog_instance.direction='right'
-                        #for player in pygame.sprite.spritecollide(dog_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                        #    if not dog_instance.player_collide:
-                        #        if player.state!='grass' and player.state!='dodge':
-                        #            player.life-=1
-                        #            player.score-=250
-                        #            player.velocity.xy=0,0
-                        #            player.state='idle'
-                        #            dog_instance.state='bite'
-                        #        else:
-                        #            if player.state=='dodge':
-                        #                player.score+=500
-                        #    dog_instance.player_collide=True
-                        #else:
-                        #    dog_instance.player_collide=False
                     for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                         dog_instance.state='chase_rat'
                         if rat.pos.x-dog_instance.pos.x>0:
@@ -851,7 +834,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                 for player in player_sprite_group:
                     if fat_guy.start_fight:#whakc and stuff only if fight started
                         game_settings['negative_screen']=True
-                        if player.pos.x<=fat_guy.left_rope_limit or player.pos.x>=fat_guy.right_rope_limit:#change later
+                        if player.pos.x<=fat_guy.left_rope_limit or player.pos.x>=fat_guy.right_rope_limit:
                             fat_guy.state='rope'
                         if fat_guy.state!='rope':
                             if abs(player.pos.x-fat_guy.body_rect.centerx)>142:
@@ -1102,7 +1085,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                     if fish_instance.direction=='right':
                         fish_instance.direction='left'
             for player in player_sprite_group:
-                if player.water:#fix fish goin thru land whne playyer not in same pond
+                if player.water:#fix fish goin thru land whne playyer not in same pond -45 degre blcok ig
                     if fish_instance.player_bite:
                         fish_instance.velocity.xy=0,0
                         if player.state=='swim' or player.state=='swim_fast':
@@ -1260,11 +1243,6 @@ class bomb(pygame.sprite.Sprite):
             bomb_instance.explode=True
             player.image_frame=0
             player.state='explode'
-        #else:
-        #    for reactive_block in pygame.sprite.spritecollide(bomb_instance,reactive_block_sprite_instance_group,dokill=False):
-        #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
-        #            bomb_instance.explode=True
-        #            reactive_block.velocity.x=0
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -1308,11 +1286,6 @@ class bomb_land(pygame.sprite.Sprite):
                     bomb.explode=True
                     player.image_frame=0
                     player.state='explode'
-            #else:
-            #    for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False):
-            #        if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
-            #            bomb.explode=True
-            #            reactive_block.velocity.x=0
                 
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
@@ -1334,7 +1307,7 @@ class rock(pygame.sprite.Sprite):
     def update(rock_instance,delta_time):
         if rock_instance.angle<=-360:
             rock_instance.angle+=360
-        rock_instance.image=pygame.transform.rotate(rock_instance.origin_image,rock_instance.angle)#add colision and stuff later
+        rock_instance.image=pygame.transform.rotate(rock_instance.origin_image,rock_instance.angle)
         if rock_instance.roll:
             rock_instance.rect.x+=100*delta_time
             rock_instance.rect.y+=400*delta_time
@@ -1609,28 +1582,14 @@ class bubble(pygame.sprite.Sprite):
                     if bubble_instance.rect.centerx-15<water_dot.dest_pos.x<bubble_instance.rect.centerx+15:
                         water_dot.force=bubble_instance.size*10
                 bubble_instance.kill()
-class water_dot(pygame.sprite.Sprite):
+class water_dot(pygame.sprite.Sprite):#add water wave spread later
     def __init__(water_dot,pos):
         super().__init__()
         water_dot.dest_pos=pygame.math.Vector2(pos)
         water_dot.pos=pos[1]
         water_dot.force=0
         water_dot.damping=1
-        #water_dot.spread_dir=None
-        #water_dot.spread_resistence=0.5
     def update(water_dot):
-        #if water_dot.spread_dir=='left':
-        #    for fellow_water_dot in water_dot_sprite_group:
-        #        if fellow_water_dot.dest_pos.x==water_dot.dest_pos.x-15:
-        #            fellow_water_dot.force=water_dot.force-water_dot.spread_resistence
-        #            fellow_water_dot.spread_dir='left'
-        #    water_dot.spread_dir=None
-        #elif water_dot.spread_dir=='right':
-        #    for fellow_water_dot in water_dot_sprite_group:
-        #        if fellow_water_dot.dest_pos.x==water_dot.dest_pos.x+15:
-        #            fellow_water_dot.force=water_dot.force-water_dot.spread_resistence
-        #            fellow_water_dot.spread_dir='left'
-        #    water_dot.spread_dir=None
         if water_dot.pos-water_dot.dest_pos.y>0:
             water_dot.pos-=water_dot.force
         elif water_dot.pos-water_dot.dest_pos.y<=0:
@@ -1662,7 +1621,7 @@ class tutorial_block(pygame.sprite.Sprite):
 
 class game():
     def __init__(game):
-        game.offset=pygame.math.Vector2()#cam offset from player?
+        game.offset=pygame.math.Vector2()#offest of objects
         game.player_offset=pygame.math.Vector2()#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
         game.draw_rect=pygame.Rect(0,0,display_size[0]+40,display_size[1]+40)
@@ -1679,7 +1638,7 @@ class game():
                 cam.screen_shake.xy=(0,0)
                 if cam.spike_shake_timer>0:
                     cam.spike_shake_timer-=delta_time
-                    cam.screen_shake.x=numpy.random.randint(-15,15)#numpy.random.randint(-10,10))
+                    cam.screen_shake.x=numpy.random.randint(-15,15)
             if cam.earthquake:
                 if cam.earthquake_timer>=30:#1/2 min
                     cam.earthqake_timer=0
@@ -2009,9 +1968,6 @@ while True:
                         game_settings['mode']='paused'
                     elif game_settings['mode']=='paused':
                         game_settings['mode']='in_game'
-                    #if game_settings['fullscreen']==True:
-                    #    display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
-                    #    game_settings['fullscreen']=False
                 if event.key==pygame.K_w:
                     if player.state!='explode' and player.state!='dodge':
                         player.jump=True
