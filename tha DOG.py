@@ -228,6 +228,7 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='left':
                 player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
+        elif player.state=='aim':
             print(player.throw_angle,player.throw_power)
             player.idle_timer+=delta_time
             if player.image_frame>=3:
@@ -453,6 +454,7 @@ class dog(pygame.sprite.Sprite):
     dog_death_image_list_left=[]
     load_spritesheet_2dir(pygame.image.load('Data/dog/dog_run.png').convert_alpha(),dog_run_image_list_left,dog_run_image_list_right,21)
     load_spritesheet_2dir(pygame.image.load('Data/dog/dog_death.png').convert_alpha(),dog_death_image_list_left,dog_death_image_list_right,5)
+    tut_end=0
     def __init__(dog_instance,x,y):
         super().__init__()
         dog_instance.velocity=pygame.math.Vector2(0,0)
@@ -471,7 +473,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
         dog_instance.stun_timer=0
     def update(dog_instance,delta_time):
-        if dog_instance.pos.x<17035:#tutoiral side
+        if dog_instance.pos.x<dog.tut_end:#tutoiral side
             dog_instance.max_velocity.x=150
         else:
             dog_instance.max_velocity.x=250
@@ -1832,6 +1834,7 @@ with open('Data/worlds/0/0_tut_blocks.csv') as map:
                 tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
             elif block_id=='9':
                 tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
+                tut_end=block_number*48+500
             elif block_id=='10':
                 tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
             elif block_id=='11':
@@ -1943,6 +1946,7 @@ def map_load():
     return water_hitlines
 
 map_load()
+dog.tut_end=tut_end
 
 prevoius_time=time.perf_counter()
 while True:
