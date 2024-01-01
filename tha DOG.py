@@ -342,7 +342,8 @@ class player(pygame.sprite.Sprite):
             player.rect=player.image.get_rect(center=player.pos.xy)
             player.mask=pygame.mask.from_surface(player.image)
         else:
-            player.velocity.x=0
+            if player.state!='pick':
+                player.velocity.x=0
         if not player.jump or abs(player.pos.y-player.jump_height)>=150:
             player.jump_counter+=1
             if player.water or player.state=='swim' or player.state=='siwm_fast':
@@ -1631,6 +1632,7 @@ class game():
         game.earthquake=False
         game.earthquake_timer=0
         game.spike_shake_timer=0
+        game.pressure_switch_pan=False
         game.fat_guy_hit=False
     def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
         for player_sprite in player_sprite_group:
@@ -1654,30 +1656,37 @@ class game():
                     cam.earthquake_timer+=delta_time
             if not cam.fat_guy_hit and player_sprite.pos.x>player.fat_guy_pan:#fat_guy pan loc
                 cam.player_offset.x-=100*delta_time
-                if cam.player_offset.x<=-(game_window.get_width()//2-50):
-                    cam.player_offset.x=-(game_window.get_width()//2-50)
+                if cam.player_offset.x<=-(display_size[1]//2-50):
+                    cam.player_offset.x=-(display_size[1]//2-50)
                 cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
             else:
-                if player_sprite.idle_timer>=2:
-                    if cam.player_offset.x>=game_window.get_width()//2-50:
-                        cam.player_offset.x=game_window.get_width()//2-50
+                print(cam.pressure_switch_pan)
+                if cam.pressure_switch_pan:
+                    if cam.player_offset.x>=(display_size[1]//2-150):
+                        cam.player_offset.x=(display_size[1]//2-150)
                     else:
-                        if cam.player_offset.x<=-(game_window.get_width()//2-50):
-                            cam.player_offset.x=-(game_window.get_width()//2-50)
-                        else:
-                            if player_sprite.direction=='right':
-                                cam.player_offset.x+=100*delta_time#pan speed for idle pan
-                            else:
-                                cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                        cam.player_offset.x+=200*delta_time
                 else:
-                    if cam.player_offset.x>0:
-                        cam.player_offset.x-=100*delta_time#pan speed for idle pan
-                        if cam.player_offset.x<0:cam.player_offset.x=0
-                    elif cam.player_offset.x<0:
-                        cam.player_offset.x+=100*delta_time#pan speed for idle pan
-                        if cam.player_offset.x>0:cam.player_offset.x=0
-                if player_sprite.pos.x<game_window.get_width()//2:
-                    cam.player_offset.x=game_window.get_width()//2-player_sprite.pos.x
+                    if player_sprite.idle_timer>=2:
+                        if cam.player_offset.x>=display_size[1]//2-50:
+                            cam.player_offset.x=display_size[1]//2-50
+                        else:
+                            if cam.player_offset.x<=-(display_size[1]//2-50):
+                                cam.player_offset.x=-(display_size[1]//2-50)
+                            else:
+                                if player_sprite.direction=='right':
+                                    cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                                else:
+                                    cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                    else:
+                        if cam.player_offset.x>0:
+                            cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                            if cam.player_offset.x<0:cam.player_offset.x=0
+                        elif cam.player_offset.x<0:
+                            cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                            if cam.player_offset.x>0:cam.player_offset.x=0
+                if player_sprite.pos.x<display_size[1]//2:
+                    cam.player_offset.x=display_size[1]//2-player_sprite.pos.x
                     cam.offset.x=0
                 else:
                     cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
@@ -1735,22 +1744,26 @@ class game():
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
-        block_sprite_instance_group.empty()
-        for block in block_sprite_group:
-            if block.rect.colliderect(update_instance.update_rect):
-                block_sprite_instance_group.add(block)
-        for sprite_group in update_sprite_group_list:
-            for sprite in sprite_group:
-                if update_instance.update_rect.colliderect(sprite.rect):
-                    sprite.update(delta_time)
-        reactive_block_sprite_instance_group.empty()
-        for reactive_block in reactive_block_sprite_group:
-            if reactive_block.rect.colliderect(update_instance.update_rect):
-                reactive_block_sprite_instance_group.add(reactive_block)
-        for reactive_instance_block in reactive_block_sprite_instance_group:reactive_instance_block.update(delta_time)
-        for water_dot in water_dot_sprite_group:
-            if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
-                water_dot.update()
+            block_sprite_instance_group.empty()
+            for block in block_sprite_group:
+                if block.rect.colliderect(update_instance.update_rect):
+                    block_sprite_instance_group.add(block)
+            for sprite_group in update_sprite_group_list:
+                for sprite in sprite_group:
+                    if update_instance.update_rect.colliderect(sprite.rect):
+                        sprite.update(delta_time)
+            reactive_block_sprite_instance_group.empty()
+            for reactive_block in reactive_block_sprite_group:
+                if reactive_block.rect.colliderect(update_instance.update_rect):
+                    reactive_block_sprite_instance_group.add(reactive_block)
+            update_instance.pressure_switch_pan=False
+            for reactive_instance_block in reactive_block_sprite_instance_group:
+                reactive_instance_block.update(delta_time)
+                if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<reactive_instance_block.rect.x and not reactive_instance_block.clicked:
+                    update_instance.pressure_switch_pan=True
+            for water_dot in water_dot_sprite_group:
+                if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
+                    water_dot.update()
 
 player_sprite_group=pygame.sprite.Group()
 
@@ -1927,6 +1940,8 @@ def map_load():
                             fat_guy.left_rope_limit=x*48
                         elif id=='2':
                             fat_guy.right_rope_limit=x*48
+                        elif id=='3':
+                            game.pressure_switch_pan_x=x*48
     #water_hitline
     water_bodies_list_counter=0
     water_bodies={}
@@ -2096,11 +2111,11 @@ while True:
                 if keys_pressed[pygame.K_s] and not player.water:
                     player.state='pick'
                 if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
-                        if player.state=='aim' or player.state=='throw':
-                            player.state='throw'
-                        else:
-                            if player.state!='pant' and player.state!='explode' and player.state!='grass':
-                                player.state='idle'
+                    if player.state=='aim' or player.state=='throw':
+                        player.state='throw'
+                    else:
+                        if player.state!='pant' and player.state!='explode' and player.state!='grass':
+                            player.state='idle'
         pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
         if player.stamina>0:
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
