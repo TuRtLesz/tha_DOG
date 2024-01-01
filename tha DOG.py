@@ -1080,10 +1080,10 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                         fish_instance.water=True
                         break
             for block in pygame.sprite.spritecollide(fish_instance,block_sprite_instance_group,dokill=False):
-                if block.id=='147' or block.id=='177' or block.id=='206' or block.id=='145' or block.id=='174' or block.id=='204':
+                if block.id=='145' or block.id=='174' or block.id=='204' or block.id=='147' or block.id=='177' or block.id=='206' or block.id=='149' or block.id=='178' or block.id=='207' or block.id=='92' or block.id=='93' or block.id=='94' or block.id=='9':
                     if fish_instance.direction=='left':
                         fish_instance.direction='right'
-                elif block.id=='152' or block.id=='180' or block.id=='209' or block.id=='154' or block.id=='183' or block.id=='211':
+                elif block.id=='154' or block.id=='183' or block.id=='211' or block.id=='209' or block.id=='180' or block.id=='152' or block.id=='150' or block.id=='179' or block.id=='208' or block.id=='67' or block.id=='3' or block.id=='4' or block.id=='5':
                     if fish_instance.direction=='right':
                         fish_instance.direction='left'
             for player in player_sprite_group:
