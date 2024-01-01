@@ -1411,6 +1411,8 @@ class little_rock(pygame.sprite.Sprite):
                         if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
                             reactive_block.explode=True
                             rock_instance.life-=1
+                        elif type(reactive_block)==spike:
+                            spike.rect.top=rock_instance.rect.bottom
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
