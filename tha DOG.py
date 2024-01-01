@@ -519,6 +519,7 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.direction='left'
                         if rat.rect.colliderect(dog_instance.rect):
                             rat.dead=True
+                            rat.frame=0
                             dog_instance.state='stomp_rat'
                     if dog_instance.state=='run':
                         dog_instance.max_velocity.y=100
@@ -1006,8 +1007,9 @@ class rat(pygame.sprite.Sprite):
     def update(rat_instance,delta_time):
         if rat_instance.dead:
             if rat_instance.frame>len(rat.rat_death_right_list)-1:
-                rat.death_sound.play()
                 rat_instance.kill()
+            elif rat_instance.frame==0:
+                rat.death_sound.play()
             if rat_instance.velocity.x>0:
                 rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
             elif rat_instance.velocity.x<0:
@@ -1017,6 +1019,7 @@ class rat(pygame.sprite.Sprite):
             for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
                     rat_instance.dead=True
+                    rat_instance.frame=0
             for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='41':#rat_hole
                     rat_instance.velocity.x=-70
@@ -1032,7 +1035,7 @@ class rat(pygame.sprite.Sprite):
                 rat_instance.image=rat.rat_run_right_list[round(rat_instance.frame)]
             elif rat_instance.velocity.x<0:
                 rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
-            rat_instance.frame+=10*delta_time
+            if not rat_instance.dead:rat_instance.frame+=10*delta_time
 class fish(pygame.sprite.Sprite):#fishes are not the bad guys
     fish_swim_imagelist_right=[]
     fish_swim_imagelist_left=[]
@@ -1660,12 +1663,11 @@ class game():
                     cam.player_offset.x=-(display_size[1]//2-50)
                 cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
             else:
-                print(cam.pressure_switch_pan)
                 if cam.pressure_switch_pan:
-                    if cam.player_offset.x>=(display_size[1]//2-150):
-                        cam.player_offset.x=(display_size[1]//2-150)
+                    if cam.player_offset.x>=(display_size[1]//2+150):
+                        cam.player_offset.x=(display_size[1]//2+150)
                     else:
-                        cam.player_offset.x+=200*delta_time
+                        cam.player_offset.x+=300*delta_time
                 else:
                     if player_sprite.idle_timer>=2:
                         if cam.player_offset.x>=display_size[1]//2-50:
