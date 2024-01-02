@@ -518,9 +518,10 @@ class dog(pygame.sprite.Sprite):
                         elif rat.pos.x-dog_instance.pos.x<0:
                             dog_instance.direction='left'
                         if rat.rect.colliderect(dog_instance.rect):
-                            rat.dead=True
-                            rat.frame=0
-                            dog_instance.state='stomp_rat'
+                            if not rat.dead:
+                                rat.dead=True
+                                rat.frame=0
+                                dog_instance.state='stomp_rat'
                     if dog_instance.state=='run':
                         dog_instance.max_velocity.y=100
                         dog_instance.image_frame+=10*delta_time
@@ -1412,7 +1413,7 @@ class little_rock(pygame.sprite.Sprite):
                             reactive_block.explode=True
                             rock_instance.life-=1
                         elif type(reactive_block)==spike:
-                            spike.rect.top=rock_instance.rect.bottom
+                            reactive_block.rect.top=rock_instance.rect.bottom
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
@@ -1673,7 +1674,8 @@ class game():
                 else:
                     if player_sprite.idle_timer>=2:
                         if cam.player_offset.x>=display_size[1]//2-50:
-                            cam.player_offset.x=display_size[1]//2-50
+                            cam.player_offset.x-=100*delta_time
+                            if cam.player_offset.x<display_size[1]//2-50:cam.player_offset.x=display_size[1]//2-50
                         else:
                             if cam.player_offset.x<=-(display_size[1]//2-50):
                                 cam.player_offset.x=-(display_size[1]//2-50)
@@ -1684,10 +1686,10 @@ class game():
                                     cam.player_offset.x-=100*delta_time#pan speed for idle pan
                     else:
                         if cam.player_offset.x>0:
-                            cam.player_offset.x-=100*delta_time#pan speed for idle pan
+                            cam.player_offset.x-=100*delta_time
                             if cam.player_offset.x<0:cam.player_offset.x=0
                         elif cam.player_offset.x<0:
-                            cam.player_offset.x+=100*delta_time#pan speed for idle pan
+                            cam.player_offset.x+=100*delta_time
                             if cam.player_offset.x>0:cam.player_offset.x=0
                 if player_sprite.pos.x<display_size[1]//2:
                     cam.player_offset.x=display_size[1]//2-player_sprite.pos.x
@@ -1763,7 +1765,7 @@ class game():
             update_instance.pressure_switch_pan=False
             for reactive_instance_block in reactive_block_sprite_instance_group:
                 reactive_instance_block.update(delta_time)
-                if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<reactive_instance_block.rect.x and not reactive_instance_block.clicked:
+                if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
             for water_dot in water_dot_sprite_group:
                 if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
