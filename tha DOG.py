@@ -1595,22 +1595,32 @@ class bubble(pygame.sprite.Sprite):
                         water_dot.force=bubble_instance.size*10
                 bubble_instance.kill()
 class water_dot():#add water wave spread later
-    def __init__(water_dot,pos):
+    damping=1
+    spread_damping=25
+    def __init__(water_dot_instance,pos):
         super().__init__()
-        water_dot.dest_pos=pygame.math.Vector2(pos)
-        water_dot.pos=pos[1]
-        water_dot.force=0
-        water_dot.damping=1
-    def update(water_dot):
-        if water_dot.pos-water_dot.dest_pos.y>0:
-            water_dot.pos-=water_dot.force
-        elif water_dot.pos-water_dot.dest_pos.y<=0:
-            water_dot.pos+=water_dot.force
-        if abs(water_dot.force)>0:
-            if water_dot.force>0:
-                water_dot.force=water_dot.force-water_dot.damping
+        water_dot_instance.dest_pos=pygame.math.Vector2(pos)
+        water_dot_instance.pos=pos[1]
+        water_dot_instance.force=0
+    def update(water_dot_instance):
+        if water_dot_instance.pos-water_dot_instance.dest_pos.y>0:
+            water_dot_instance.pos-=water_dot_instance.force
+        elif water_dot_instance.pos-water_dot_instance.dest_pos.y<=0:
+            water_dot_instance.pos+=water_dot_instance.force
+        if abs(water_dot_instance.force)>0:
+            #for water_dot_obj in water_dot_class_list:
+            #    if water_dot_obj.dest_pos.x==water_dot_instance.dest_pos.x-16:
+            #        if water_dot_obj.force==0:
+            #            water_dot_obj.force=abs(water_dot_instance.force)-water_dot.spread_damping
+            #            water_dot_instance.force-water_dot.spread_damping
+            #    elif water_dot_obj.dest_pos.x==water_dot_instance.dest_pos.x+16:
+            #        if water_dot_obj.force==0:
+            #            water_dot_obj.force=abs(water_dot_instance.force)-water_dot.spread_damping
+            #            water_dot_instance.force-water_dot.spread_damping
+            if water_dot_instance.force>0:
+                water_dot_instance.force=water_dot_instance.force-water_dot.damping
             else:
-                water_dot.force=water_dot.force+water_dot.damping
+                water_dot_instance.force=water_dot_instance.force+water_dot.damping
 class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
         super().__init__()
