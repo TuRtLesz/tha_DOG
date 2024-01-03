@@ -497,6 +497,7 @@ class dog(pygame.sprite.Sprite):
                         else:
                             break
                     if dog_instance.state=='swim' or dog_instance.state=='run':
+                        dog_instance.velocity.y=0
                         if dog_instance.prev_direction!=dog_instance.direction:#reducing drag while switching dirtections
                             if dog_instance.prev_direction=='right':
                                 dog_instance.velocity.x=100
@@ -705,9 +706,9 @@ class ostrich(pygame.sprite.Sprite):
         ostrich_instance.velocity=pygame.math.Vector2()
         ostrich_instance.acceleration=pygame.math.Vector2()
         if direction=='left':
-            ostrich_instance.acceleration.x=10
+            ostrich_instance.acceleration.x=50
         else:
-            ostrich_instance.acceleration.x=-10
+            ostrich_instance.acceleration.x=-50
         ostrich_instance.life=4
         ostrich_instance.image_frame=0
         ostrich_instance.stun_timer=0
@@ -716,19 +717,19 @@ class ostrich(pygame.sprite.Sprite):
             if ostrich_instance.stun_timer==0:
                 for player in player_sprite_group:
                     if player.pos.x-ostrich_instance.rect.left<-500:
-                        ostrich_instance.acceleration.x=-10
+                        ostrich_instance.acceleration.x=-50
                     elif player.pos.x-ostrich_instance.rect.right>500:
-                        ostrich_instance.acceleration.x=10
+                        ostrich_instance.acceleration.x=50
                     for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
                         if block.id=='87' or block.id=='35':
-                            if ostrich_instance.acceleration.x==10:
+                            if ostrich_instance.acceleration.x==50:
                                 ostrich_instance.velocity.x=0
-                                ostrich_instance.acceleration.x=-10
+                                ostrich_instance.acceleration.x=-50
                                 ostrich_instance.image_frame=0
                         elif block.id=='37' or block.id=='91':
-                            if ostrich_instance.acceleration.x==-10:
+                            if ostrich_instance.acceleration.x==-50:
                                 ostrich_instance.velocity.x=0
-                                ostrich_instance.acceleration.x=10
+                                ostrich_instance.acceleration.x=50
                                 ostrich_instance.image_frame=0
                     if int(ostrich_instance.image_frame)>=len(ostrich.run_image_list_left):
                         ostrich_instance.image_frame=0
@@ -757,10 +758,11 @@ class ostrich(pygame.sprite.Sprite):
                                 dog.life=0
                                 player.score+=50
                     for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_instance_group,dokill=False):
-                        if type(reactive_block)==bomb:
-                            ostrich_instance.life=0
-                            ostrich_instance.image_frame=0
-                            player.score+=250
+                        if type(reactive_block)==bomb_land:
+                            if ostrich_instance.rect.collidepoint(reactive_block.rect.center):
+                                ostrich_instance.life=0
+                                ostrich_instance.image_frame=0
+                                reactive_block.explode=True
                         elif type(reactive_block)==little_rock:
                             if reactive_block.velocity.x!=0:
                                 ostrich_instance.stun_timer=4
