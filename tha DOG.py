@@ -701,7 +701,7 @@ class ostrich(pygame.sprite.Sprite):
     def __init__(ostrich_instance,x,y,direction):
         super().__init__()
         ostrich_instance.image=ostrich.run_image_list_left[0]
-        ostrich_instance.rect=ostrich_instance.image.get_rect(midbottom=(x*48,(y+1)*48))
+        ostrich_instance.rect=ostrich_instance.image.get_rect(midbottom=(x*48,((y+1)*48)+5))
         ostrich_instance.velocity=pygame.math.Vector2()
         ostrich_instance.acceleration=pygame.math.Vector2()
         if direction=='left':
@@ -762,23 +762,24 @@ class ostrich(pygame.sprite.Sprite):
                             ostrich_instance.image_frame=0
                             player.score+=250
                         elif type(reactive_block)==little_rock:
-                            ostrich_instance.stun_timer=4
-                            ostrich_instance.life-=1
-                            if ostrich_instance.life<0:ostrich_instance.image_frame=0
-                            player.score+=450
+                            if reactive_block.velocity.x!=0:
+                                ostrich_instance.stun_timer=4
+                                ostrich_instance.life-=1
+                                if ostrich_instance.life<=0:ostrich_instance.image_frame=0
+                                player.score+=450
             else:
                 if ostrich_instance.stun_timer<0:
                     ostrich_instance.stun_timer=0
                 else:
                     ostrich_instance.stun_timer-=delta_time
         else:
-            if int(ostrich_instance.image_frame)>=len(ostrich.death_image_list_left):
+            if int(ostrich_instance.image_frame)>=len(ostrich.death_image_list_left)-1:
                 ostrich_instance.kill()
             if ostrich_instance.acceleration.x>0:
                 ostrich_instance.image=ostrich.death_image_list_right[int(ostrich_instance.image_frame)]
             elif ostrich_instance.acceleration.x<0:
                 ostrich_instance.image=ostrich.death_image_list_left[int(ostrich_instance.image_frame)]
-            ostrich_instance.image_frame+=15*delta_time
+            ostrich_instance.image_frame+=5*delta_time
 class big_fat_guy(pygame.sprite.Sprite):
     whack_image_list_left=[]
     run_image_list_left=[]
@@ -1872,7 +1873,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(70368,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load():
     reactive_block_sprite_group.empty()
