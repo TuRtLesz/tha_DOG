@@ -444,7 +444,7 @@ class player(pygame.sprite.Sprite):
                 if player.state=='run' or player.state=='sprint':
                     if numpy.random.randint(0,7)==1:
                         bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
-                for water_dot in water_dot_sprite_group:
+                for water_dot in water_dot_class_list:
                     if player.rect.centerx-15<water_dot.dest_pos.x<player.rect.centerx+15:
                         water_dot.force=30
 
@@ -1590,11 +1590,11 @@ class bubble(pygame.sprite.Sprite):
         bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
         for water_line in water_hitlines:
             if bubble_instance.rect.clipline(water_line)!=():
-                for water_dot in water_dot_sprite_group:
+                for water_dot in water_dot_class_list:
                     if bubble_instance.rect.centerx-15<water_dot.dest_pos.x<bubble_instance.rect.centerx+15:
                         water_dot.force=bubble_instance.size*10
                 bubble_instance.kill()
-class water_dot(pygame.sprite.Sprite):#add water wave spread later
+class water_dot():#add water wave spread later
     def __init__(water_dot,pos):
         super().__init__()
         water_dot.dest_pos=pygame.math.Vector2(pos)
@@ -1643,7 +1643,7 @@ class game():
         game.spike_shake_timer=0
         game.pressure_switch_pan=False
         game.fat_guy_hit=False
-    def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_sprite_group):
+    def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,water_dot_class_list):
         for player_sprite in player_sprite_group:
             if player.state=='explode':
                 cam.screen_shake.xy=(numpy.random.randint(-10,10),numpy.random.randint(-10,10))
@@ -1719,7 +1719,7 @@ class game():
             cam.water_bodies_list_counter=0
             cam.water_bodies={}
             cam.prev_water_dot_xpos=0
-            for water_dot in water_dot_sprite_group:#making seprate lists for serpate water bodies
+            for water_dot in water_dot_class_list:#making seprate lists for serpate water bodies
                 if abs(water_dot.dest_pos.x-cam.prev_water_dot_xpos)>17:
                     cam.water_bodies_list_counter+=1
                 cam.prev_water_dot_xpos=water_dot.dest_pos.x
@@ -1749,7 +1749,7 @@ class game():
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
-    def update(update_instance,update_sprite_group_list,delta_time,water_dot_sprite_group):
+    def update(update_instance,update_sprite_group_list,delta_time,water_dot_class_list):
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
@@ -1770,8 +1770,8 @@ class game():
                 reactive_instance_block.update(delta_time)
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
-            for water_dot in water_dot_sprite_group:
-                if abs(player.rect.centerx-water_dot.dest_pos.x)<display_size[0]:
+            for water_dot in water_dot_class_list:
+                if update_instance.update_rect.x<water_dot.dest_pos.x<update_instance.update_rect.right:
                     water_dot.update()
 
 player_sprite_group=pygame.sprite.Group()
@@ -1791,7 +1791,7 @@ bubble_sprite_group=pygame.sprite.Group()
 block_sprite_instance_group=pygame.sprite.Group()
 reactive_block_sprite_instance_group=pygame.sprite.Group()
 
-water_dot_sprite_group=pygame.sprite.Group()
+water_dot_class_list=[]
 
 tutorial_block_sprite_group=pygame.sprite.Group()
 
@@ -1875,7 +1875,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(70368,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load():
     reactive_block_sprite_group.empty()
@@ -1901,7 +1901,7 @@ def map_load():
                     reactive_block_sprite_group.add(flower(block_number,row_number))
                 elif block_id=='8':
                     for x_pos in range(block_number*48,(block_number+1)*48,16):
-                        water_dot_sprite_group.add(water_dot((x_pos,row_number*48)))
+                        water_dot_class_list.append(water_dot((x_pos,row_number*48)))
                 elif block_id=='9':
                     reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
                 elif block_id=='10':
@@ -1955,7 +1955,7 @@ def map_load():
     water_bodies_list_counter=0
     water_bodies={}
     prev_water_dot_xpos=0
-    for water_dot_obj in water_dot_sprite_group:#making seprate lists for serpate water bodiesS
+    for water_dot_obj in water_dot_class_list:#making seprate lists for serpate water bodiesS
         if abs(water_dot_obj.dest_pos.x-prev_water_dot_xpos)>17:
             water_bodies_list_counter+=1
         prev_water_dot_xpos=water_dot_obj.dest_pos.x
@@ -2008,14 +2008,14 @@ while True:
                 game_settings['mode']='game_over'
             if player.state!='aim':
                 game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
-                            delta_time,water_dot_sprite_group)
+                            delta_time,water_dot_class_list)
             elif player.state=='aim' or player.state=='throw':
                 player.update(delta_time)
                 big_fat_guy_sprite_group.update(delta_time)
         game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,bubble_sprite_group],
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group],
-                    water_dot_sprite_group)
+                    water_dot_class_list)
         
         for player in player_sprite_group:
             print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
