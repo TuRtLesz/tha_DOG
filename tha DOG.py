@@ -11,7 +11,7 @@ clock=pygame.time.Clock()
 
 save_data={'high_score':0}#add lsat check point?
 
-game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game'}
+game_settings={'fullscreen':False,'negative_screen':False,'mode':'game_complete'}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
     sprite_list.clear()
@@ -54,29 +54,21 @@ exit_game_complete_list=[]
 game_complete_list=[]
 play_list=[]
 retry_list=[]
-exit_game_complete_spritesheet=pygame.image.load('Data/menu_buttons/exit_game_complete.png').convert()
-play_spritesheet=pygame.image.load('Data/menu_buttons/play.png').convert()
-retry_spritesheet=pygame.image.load('Data/menu_buttons/retry.png').convert()
-for x in range(0,2):
-    import_image=pygame.Surface((exit_game_complete_spritesheet.get_width()//2,exit_game_complete_spritesheet.get_height()),pygame.SRCALPHA)
-    import_image.blit(exit_game_complete_spritesheet,(0,0),(x*exit_game_complete_spritesheet.get_width()//2,0,exit_game_complete_spritesheet.get_width()//2,exit_game_complete_spritesheet.get_height()))
-    import_image=pygame.transform.scale2x(import_image)
-    exit_game_complete_list.append(import_image)
-load_spritesheet(pygame.image.load('Data/menu_buttons/game_complete.png').convert(),game_complete_list,alpha_sur=False,image_scale=2)
-for x in range(0,2):
-    import_image=pygame.Surface((play_spritesheet.get_width()//2,play_spritesheet.get_height()),pygame.SRCALPHA)
-    import_image.blit(play_spritesheet,(0,0),(x*play_spritesheet.get_width()//2,0,play_spritesheet.get_width()//2,play_spritesheet.get_height()))
-    import_image=pygame.transform.scale2x(import_image)
-    play_list.append(import_image)
-for x in range(0,2):
-    import_image=pygame.Surface((retry_spritesheet.get_width()//2,retry_spritesheet.get_height()),pygame.SRCALPHA)
-    import_image.blit(retry_spritesheet,(0,0),(x*retry_spritesheet.get_width()//2,0,retry_spritesheet.get_width()//2,retry_spritesheet.get_height()))
-    import_image=pygame.transform.scale2x(import_image)
-    retry_list.append(import_image)
+replay_list=[]
+cookie_list=[]
+cookie_image_frame=0
+load_spritesheet(pygame.image.load('Data/menu_buttons/exit_game_complete.png').convert(),exit_game_complete_list,alpha_sur=False,image_scale=2)
+load_spritesheet(pygame.image.load('Data/menu_buttons/replay.png').convert(),replay_list,alpha_sur=False,image_scale=2)
+load_spritesheet(pygame.image.load('Data/menu_buttons/retry.png').convert(),retry_list,alpha_sur=False,image_scale=2)
+load_spritesheet(pygame.image.load('Data/menu_buttons/play.png').convert(),play_list,alpha_sur=False,image_scale=2)
+load_spritesheet(pygame.image.load('Data/menu_buttons/game_complete.png').convert(),game_complete_list,alpha_sur=False,image_scale=3)
+load_spritesheet(pygame.image.load('Data/menu_buttons/cookie.png').convert(),cookie_list,frames=7,alpha_sur=False,image_scale=2)
 exit_rect=exit_image.get_rect(topleft=(display_size[0]//2-exit_image.get_width()//2,display_size[1]-200))
-exit_game_complete_rect=exit_game_complete_list[1].get_rect(topleft=(display_size[0]//2-(exit_game_complete_list[1].get_width()//2),display_size[1]-200))
+exit_game_complete_rect=exit_game_complete_list[1].get_rect(topleft=(display_size[0]//2+(200+exit_game_complete_list[0].get_width()//2),display_size[1]-200))
+cookie_rect=cookie_list[0].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),100+game_complete_list[0].get_height()))
 play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 retry_rect=retry_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
+replay_rect=replay_list[0].get_rect(topleft=(display_size[0]//2-(200+replay_list[0].get_width()//2),display_size[1]-200))
 new_life_image_list=[]
 life_death_image_list=[]
 load_spritesheet(pygame.image.load('Data/life/new_life.png').convert_alpha(),new_life_image_list,5,image_scale=2)
@@ -2227,6 +2219,39 @@ while True:
     elif game_settings['mode']=='game_complete':
         if player.score>save_data['high_score']:
             save_data['high_score']=player.score
+        if round(menu_image_frame)>1:
+            menu_image_frame=0
+        game_window.blit(game_complete_list[int(menu_image_frame)],(display_size[0]//2-game_complete_list[0].get_width()//2,50))
+        if int(cookie_image_frame)<=6:
+            game_window.blit(cookie_list[int(cookie_image_frame)],cookie_rect.topleft)
+        game_window.blit(replay_list[int(menu_image_frame)],replay_rect.topleft)
+        game_window.blit(exit_game_complete_list[int(menu_image_frame)],exit_game_complete_rect.topleft)
+        text('thanguu for playin the game!! here is a cookie <3',(0,0,0),30,(display_size[0]//2-441,50+game_complete_list[0].get_height()))
+        menu_image_frame+=5*delta_time
+        if any(pygame.mouse.get_pressed()):
+            mouse_pos=pygame.mouse.get_pos()
+            if game_settings['fullscreen']:
+                if exit_game_complete_rect.collidepoint(mouse_pos):
+                    pygame.mixer.quit()
+                    pygame.quit()
+                    sys.exit()
+                elif replay_rect.collidepoint(mouse_pos):
+                    player.score=0
+                    player.hand=''
+                    player.pos.xy=(check_point_list[0])
+                    player.life=3
+                    game_settings['mode']='in_game'
+            else:
+                if exit_game_complete_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    pygame.mixer.quit()
+                    pygame.quit()
+                    sys.exit()
+                elif replay_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    player.score=0
+                    player.hand=''
+                    player.pos.xy=(check_point_list[0])
+                    player.life=3
+                    game_settings['mode']='in_game'
     game_window.blit(high_score_image,(10,10))
     text(str(save_data['high_score']),(0,0,0),40,(156,5))
     game_window.blit(score_image,(10,50))
