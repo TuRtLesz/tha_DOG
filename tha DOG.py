@@ -489,7 +489,6 @@ class dog(pygame.sprite.Sprite):
                         else:
                             break
                     if dog_instance.state=='swim' or dog_instance.state=='run':
-                        dog_instance.velocity.y=0
                         if dog_instance.prev_direction!=dog_instance.direction:#reducing drag while switching dirtections
                             if dog_instance.prev_direction=='right':
                                 dog_instance.velocity.x=100
@@ -527,7 +526,7 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.acceleration.x=-100
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                     elif dog_instance.state=='swim' or dog_instance.state=='chase_rat':
-                        dog_instance.max_velocity.y=0
+                        dog_instance.velocity.y=0
                         dog_instance.image_frame+=15*delta_time
                         if dog_instance.image_frame>=11:
                             dog_instance.image_frame=0
