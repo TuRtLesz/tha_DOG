@@ -445,8 +445,11 @@ class dog(pygame.sprite.Sprite):
     dog_run_image_list_left=[]
     dog_death_image_list_right=[]
     dog_death_image_list_left=[]
+    dog_bite_image_list_right=[]
+    dog_bite_image_list_left=[]
     load_spritesheet_2dir(pygame.image.load('Data/dog/dog_run.png').convert_alpha(),dog_run_image_list_left,dog_run_image_list_right,21)
     load_spritesheet_2dir(pygame.image.load('Data/dog/dog_death.png').convert_alpha(),dog_death_image_list_left,dog_death_image_list_right,5)
+    load_spritesheet_2dir(pygame.image.load('Data/dog/dog_bite.png').convert_alpha(),dog_bite_image_list_left,dog_bite_image_list_right,4)
     tut_end=0
     def __init__(dog_instance,x,y):
         super().__init__()
