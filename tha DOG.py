@@ -2240,6 +2240,8 @@ while True:
                     player.pos.xy=(check_point_list[0])
                     player.life=3
                     game_settings['mode']='in_game'
+                elif cookie_rect.collidepoint(mouse_pos):
+                    cookie_image_frame+=1
             else:
                 if exit_game_complete_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
@@ -2251,6 +2253,8 @@ while True:
                     player.pos.xy=(check_point_list[0])
                     player.life=3
                     game_settings['mode']='in_game'
+                elif cookie_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    cookie_image_frame+=1
     game_window.blit(high_score_image,(10,10))
     text(str(save_data['high_score']),(0,0,0),40,(156,5))
     game_window.blit(score_image,(10,50))
