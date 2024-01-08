@@ -147,12 +147,13 @@ class player(pygame.sprite.Sprite):
                 break
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             if not player.dog_collide:
-                if player.state!='grass' and player.state!='dodge' and dog.state!='bite' and dog.state!='stunned':
+                if player.state!='grass' and player.state!='dodge' and dog.state!='bite' and dog.stun_timer<=0:
                     player.life-=1
                     player.score-=250
                     player.velocity.xy=0,0
                     player.state='idle'
-                    dog.state='bite'
+                    dog.bite_timer=3
+                    dog.image_frame=0
                 else:
                     if player.state=='dodge':
                         player.score+=500
@@ -468,6 +469,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
         dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
         dog_instance.stun_timer=0
+        dog_instance.bite_timer=0
     def update(dog_instance,delta_time):
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
             dog_instance.max_velocity.x=150
@@ -476,8 +478,8 @@ class dog(pygame.sprite.Sprite):
         if dog_instance.life<=0:
             dog_instance.state='dead'
         if dog_instance.state!='dead':
-            if dog_instance.state!='bite':
-                if dog_instance.state!='stunned':
+            if dog_instance.bite_timer<=0:
+                if dog_instance.stun_timer<=0:
                     for water_rect in water_blocks_rect_list:
                         if dog_instance.state!='swim':
                             if dog_instance.rect.colliderect(water_rect):
@@ -592,20 +594,21 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                             dog_instance.pos.xy=dog_instance.rect.center
                 else:
-                    if dog_instance.stun_timer>=5:
+                    if dog_instance.stun_timer<=0:
                         dog_instance.state='idle'
                         dog_instance.stun_timer=0
                         for player in player_sprite_group:player.dog_collide=False
                     else:
-                        dog_instance.stun_timer+=delta_time
+                        dog_instance.stun_timer-=delta_time
             else:
+                dog_instance.bite_timer-=delta_time
+                if int(dog_instance.image_frame)>=len(dog.dog_bite_image_list_left)-1:
+                    dog_instance.image_frame=len(dog.dog_bite_image_list_left)-1
+                else:dog_instance.image_frame+=5*delta_time
                 if dog_instance.direction=='left':
-                    dog_instance.image=dog.dog_run_image_list_left[12]
+                    dog_instance.image=dog.dog_bite_image_list_left[int(dog_instance.image_frame)]
                 else:
-                    dog_instance.image=dog.dog_run_image_list_right[12]
-                for player in player_sprite_group:
-                    if player.velocity.x!=0:
-                        dog_instance.state='stunned'
+                    dog_instance.image=dog.dog_bite_image_list_right[int(dog_instance.image_frame)]
         else:
             if int(dog_instance.image_frame)>=len(dog.dog_death_image_list_left):
                 dog_instance.kill()
@@ -1398,7 +1401,7 @@ class little_rock(pygame.sprite.Sprite):
             for player in player_sprite_group:
                 if rock_instance.velocity.x!=0:
                     for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
-                        dog.state='stunned'
+                        dog.stun_timer=5
                         dog.life-=1
                         dog.image_frame=0
                         rock_instance.velocity.x=0
