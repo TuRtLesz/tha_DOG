@@ -1,9 +1,7 @@
 import pygame
 from pygame.locals import *
-from threading import Thread
-import time
 # Constants
-SCREEN_WIDTH = 400
+SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 400
 CAPTION = "Waves Simulation with Pygame"
 BLUE = (0, 103, 247)
@@ -12,7 +10,6 @@ WHITE = (255, 255, 255)
 
 
 
-water_spring_list = []
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption(CAPTION)
@@ -23,14 +20,13 @@ class water_spring:
     tension = 0.025
     dampening = 0.020
     spread = 0.25
-    def __init__(water_spring_instance, x, target_height, rod_width):
+    def __init__(water_spring_instance, x, target_height):
         water_spring_instance.x = x
         water_spring_instance.y = 0
         water_spring_instance.speed = 0
         water_spring_instance.height = target_height
         water_spring_instance.target_height=target_height
         water_spring_instance.bottom = 400
-        water_spring_instance.rod_width = rod_width
     def update(water_spring_instance):
         water_spring_instance.y = water_spring_instance.target_height - water_spring_instance.height
         water_spring_instance.speed += water_spring.tension * water_spring_instance.y - water_spring_instance.speed * water_spring.dampening
@@ -38,67 +34,50 @@ class water_spring:
 
 # Max wave height and stable point
 target_height = 200
-# Initial speed
-init_speed = 200
 # First position
 init_position_x = 0
 # Second position
-final_position_x = 400
-# List of objects (here the objects are Springs)
-number_rod = abs(int((init_position_x - final_position_x) / 2))
-"""Have half rod on all the water"""
-rod_width =int((init_position_x + final_position_x) / number_rod)
-"""Make an size average thank to the number of rod"""
-init_index = int(number_rod / rod_width)
+final_position_x = 1000
+
+water_spring_list = []
+
 """Create the water_spring list"""
-for x in range(init_position_x, final_position_x, rod_width):
-    water_spring_list.append(water_spring(x, target_height, rod_width))
+for x in range(init_position_x, final_position_x, 2):
+    water_spring_list.append(water_spring(x, target_height))
 
 
         
 
 
-class wave_class(Thread):
-    def __init__(wave_class_instance):
-        Thread.__init__(wave_class_instance)
-        wave_class_instance.time = 0
-        wave_class_instance.max_time = 2
-        wave_class_instance.time_sleep = 0.01
-        wave_class_instance.done = False
-        # Number of loop round // Warning with a too hight value on this variable, the script will be very slower
-        wave_class_instance.height_splash = 5
-    def run(wave_class_instance):
-        while not wave_class_instance.done:
-            for water_spring in water_spring_list:
-                water_spring.update()
-            lDeltas = list(water_spring_list)
-            rDeltas = list(water_spring_list)
-            for j in range(wave_class_instance.height_splash):
-                for i in range(len(water_spring_list)): 
-                    if i > 0:
-                        lDeltas[i] = water_spring.spread * (water_spring_list[i].height - water_spring_list[i - 1].height)
-                        water_spring_list[i - 1].speed += lDeltas[i]
-                    if i < len(water_spring_list) - 1:
-                        rDeltas[i] = water_spring.spread * (water_spring_list[i].height - water_spring_list[i + 1].height)
-                        water_spring_list[i + 1].speed += rDeltas[i]
-                for i in range(len(water_spring_list)):
-                    if i > 0:
-                        water_spring_list[i - 1].height += lDeltas[i]
-                    if i < len(water_spring_list) - 1:
-                        water_spring_list[i + 1].height += rDeltas[i]
-            count = 0
-            for i in range(len(water_spring_list)):
-                if not int(water_spring_list[i].speed) and not int(water_spring_list[i].y):
-                    count += 1
-            if count == len(water_spring_list):
-                for i in range(len(water_spring_list)):
-                    water_spring_list[i].speed = 0
-                    water_spring_list[i].height = water_spring_list[i].target_height
-                    water_spring_list[i].y = 0 
-            wave_class_instance.time += wave_class_instance.time_sleep
-            if wave_class_instance.time >= wave_class_instance.max_time:
-                wave_class_instance.done = True
-            time.sleep(wave_class_instance.time_sleep) 
+
+def wave_update():
+    for water_spring in water_spring_list:
+        water_spring.update()
+    lDeltas = list(water_spring_list)
+    rDeltas = list(water_spring_list)
+    for j in range(5):# Number of loop round // Warning with a too hight value on this variable, the script will be very slower
+        for i in range(len(water_spring_list)): 
+            if i > 0:
+                lDeltas[i] = water_spring.spread * (water_spring_list[i].height - water_spring_list[i - 1].height)
+                water_spring_list[i - 1].speed += lDeltas[i]
+            if i < len(water_spring_list) - 1:
+                rDeltas[i] = water_spring.spread * (water_spring_list[i].height - water_spring_list[i + 1].height)
+                water_spring_list[i + 1].speed += rDeltas[i]
+        for i in range(len(water_spring_list)):
+            if i > 0:
+                water_spring_list[i - 1].height += lDeltas[i]
+            if i < len(water_spring_list) - 1:
+                water_spring_list[i + 1].height += rDeltas[i]
+    count = 0
+    for i in range(len(water_spring_list)):
+        if not int(water_spring_list[i].speed) and not int(water_spring_list[i].y):
+            count += 1
+    if count == len(water_spring_list):
+        for i in range(len(water_spring_list)):
+            water_spring_list[i].speed = 0
+            water_spring_list[i].height = water_spring_list[i].target_height
+            water_spring_list[i].y = 0 
+
      
 while True:
     for event in pygame.event.get():
@@ -111,21 +90,20 @@ while True:
 
             #if counter.done == True:
             pos = pygame.mouse.get_pos()
-            init_index = int(pos[0] / final_position_x * number_rod)
-            water_spring_list[init_index].speed = init_speed
-            counter = wave_class()
-            counter.start()
+            water_spring_list[int(pos[0] / final_position_x * (abs(int((init_position_x - final_position_x) / 2))))].speed = 200
+            
 
 
     screen.fill(WHITE)
-
+    wave_update()
 
     for water_spring in water_spring_list:
-        pygame.draw.line(screen, BLUE, (water_spring.x, water_spring.height), (water_spring.x, water_spring.height), water_spring.rod_width)
+        pygame.draw.line(screen, BLUE, (water_spring.x, water_spring.height), (water_spring.x, water_spring.height), 2)
+
     #water_spring_last_pos=[0,0]
     #for water_spring in water_spring_list:
     #    if water_spring.x-water_spring_last_pos[0]<16:#change number later
-    #        pygame.draw.line(screen, BLUE, (water_spring.x, water_spring.height), (water_spring.x, water_spring.height), water_spring.rod_width)
+    #        pygame.draw.line(screen, BLUE, (water_spring.x, water_spring.height), (water_spring.x, water_spring.height), 2)
     #        water_spring_last_pos[0]=water_spring.x
     #        water_spring_last_pos[1]=water_spring.height
     #    else:

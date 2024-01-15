@@ -10,7 +10,7 @@ clock=pygame.time.Clock()
 
 save_data={'high_score':0}#add lsat check point?
 
-game_settings={'fullscreen':False,'negative_screen':False,'mode':'game_complete'}
+game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game'}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
     sprite_list.clear()
