@@ -434,11 +434,12 @@ class player(pygame.sprite.Sprite):
         for water_line in water_hitlines:
             if player.rect.clipline(water_line)!=():
                 if player.state=='run' or player.state=='sprint':
-                    if numpy.random.randint(0,7)==1:
+                    if numpy.random.randint(0,150)==1:
                         bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
-
-
-                #add waves hereee
+                for water_spring_obj in water_spring_instance_list:
+                    if player.pos.x-2<water_spring_obj.x<player.pos.x+2:
+                        if water_spring_obj.speed==0:
+                            water_spring_obj.speed=200
 
 class dog(pygame.sprite.Sprite):
     dog_run_image_list_right=[]
@@ -1611,6 +1612,54 @@ class tutorial_block(pygame.sprite.Sprite):
             tut_block.image_frame=0
         tut_block.image=tut_block.image_list[int(tut_block.image_frame)]
         tut_block.image_frame+=5*delta_time
+class water_spring:
+    tension = 0.025
+    dampening = 0.020
+    spread = 0.25
+    def __init__(water_spring_instance, x, target_height):
+        water_spring_instance.x = x
+        water_spring_instance.y = 0
+        water_spring_instance.speed = 0
+        water_spring_instance.height = target_height
+        water_spring_instance.target_height=target_height
+    def update(water_spring_instance):
+        water_spring_instance.y = water_spring_instance.target_height - water_spring_instance.height
+        water_spring_instance.speed += water_spring.tension * water_spring_instance.y - water_spring_instance.speed * water_spring.dampening
+        water_spring_instance.height += water_spring_instance.speed
+def wave_update(water_spring_instance_list,water_spring_list):
+    water_spring_instance_list.clear()
+    for water_spring_obj in water_spring_list:
+        if game.update_rect.left<water_spring_obj.x<game.update_rect.right:
+            water_spring_instance_list.append(water_spring_obj)
+    for water_spring in water_spring_instance_list:
+        water_spring.update()
+    lDeltas = list(water_spring_instance_list)
+    rDeltas = list(water_spring_instance_list)
+    for j in range(5):# Number of loop round // Warning with a too hight value on this variable, the script will be very slower
+        for i in range(len(water_spring_instance_list)): 
+            if i > 0:
+                lDeltas[i] = water_spring.spread * (water_spring_instance_list[i].height - water_spring_instance_list[i - 1].height)
+                water_spring_instance_list[i - 1].speed += lDeltas[i]
+            if i < len(water_spring_instance_list) - 1:
+                rDeltas[i] = water_spring.spread * (water_spring_instance_list[i].height - water_spring_instance_list[i + 1].height)
+                water_spring_instance_list[i + 1].speed += rDeltas[i]
+        for i in range(len(water_spring_instance_list)):
+            if i > 0:
+                water_spring_instance_list[i - 1].height += lDeltas[i]
+            if i < len(water_spring_instance_list) - 1:
+                water_spring_instance_list[i + 1].height += rDeltas[i]
+    count = 0
+    for i in range(len(water_spring_instance_list)):
+        if not int(water_spring_instance_list[i].speed) and not int(water_spring_instance_list[i].y):
+            count += 1
+    if count == len(water_spring_instance_list):
+        for i in range(len(water_spring_instance_list)):
+            water_spring_instance_list[i].speed = 0
+            water_spring_instance_list[i].height = water_spring_instance_list[i].target_height
+            water_spring_instance_list[i].y = 0 
+    return water_spring_list,water_spring_instance_list
+water_spring_instance_list=[]
+water_spring_list=[]
 
 class game():
     def __init__(game):
@@ -1700,6 +1749,9 @@ class game():
                 for sprite in sprite_group:
                     if cam.draw_rect.colliderect(sprite.rect):
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
+            for water_spring in water_spring_instance_list:
+                if cam.draw_rect.left<water_spring.x<cam.draw_rect.right:
+                    pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
     def update(update_instance,update_sprite_group_list,delta_time):
         for player in player_sprite_group:
             player.update(delta_time)
@@ -1721,6 +1773,7 @@ class game():
                 reactive_instance_block.update(delta_time)
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
+        wave_update(water_spring_instance_list,water_spring_list)
 
 player_sprite_group=pygame.sprite.Group()
 
@@ -1821,10 +1874,9 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(6067,560))#2067,560,30111,75984,960,boss-109968
 
-def map_load(water_hitlines):
-    last_xy=[0,0]
+def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
     with open('Data/worlds/0/0_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -1847,18 +1899,8 @@ def map_load(water_hitlines):
                 elif block_id=='7':
                     reactive_block_sprite_group.add(flower(block_number,row_number))
                 elif block_id=='8':
-                    if last_xy[1]==0:
-                        inital_xy=[block_number*48,row_number*48]
-                        last_xy[1]=row_number*48
-                    else:
-                        if (row_number*48)!=last_xy[1]:
-                            water_hitlines.append([inital_xy,last_xy])
-                        else:
-                            last_xy=[block_number*48,row_number*48]
-                    for x_pos in range(block_number*48,(block_number+1)*48,16):
-                        pass
-
-                    #import water springs pos
+                    for x_pos in range(block_number*48,(block_number+1)*48,2):
+                        water_spring_list.append(water_spring(x_pos,row_number*48))
                 elif block_id=='9':
                     reactive_block_sprite_group.add(pressure_switch(block_number,row_number))
                 elif block_id=='10':
@@ -1908,9 +1950,21 @@ def map_load(water_hitlines):
                             fat_guy.right_rope_limit=x*48
                         elif id=='3':
                             game.pressure_switch_pan_x=x*48
-    return water_hitlines
+    inital_xy=[0,0]
+    for water_spring_obj in water_spring_list:
+        if inital_xy[0]==0:
+            inital_xy=[water_spring_obj.x,water_spring_obj.target_height]
+            last_xy=[water_spring_obj.x,water_spring_obj.target_height]
+        else:
+            if water_spring_obj.x-last_xy[0]>48 or last_xy[1]!=water_spring_obj.target_height:
+                water_hitlines.append([inital_xy,last_xy])
+                inital_xy=[water_spring_obj.x,water_spring_obj.target_height]
+                last_xy=[water_spring_obj.x,water_spring_obj.target_height]
+            else:
+                last_xy=[water_spring_obj.x,water_spring_obj.target_height]
+    return water_hitlines,water_spring_list
 
-map_load(water_hitlines)
+map_load(water_hitlines,water_spring_list)
 dog.tut_end=tut_end
 prevoius_time=time.perf_counter()
 while True:
@@ -1955,7 +2009,6 @@ while True:
         game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,bubble_sprite_group],
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group])
-        
         #for player in player_sprite_group:
         #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
