@@ -1823,7 +1823,8 @@ game=game()
 
 player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
-def map_load():
+def map_load(water_hitlines):
+    last_xy=[0,0]
     reactive_block_sprite_group.empty()
     with open('Data/worlds/0/0_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
@@ -1846,6 +1847,14 @@ def map_load():
                 elif block_id=='7':
                     reactive_block_sprite_group.add(flower(block_number,row_number))
                 elif block_id=='8':
+                    if last_xy[1]==0:
+                        inital_xy=[block_number*48,row_number*48]
+                        last_xy[1]=row_number*48
+                    else:
+                        if (row_number*48)!=last_xy[1]:
+                            water_hitlines.append([inital_xy,last_xy])
+                        else:
+                            last_xy=[block_number*48,row_number*48]
                     for x_pos in range(block_number*48,(block_number+1)*48,16):
                         pass
 
@@ -1899,10 +1908,10 @@ def map_load():
                             fat_guy.right_rope_limit=x*48
                         elif id=='3':
                             game.pressure_switch_pan_x=x*48
+    return water_hitlines
 
-map_load()
+map_load(water_hitlines)
 dog.tut_end=tut_end
-
 prevoius_time=time.perf_counter()
 while True:
     delta_time=time.perf_counter()-prevoius_time
@@ -1947,8 +1956,8 @@ while True:
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group])
         
-        for player in player_sprite_group:
-            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        #for player in player_sprite_group:
+        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
@@ -2088,7 +2097,7 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
-                    map_load()
+                    map_load(water_hitlines)
                 elif exit_rect.collidepoint(mouse_pos):
                     pygame.mixer.quit()
                     pygame.quit()
@@ -2109,7 +2118,7 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
-                    map_load()
+                    map_load(water_hitlines)
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
                     pygame.quit()

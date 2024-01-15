@@ -26,7 +26,6 @@ class water_spring:
         water_spring_instance.speed = 0
         water_spring_instance.height = target_height
         water_spring_instance.target_height=target_height
-        water_spring_instance.bottom = 400
     def update(water_spring_instance):
         water_spring_instance.y = water_spring_instance.target_height - water_spring_instance.height
         water_spring_instance.speed += water_spring.tension * water_spring_instance.y - water_spring_instance.speed * water_spring.dampening
