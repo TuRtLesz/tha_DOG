@@ -445,7 +445,7 @@ class player(pygame.sprite.Sprite):
                     for water_spring_obj in water_spring_instance_list:
                         if player.pos.x-2<water_spring_obj.x<player.pos.x+2:
                             if abs(water_spring_obj.speed)<3:
-                                water_spring_obj.speed=20
+                                water_spring_obj.speed=10
                        #elif int(player.image_frame)==0:
                        #    if numpy.random.randint(0,1)==1:
                        #        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
@@ -2168,7 +2168,7 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
-                    map_load(water_hitlines)
+                    map_load(water_hitlines,water_spring_list)
                 elif exit_rect.collidepoint(mouse_pos):
                     pygame.mixer.quit()
                     pygame.quit()
