@@ -1712,24 +1712,24 @@ class game():
                         cam.screen_shake.y=numpy.random.randint(-15,15)
                     cam.earthquake_timer+=delta_time
             if not cam.fat_guy_hit and player_sprite.pos.x>player.fat_guy_pan:#fat_guy pan loc
-                cam.player_offset.x-=100*delta_time
-                if cam.player_offset.x<=-(display_size[1]//2-50):
-                    cam.player_offset.x=-(display_size[1]//2-50)
+                cam.player_offset.x-=200*delta_time
+                if cam.player_offset.x<=-(display_size[0]//2-50):
+                    cam.player_offset.x=-(display_size[0]//2-50)
                 cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
             else:
                 if cam.pressure_switch_pan:
-                    if cam.player_offset.x>=(display_size[1]//2+150):
-                        cam.player_offset.x=(display_size[1]//2+150)
+                    if cam.player_offset.x>=(display_size[0]//2-150):
+                        cam.player_offset.x=(display_size[0]//2-150)
                     else:
                         cam.player_offset.x+=300*delta_time
                 else:
                     if player_sprite.idle_timer>=2:
-                        if cam.player_offset.x>=display_size[1]//2-50:
+                        if cam.player_offset.x>=display_size[0]//2-350:
                             cam.player_offset.x-=100*delta_time
-                            if cam.player_offset.x<display_size[1]//2-50:cam.player_offset.x=display_size[1]//2-50
+                            if cam.player_offset.x<display_size[0]//2-350:cam.player_offset.x=display_size[0]//2-350
                         else:
-                            if cam.player_offset.x<=-(display_size[1]//2-50):
-                                cam.player_offset.x=-(display_size[1]//2-50)
+                            if cam.player_offset.x<=-(display_size[0]//2-350):
+                                cam.player_offset.x=-(display_size[0]//2-350)
                             else:
                                 if player_sprite.direction=='right':
                                     cam.player_offset.x+=100*delta_time#pan speed for idle pan
@@ -1742,8 +1742,8 @@ class game():
                         elif cam.player_offset.x<0:
                             cam.player_offset.x+=100*delta_time
                             if cam.player_offset.x>0:cam.player_offset.x=0
-                if player_sprite.pos.x<display_size[1]//2:
-                    cam.player_offset.x=display_size[1]//2-player_sprite.pos.x
+                if player_sprite.pos.x<display_size[0]//2:
+                    cam.player_offset.x=display_size[0]//2-player_sprite.pos.x
                     cam.offset.x=0
                 else:
                     cam.offset.x=player_sprite.pos.x-(game_window.get_width()//2)+cam.player_offset.x
@@ -1892,7 +1892,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(111504,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
