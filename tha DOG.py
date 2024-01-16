@@ -1892,7 +1892,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(111504,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
@@ -2027,8 +2027,8 @@ while True:
         game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,bubble_sprite_group],
                     player_sprite_group,
                     [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group])
-        #for player in player_sprite_group:
-        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        for player in player_sprite_group:
+            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
             #    if event.key==pygame.K_w:
@@ -2189,7 +2189,7 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
-                    map_load(water_hitlines)
+                    map_load(water_hitlines,water_spring_list)
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
                     pygame.quit()
