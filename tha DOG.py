@@ -100,7 +100,6 @@ class player(pygame.sprite.Sprite):
         player.jump_counter=0
         player.direction='right'
         player.hand=''
-        player.dog_collide=False
         player.jump_height=spawn_y
         player.prev_flower_count=0
         player.flower_count=0
@@ -145,18 +144,15 @@ class player(pygame.sprite.Sprite):
             else:
                 break
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            if not player.dog_collide:
-                if player.state!='grass' and player.state!='dodge' and dog.state!='bite' and dog.stun_timer<=0:
-                    player.life-=1
-                    player.score-=250
-                    player.velocity.xy=0,0
-                    player.state='idle'
-                    dog.bite_timer=3
-                    dog.image_frame=0
-                else:
-                    if player.state=='dodge':
-                        player.score+=500
-                player.dog_collide=True
+            if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
+                player.life-=1
+                player.score-=250
+                player.velocity.xy=0,0
+                player.state='idle'
+                dog.bite_timer=3
+                dog.image_frame=0
+            elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
+                player.score+=500
         if player.stamina<1000 and not player.water:
                 if player.state=='idle' and not player.jump:
                     player.state='pant'
@@ -197,7 +193,6 @@ class player(pygame.sprite.Sprite):
                 player.stamina-=100
                 player.image_frame=0
                 player.dodge=False
-                player.dog_collide=False
                 if player.direction=='left':
                     player.rect.x-=12
                 else:
@@ -433,13 +428,22 @@ class player(pygame.sprite.Sprite):
                     player.jump=False
         for water_line in water_hitlines:
             if player.rect.clipline(water_line)!=():
-                if player.state=='run' or player.state=='sprint':
-                    if numpy.random.randint(0,150)==1:
-                        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
-                for water_spring_obj in water_spring_instance_list:
-                    if player.pos.x-2<water_spring_obj.x<player.pos.x+2:
-                        if water_spring_obj.speed==0:
-                            water_spring_obj.speed=200
+                if player.state=='swim' or player.state=='swim_fast':
+                    if abs(player.velocity.x)>0:
+                        if int(player.image_frame)==7 or int(player.image_frame)==11:
+                            if player.direction=='right':
+                                for water_spring_obj in water_spring_instance_list:
+                                    if player.rect.right-2<water_spring_obj.x<player.rect.right+2:
+                                        if abs(water_spring_obj.speed)<5:
+                                            water_spring_obj.speed=50
+                            elif player.direction=='left':
+                                for water_spring_obj in water_spring_instance_list:
+                                    if player.rect.left-2<water_spring_obj.x<player.rect.left+2:
+                                        if abs(water_spring_obj.speed)<5:
+                                            water_spring_obj.speed=50
+                       #elif int(player.image_frame)==0:
+                       #    if numpy.random.randint(0,1)==1:
+                       #        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
 
 class dog(pygame.sprite.Sprite):
     dog_run_image_list_right=[]
@@ -593,11 +597,16 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '94':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                             dog_instance.pos.xy=dog_instance.rect.center
+                        for water_line in water_hitlines:
+                            if dog_instance.rect.clipline(water_line)==():
+                                for water_spring_obj in water_spring_instance_list:
+                                    if dog_instance.pos.x-2<water_spring_obj.x<dog_instance.pos.x+2:
+                                        if abs(water_spring_obj.speed)==0:
+                                            water_spring_obj.speed=25
                 else:
                     if dog_instance.stun_timer<=0:
                         dog_instance.state='idle'
                         dog_instance.stun_timer=0
-                        for player in player_sprite_group:player.dog_collide=False
                     else:
                         dog_instance.stun_timer-=delta_time
             else:
@@ -1007,7 +1016,7 @@ class rat(pygame.sprite.Sprite):
         rat_instance.pos=pygame.math.Vector2(rat_instance.rect.center)
     def update(rat_instance,delta_time):
         if rat_instance.dead:
-            if rat_instance.frame>len(rat.rat_death_right_list)-1:
+            if rat_instance.frame>=len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
             elif rat_instance.frame==0:
                 rat.death_sound.play()
@@ -1377,6 +1386,8 @@ class rock(pygame.sprite.Sprite):
             for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock:
                     rock_instance.roll=True
+            for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
+                rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
@@ -1426,6 +1437,10 @@ class little_rock(pygame.sprite.Sprite):
                     rock_instance.pos.xy=rock_instance.rect.center
                 for water_line in water_hitlines:
                     if rock_instance.rect.clipline(water_line)!=():
+                        for water_spring_obj in water_spring_instance_list:
+                            if rock_instance.rect.centerx-2<water_spring_obj.x<rock_instance.rect.centerx+2:
+                                if abs(water_spring_obj.speed)==0:
+                                    water_spring_obj.speed=50
                         rock_instance.acceleration.y=300
                         if rock_instance.velocity.y>little_rock.water_resistance.y:
                             rock_instance.velocity-=little_rock.water_resistance
@@ -1588,10 +1603,10 @@ class bubble(pygame.sprite.Sprite):
         bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
         for water_line in water_hitlines:
             if bubble_instance.rect.clipline(water_line)!=():
-                #add waves herhee
-
-
-
+                for water_spring_obj in water_spring_instance_list:
+                    if bubble_instance.rect.centerx-2<water_spring_obj.x<bubble_instance.rect.centerx+2:
+                        if abs(water_spring_obj.speed)<10:
+                            water_spring_obj.speed=bubble_instance.size*100
                 bubble_instance.kill()
 class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
@@ -1983,7 +1998,7 @@ while True:
                         display_window=pygame.display.set_mode((display_size[0]//2,display_size[1]//2))
                         game_settings['fullscreen']=False
                     elif game_settings['fullscreen']==False:
-                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN|pygame.SCALED)
+                        display_window=pygame.display.set_mode((display_size[0],display_size[1]),pygame.FULLSCREEN)
                         game_settings['fullscreen']=True
                 if event.key==pygame.K_ESCAPE:
                     if game_settings['mode']=='in_game':
