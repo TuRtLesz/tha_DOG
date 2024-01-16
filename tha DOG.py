@@ -441,6 +441,11 @@ class player(pygame.sprite.Sprite):
                                     if player.rect.left-2<water_spring_obj.x<player.rect.left+2:
                                         if abs(water_spring_obj.speed)<5:
                                             water_spring_obj.speed=50
+                elif player.state=='run' or player.state=='sprint':
+                    for water_spring_obj in water_spring_instance_list:
+                        if player.pos.x-2<water_spring_obj.x<player.pos.x+2:
+                            if abs(water_spring_obj.speed)<3:
+                                water_spring_obj.speed=20
                        #elif int(player.image_frame)==0:
                        #    if numpy.random.randint(0,1)==1:
                        #        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
@@ -1264,7 +1269,7 @@ class bomb(pygame.sprite.Sprite):
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
                 for bubble_count in range(numpy.random.randint(5,10)):
-                    bubble_sprite_group.add(bubble(numpy.random.randint(bomb_instance.rect.x,bomb_instance.rect.x+bomb_instance.image.get_width()),numpy.random.randint(bomb_instance.rect.y,bomb_instance.rect.bottom),round(numpy.random.uniform(0.1,2),ndigits=1)))
+                    bubble_sprite_group.add(bubble(numpy.random.randint(bomb_instance.rect.x,bomb_instance.rect.right),numpy.random.randint(bomb_instance.rect.y+(bomb_instance.rect.width//2),bomb_instance.rect.bottom+10),round(numpy.random.uniform(0.1,2),ndigits=1)))
                 bomb_instance.kill()
             else:
                 bomb_instance.image=bomb_instance.bomb_image_list[int(bomb_instance.frame)]
@@ -1386,8 +1391,6 @@ class rock(pygame.sprite.Sprite):
             for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock:
                     rock_instance.roll=True
-            for player in pygame.sprite.spritecollide(rock_instance,player_sprite_group,dokill=False):
-                rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
@@ -1889,7 +1892,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(6067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
