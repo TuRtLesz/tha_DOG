@@ -519,15 +519,17 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.direction='right'
                     for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                         dog_instance.state='chase_rat'
-                        if rat.pos.x-dog_instance.pos.x>0:
+                        if rat.rect.centerx-dog_instance.rect.centerx>0:
                             dog_instance.direction='right'
-                        elif rat.pos.x-dog_instance.pos.x<0:
+                        elif rat.rect.centerx-dog_instance.rect.centerx<0:
                             dog_instance.direction='left'
                         if rat.rect.colliderect(dog_instance.rect):
-                            if not rat.dead:
-                                rat.dead=True
+                            if not rat.fart_dead or not rat.dead:
+                                rat.fart_dead=True
                                 rat.frame=0
-                                dog_instance.state='stomp_rat'
+                                dog_instance.stun_timer=6
+                            elif rat.fart_dead:
+                                dog_instance.stun_timer=6
                     if dog_instance.state=='run':
                         dog_instance.max_velocity.y=100
                         dog_instance.image_frame+=10*delta_time
@@ -1008,8 +1010,11 @@ class rat(pygame.sprite.Sprite):
     rat_death_right_list=[]
     rat_run_left_list=[]
     rat_death_left_list=[]
+    rat_fart_left_list=[]
+    rat_fart_right_list=[]
     load_spritesheet_2dir(pygame.image.load('Data/rat/rat_run.png').convert_alpha(),rat_run_left_list,rat_run_right_list,frames=4)
     load_spritesheet_2dir(pygame.image.load('Data/rat/rat_death.png').convert_alpha(),rat_death_left_list,rat_death_right_list,frames=7)
+    load_spritesheet_2dir(pygame.image.load('Data/rat/rat_fart.png').convert_alpha(),rat_fart_left_list,rat_fart_right_list,frames=7)
     def __init__(rat_instance,x,y):
         super().__init__()
         rat_instance.image=rat.rat_run_left_list[0]
@@ -1017,40 +1022,52 @@ class rat(pygame.sprite.Sprite):
         rat_instance.mask=pygame.mask.from_surface(rat_instance.image)
         rat_instance.frame=0
         rat_instance.dead=False
+        rat_instance.fart_dead=False
         rat_instance.velocity=pygame.math.Vector2(-10,0)
-        rat_instance.pos=pygame.math.Vector2(rat_instance.rect.center)
     def update(rat_instance,delta_time):
-        if rat_instance.dead:
-            if rat_instance.frame>=len(rat.rat_death_right_list)-1:
+        if rat_instance.fart_dead:
+            if rat_instance.frame>=len(rat.rat_fart_right_list)-1:
                 rat_instance.kill()
             elif rat_instance.frame==0:
-                rat.death_sound.play()
+                rat_instance.rect=rat_instance.image.get_rect(midbottom=(rat_instance.rect.centerx-43,rat_instance.rect.bottom-73))
+            #    rat.fart_sound.play()
             if rat_instance.velocity.x>0:
-                rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
+                rat_instance.image=rat.rat_fart_right_list[int(rat_instance.frame)]
             elif rat_instance.velocity.x<0:
-                rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
+                rat_instance.image=rat.rat_fart_left_list[int(rat_instance.frame)]
             rat_instance.frame+=8*delta_time
         else:
-            for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
-                    rat_instance.dead=True
+            if rat_instance.dead:
+                if rat_instance.frame>=len(rat.rat_death_right_list)-1:
+                    rat_instance.kill()
+                elif rat_instance.frame==0:
+                    rat.death_sound.play()
+                if rat_instance.velocity.x>0:
+                    rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
+                elif rat_instance.velocity.x<0:
+                    rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
+                rat_instance.frame+=8*delta_time
+            else:
+                for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
+                    if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
+                        rat_instance.dead=True
+                        rat_instance.frame=0
+                        player.velocity.x=0
+                for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
+                    if block.id=='41':#rat_hole
+                        rat_instance.velocity.x=-70
+                    elif block.id=='37':#rock
+                        rat_instance.velocity.x=70
+                    elif block.id=='91':#rock_long
+                        rat_instance.velocity.x=70
+                rat_instance.rect.centerx+=rat_instance.velocity.x*delta_time
+                if rat_instance.frame>len(rat.rat_run_right_list)-1:
                     rat_instance.frame=0
-            for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
-                if block.id=='41':#rat_hole
-                    rat_instance.velocity.x=-70
-                elif block.id=='37':#rock
-                    rat_instance.velocity.x=70
-                elif block.id=='91':#rock_long
-                    rat_instance.velocity.x=70
-            rat_instance.pos.x+=rat_instance.velocity.x*delta_time
-            rat_instance.rect.center=rat_instance.pos
-            if rat_instance.frame>len(rat.rat_run_right_list)-1:
-                rat_instance.frame=0
-            if rat_instance.velocity.x>0:
-                rat_instance.image=rat.rat_run_right_list[round(rat_instance.frame)]
-            elif rat_instance.velocity.x<0:
-                rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
-            if not rat_instance.dead:rat_instance.frame+=10*delta_time
+                if rat_instance.velocity.x>0:
+                    rat_instance.image=rat.rat_run_right_list[round(rat_instance.frame)]
+                elif rat_instance.velocity.x<0:
+                    rat_instance.image=rat.rat_run_left_list[round(rat_instance.frame)]
+                if not rat_instance.dead:rat_instance.frame+=10*delta_time
 class fish(pygame.sprite.Sprite):#fishes are not the bad guys
     fish_swim_imagelist_right=[]
     fish_swim_imagelist_left=[]
