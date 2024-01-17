@@ -1575,14 +1575,13 @@ class nest(pygame.sprite.Sprite):
         nest_instance.bird_count=5#no of birds in a nest
         nest_instance.rect=nest_instance.image.get_rect(topleft=(x*48,y*48))
     def update(nest_instance,delta_time):
-        if nest_instance.bird_count>0:
-            if not nest_instance.fall:
-                if nest_instance.timer>=10:
-                    nest_instance.timer=0
-                    bird_sprite_group.add(bird(nest_instance.rect.centerx,nest_instance.rect.centery))
-                    nest_instance.bird_count-=1
-                else:
-                    nest_instance.timer+=delta_time
+        if nest_instance.bird_count>0 and not nest_instance.fall:
+            if nest_instance.timer>=10:
+                nest_instance.timer=0
+                bird_sprite_group.add(bird(nest_instance.rect.centerx,nest_instance.rect.centery))
+                nest_instance.bird_count-=1
+            else:
+                nest_instance.timer+=delta_time
             for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_instance_group,dokill=False):
                 if type(reactive_block)==little_rock:
                     nest_instance.fall=True
