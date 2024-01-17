@@ -693,7 +693,7 @@ class bird(pygame.sprite.Sprite):
                     else:bird_instance.velocity.y=0
                 else:bird_instance.velocity.y=0
                 bird_instance.rect.center+=bird_instance.velocity*delta_time
-                if player.rect.colliderect(bird_instance.rect) and player.state!='dodge':
+                if player.rect.colliderect(bird_instance.rect) and player.state!='dodge' and player.state!='grass':
                     player.score-=100
                     player.life-=1
                     bird_instance.dead=True
@@ -754,7 +754,7 @@ class ostrich(pygame.sprite.Sprite):
                     ostrich_instance.rect.center+=ostrich_instance.velocity*delta_time
                     ostrich_instance.image_frame+=10*delta_time
                     for player in pygame.sprite.spritecollide(ostrich_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                        if player.state!='dodge':
+                        if player.state!='dodge' and player.state!='grass':
                             player.life-=1
                             player.score-=500
                             player.velocity.x=0
