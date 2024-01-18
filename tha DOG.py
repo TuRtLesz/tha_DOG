@@ -459,6 +459,27 @@ class player(pygame.sprite.Sprite):
                        #elif int(player.image_frame)==0:
                        #    if numpy.random.randint(0,1)==1:
                        #        bubble_sprite_group.add(bubble(numpy.random.randint(player.rect.x,player.rect.x+player.image.get_width()),numpy.random.randint(water_line[1][1],player.rect.bottom),round(numpy.random.uniform(0.1,1.5),ndigits=1)))
+    def play_sound_dir(player,sound,sound_distance):
+        if abs(player.pos.x-sound_distance)<=100:
+            sound.play()
+        else:
+            player.sound_channel=pygame.mixer.find_channel()
+            if player.sound_channel==None:
+                player.sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels+1)#getting free channel
+            if game.draw_rect.x-100<=sound_distance<=game.draw_rect.right+100:
+                if player.pos.x>sound_distance:#left speaker
+                    if abs(player.pos.x-sound_distance)>display_size[0]//2:
+                        player.sound_channel.set_volume(1,0)
+                    else:
+                        player.sound_pan=abs(player.pos.x-sound_distance)/(display_size[0]//2)-0.1
+                        player.sound_channel.set_volume(1-player.sound_pan,0)
+                else:
+                    if abs(sound_distance-player.pos.x)>display_size[0]//2:
+                        player.sound_channel.set_volume(0,1)
+                    else:
+                        player.sound_pan=abs(sound_distance-player.pos.x)/(display_size[0]//2)-0.1
+                        player.sound_channel.set_volume(0,1-player.sound_pan)
+            player.sound_channel.play(sound)
 
 class dog(pygame.sprite.Sprite):
     dog_run_image_list_right=[]
@@ -537,6 +558,7 @@ class dog(pygame.sprite.Sprite):
                             if not rat.dead:
                                 rat.frame=0
                                 rat.dead=True
+                                player.play_sound_dir(rat.death_sound,rat.rect.centerx)
                                 dog_instance.stun_timer=6
                             elif rat.dead:
                                 dog_instance.stun_timer=6
@@ -1020,11 +1042,8 @@ class rat(pygame.sprite.Sprite):
     rat_death_right_list=[]
     rat_run_left_list=[]
     rat_death_left_list=[]
-    rat_fart_left_list=[]
-    rat_fart_right_list=[]
     load_spritesheet_2dir(pygame.image.load('Data/rat/rat_run.png').convert_alpha(),rat_run_left_list,rat_run_right_list,frames=4)
     load_spritesheet_2dir(pygame.image.load('Data/rat/rat_death.png').convert_alpha(),rat_death_left_list,rat_death_right_list,frames=7)
-    load_spritesheet_2dir(pygame.image.load('Data/rat/rat_fart.png').convert_alpha(),rat_fart_left_list,rat_fart_right_list,frames=7)
     def __init__(rat_instance,x,y):
         super().__init__()
         rat_instance.image=rat.rat_run_left_list[0]
@@ -1032,7 +1051,6 @@ class rat(pygame.sprite.Sprite):
         rat_instance.mask=pygame.mask.from_surface(rat_instance.image)
         rat_instance.frame=0
         rat_instance.dead=False
-        rat_instance.fart_dead=False
         rat_instance.velocity=pygame.math.Vector2(-10,0)
     def update(rat_instance,delta_time):
         if rat_instance.dead:
@@ -1437,17 +1455,18 @@ class little_rock(pygame.sprite.Sprite):
                         if rock_instance.velocity.y>little_rock.water_resistance.y:
                             rock_instance.velocity-=little_rock.water_resistance
                             rock_instance.velocity.y=-rock_instance.velocity.y
-                            rock_instance.water_jump_sound_channel=pygame.mixer.find_channel()
-                            if rock_instance.water_jump_sound==None:
-                                rock_instance.water_jump_sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels+1)
-                            if abs(rock_instance.rect.x-player.pos.x)<=50:
-                                rock_instance.water_jump_sound_channel.set_volume(1,1)
-                            else:
-                                if player.pos.x>rock_instance.rect.x:
-                                    rock_instance.water_jump_sound_channel.set_volume(0.9,0.1)#set volue acoddin to how close rokc slpashlater
-                                else:
-                                    rock_instance.water_jump_sound_channel.set_volume(0.1,0.9)#set volue acoddin to how close rokc slpashlater
-                            rock_instance.water_jump_sound_channel.play(little_rock.water_jump_sound)
+                            player.play_sound_dir(little_rock.water_jump_sound,rock_instance.rect.centerx)
+                            #rock_instance.water_jump_sound_channel=pygame.mixer.find_channel()
+                            #if rock_instance.water_jump_sound==None:
+                            #    rock_instance.water_jump_sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels+1)
+                            #if abs(rock_instance.rect.x-player.pos.x)<=50:
+                            #    rock_instance.water_jump_sound_channel.set_volume(1,1)
+                            #else:
+                            #    if player.pos.x>rock_instance.rect.x:
+                            #        rock_instance.water_jump_sound_channel.set_volume(0.9,0.1)#set volue acoddin to how close rokc slpashlater
+                            #    else:
+                            #        rock_instance.water_jump_sound_channel.set_volume(0.1,0.9)#set volue acoddin to how close rokc slpashlater
+                            #rock_instance.water_jump_sound_channel.play(little_rock.water_jump_sound)
         else:
             if int(rock_instance.image_frame)>=len(little_rock.image_list):
                 rock_instance.kill()
