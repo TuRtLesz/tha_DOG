@@ -325,13 +325,13 @@ class player(pygame.sprite.Sprite):
         #    player.velocity.y=player.max_velocity.y
         if player.stamina<=0:
             player.stamina=0
-        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick' and player.state!='grass':
+        if player.state!='idle'and player.state!='pant' and player.state!='interact' and player.state!='fall' and player.state!='aim' and player.state!='throw' and player.state!='explode' and player.state!='pick' and player.state!='grass' and player.state!='jump':
             player.velocity+=player.acceleration*delta_time
             player.pos+=player.velocity*delta_time
             player.rect=player.image.get_rect(center=player.pos.xy)
             player.mask=pygame.mask.from_surface(player.image)
         else:
-            if player.state!='pick':
+            if player.state!='pick' and player.state!='jump':
                 player.velocity.x=0
         if not player.jump or abs(player.pos.y-player.jump_height)>=150:
             player.jump_counter+=1
@@ -355,13 +355,17 @@ class player(pygame.sprite.Sprite):
                         player.image=player.jump_image_list_left[round(player.image_frame)] 
                     player.stamina-=50*delta_time
                     player.pos.y-=300*delta_time
-                    if player.velocity.x<100 and player.direction=='right':
-                        player.velocity.x=150
-                    elif player.velocity.x<-100 and player.direction=='left':
-                        player.velocity.x=-150
+                    if player.velocity.x<150 and player.direction=='right':
+                        player.pos.x+=150*delta_time
+                    elif player.velocity.x<-150 and player.direction=='left':
+                        player.pos.x-=150*delta_time
                     player.rect.center=player.pos
                 else:
                     player.jump=False
+        if player.state=='jump':
+            player.pos.x+=player.velocity.x*delta_time
+            player.rect=player.image.get_rect(center=player.pos.xy)
+            player.mask=pygame.mask.from_surface(player.image)
         for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
@@ -2018,7 +2022,7 @@ while True:
                     if player.state!='explode' and player.state!='dodge':
                         player.jump=True
                         player.image_frame=0
-                        player.state='sprint'
+                        player.state='jump'
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -2087,9 +2091,11 @@ while True:
                         player.velocity.x=0
                     player.direction='right'
                     if player.water:
+                        if player.state=='jump':player.state='swim_fast'
                         if player.state!='swim_fast':
                             player.state='swim'
                     else:
+                        if player.state=='jump':player.state='sprint'
                         if player.state!='sprint' and player.state!='dodge':
                             player.state='run'
                     if keys_pressed[pygame.K_LSHIFT]:
@@ -2110,9 +2116,11 @@ while True:
                         player.velocity.x=0
                     player.direction='left'
                     if player.water:
+                        if player.state=='jump':player.state='swim_fast'
                         if player.state!='swim_fast':
                             player.state='swim'
                     else:
+                        if player.state=='jump':player.state='sprint'
                         if player.state!='sprint' and player.state!='dodge':
                             player.state='run'
                     if keys_pressed[pygame.K_LSHIFT]:
