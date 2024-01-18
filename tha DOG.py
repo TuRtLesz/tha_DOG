@@ -267,7 +267,7 @@ class player(pygame.sprite.Sprite):
                     player.image=player.throw_image_list_left[int(player.image_frame)]
                 elif player.direction=='right':
                     player.image=player.throw_image_list_right[int(player.image_frame)]
-                player.image_frame+=10*delta_time
+                player.image_frame+=15*delta_time
         elif player.state=='run':
             player.max_velocity.x=200
             player.image_frame+=(abs(player.velocity.x)//10)*delta_time
@@ -535,8 +535,8 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.direction='left'
                         if rat.rect.colliderect(dog_instance.rect):
                             if not rat.fart_dead or not rat.dead:
-                                rat.fart_dead=True
                                 rat.frame=0
+                                rat.fart_dead=True
                                 dog_instance.stun_timer=6
                             elif rat.fart_dead:
                                 dog_instance.stun_timer=6
@@ -1358,9 +1358,9 @@ class rock(pygame.sprite.Sprite):
             rock_instance.angle+=360
         rock_instance.image=pygame.transform.rotate(rock_instance.origin_image,rock_instance.angle)
         if rock_instance.roll:
-            rock_instance.rect.x+=100*delta_time
-            rock_instance.rect.y+=400*delta_time
-            rock_instance.angle-=40*delta_time
+            rock_instance.rect.x+=150*delta_time
+            rock_instance.rect.y+=450*delta_time
+            rock_instance.angle-=70*delta_time
             for block in pygame.sprite.spritecollide(rock_instance,block_sprite_instance_group,dokill=False):
                 if block.id=='10':
                     rock_instance.roll=False
