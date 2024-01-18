@@ -1374,15 +1374,12 @@ class rock(pygame.sprite.Sprite):
                     elif block.id=='101':
                         if rock_instance.rect.left-block.rect.left>=29:
                             rock_instance.rect.bottom=48-(-2.38*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='74':
-                        if rock_instance.rect.left-block.rect.left<=11:
-                            rock_instance.rect.bottom=48-(-5.56*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
                     elif block.id=='88':
                         if rock_instance.rect.left-block.rect.left<=25:
-                            rock_instance.rect.bottom=48-(-3.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                            rock_instance.rect.bottom=48-(-3.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom#-18
                     elif block.id=='102':
                         if rock_instance.rect.left-block.rect.left>=22:
-                            rock_instance.rect.bottom=48-(-1.9*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
+                            rock_instance.rect.bottom=48-(-1.9*(rock_instance.rect.left-block.rect.x))+block.rect.bottom#-18
                     elif block.id=='90':#y = -1.7*x + 74.49683
                         if rock_instance.rect.left-block.rect.left>=16:
                             rock_instance.rect.bottom=-1.7*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
