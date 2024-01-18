@@ -132,7 +132,9 @@ class player(pygame.sprite.Sprite):
         player.mask=pygame.mask.from_surface(player.image)
         player.pos=pygame.math.Vector2(player.rect.center)
         player.rock_throw_sound=pygame.mixer.Sound('Data/player/rock_throw.wav')
+        player.game_end_pos=0
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
+        if player.pos.x>player.game_end_pos:game_settings['mode']='game_complete'
         for check_point in check_point_list:
             if player.pos.x>=check_point.right:
                 player.last_check_point=check_point
@@ -1717,7 +1719,7 @@ class game():
                     cam.spike_shake_timer-=delta_time
                     cam.screen_shake.x=numpy.random.randint(-15,15)
             if cam.earthquake:
-                if cam.earthquake_timer>=30:#1/2 min
+                if cam.earthquake_timer>=15:#1/2 min
                     cam.earthqake_timer=0
                     cam.earthquake=False
                     cam.screen_shake.xy=(0,0)
@@ -1898,6 +1900,12 @@ with open('Data/worlds/0/0_tut_blocks.csv') as map:
                 tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
             elif block_id=='13':
                 tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
+            elif block_id=='14':
+                tutorial_block_sprite_group.add(tutorial_block(244,'info_tha_dog',block_number,row_number))
+            elif block_id=='15':
+                tutorial_block_sprite_group.add(tutorial_block(588,'info_thanks',block_number,row_number))
+            elif block_id=='16':
+                tutorial_block_sprite_group.add(tutorial_block(245,'info_turtle',block_number,row_number))
 with open('Data/worlds/0/0_checkpoints.csv') as map:
     world_reader=csv.reader(map,delimiter=',')
     check_point_list=[]
@@ -1984,6 +1992,8 @@ def map_load(water_hitlines,water_spring_list):
                             fat_guy.right_rope_limit=x*48
                         elif id=='3':
                             game.pressure_switch_pan_x=x*48
+                        elif id=='4':
+                            player.game_end_pos=x*48
     inital_xy=[0,0]
     for water_spring_obj in water_spring_list:
         if inital_xy[0]==0:
