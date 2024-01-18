@@ -347,9 +347,9 @@ class player(pygame.sprite.Sprite):
             player.jump_height=player.pos.y
             player.jump_counter=0
             game.draw_rect.centery=player.jump_height-300#?
-            if block.id=='0' or block.id=='1' or block.id=='2' or block.id=='64' or block.id=='65' or block.id == '66' or block.id == '116' or block.id == '117' or block.id == '118':
+            if block.id=='0' or block.id=='1' or block.id=='2' or block.id=='34' or block.id=='35' or block.id == '36' or block.id == '56' or block.id == '57' or block.id == '58':
                 player.rect.bottom=block.rect.top
-            elif block.id=='68':
+            elif block.id=='38':
                 if block.rect.x<player.rect.x:
                     player.rect.left=block.rect.right
                 elif block.rect.x>player.rect.x:
@@ -361,7 +361,7 @@ class player(pygame.sprite.Sprite):
                 player.rect.bottom=block.rect.top+30
             elif block.id=='13':
                 player.rect.bottom=block.rect.top+30
-            elif block.id=='70':
+            elif block.id=='40':
                 player.rect.bottom=block.rect.top
             elif block.id=='3':#ramps
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
@@ -369,27 +369,27 @@ class player(pygame.sprite.Sprite):
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
             elif block.id=='5':
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
-            elif block.id=='92':
+            elif block.id=='47':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-            elif block.id=='93':
+            elif block.id=='48':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-            elif block.id=='94':
+            elif block.id=='49':
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             #rock
-            elif block.id=='35' or block.id=='87':
+            elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
                     player.rect.right=block.rect.left+53
                     player.velocity.xy=0,0
                     player.state='idle'
-            elif block.id=='37' or block.id=='91':
+            elif block.id=='22' or block.id=='46':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='left':
                     player.rect.left=block.rect.right-53
                     player.velocity.xy=0,0
                     player.state='idle'
-            elif block.id=='7' or block.id=='59':
+            elif block.id=='7' or block.id=='29':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.bottom):
                     player.rect.bottom=block.rect.top+26
-            elif block.id == '6' or block.id == '58':#top curve right
+            elif block.id == '6' or block.id == '28':#top curve right
                 if player.pos.x-block.rect.x>18:
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
@@ -397,7 +397,7 @@ class player(pygame.sprite.Sprite):
                 if player.pos.x-block.rect.x<=23:
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
-            #elif block.id == '35':#sideleft
+            #elif block.id == '20':#sideleft
             #    if pygame.sprite.collide_mask(player,block):
             #        if player.rect.bottom!=block.rect.bottom+1:
             #            print('test')
@@ -405,7 +405,7 @@ class player(pygame.sprite.Sprite):
             #        else:
             #            if player.state=='run_right':
             #                player.rect.right=block.rect.left+48
-            #elif block.id == '37':#side right
+            #elif block.id == '22':#side right
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             player.pos.xy=player.rect.center
@@ -585,7 +585,7 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '13':
                             dog_instance.rect.bottom=block.rect.top+30
                             dog_instance.pos.xy=dog_instance.rect.center
-                        elif block.id == '70':
+                        elif block.id == '40':
                             dog_instance.rect.bottom=block.rect.top
                             dog_instance.pos.xy=dog_instance.rect.center
                         elif block.id == '3':#ramps
@@ -597,13 +597,13 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '5':
                             dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-22
                             dog_instance.pos.xy=dog_instance.rect.center
-                        elif block.id == '92':
+                        elif block.id == '47':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
                             dog_instance.pos.xy=dog_instance.rect.center
-                        elif block.id == '93':
+                        elif block.id == '48':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
                             dog_instance.pos.xy=dog_instance.rect.center
-                        elif block.id == '94':
+                        elif block.id == '49':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                             dog_instance.pos.xy=dog_instance.rect.center
                         for water_line in water_hitlines:
@@ -736,12 +736,12 @@ class ostrich(pygame.sprite.Sprite):
                     elif player.pos.x-ostrich_instance.rect.right>500:
                         ostrich_instance.acceleration.x=50
                     for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
-                        if block.id=='87' or block.id=='35':
+                        if block.id=='42' or block.id=='20':
                             if ostrich_instance.acceleration.x==50:
                                 ostrich_instance.velocity.x=0
                                 ostrich_instance.acceleration.x=-50
                                 ostrich_instance.image_frame=0
-                        elif block.id=='37' or block.id=='91':
+                        elif block.id=='22' or block.id=='46':
                             if ostrich_instance.acceleration.x==-50:
                                 ostrich_instance.velocity.x=0
                                 ostrich_instance.acceleration.x=50
@@ -1056,11 +1056,11 @@ class rat(pygame.sprite.Sprite):
                         rat_instance.frame=0
                         player.velocity.x=0
                 for block in pygame.sprite.spritecollide(rat_instance,block_sprite_instance_group,dokill=False):
-                    if block.id=='41':#rat_hole
+                    if block.id=='26':#rat_hole
                         rat_instance.velocity.x=-70
-                    elif block.id=='37':#rock
+                    elif block.id=='22':#rock
                         rat_instance.velocity.x=70
-                    elif block.id=='91':#rock_long
+                    elif block.id=='46':#rock_long
                         rat_instance.velocity.x=70
                 rat_instance.rect.centerx+=rat_instance.velocity.x*delta_time
                 if rat_instance.frame>len(rat.rat_run_right_list)-1:
@@ -1118,10 +1118,10 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                         fish_instance.water=True
                         break
             for block in pygame.sprite.spritecollide(fish_instance,block_sprite_instance_group,dokill=False):
-                if block.id=='145' or block.id=='174' or block.id=='204' or block.id=='147' or block.id=='177' or block.id=='206' or block.id=='149' or block.id=='178' or block.id=='207' or block.id=='92' or block.id=='93' or block.id=='94' or block.id=='9':
+                if block.id=='70' or block.id=='84' or block.id=='99' or block.id=='72' or block.id=='87' or block.id=='101' or block.id=='74' or block.id=='88' or block.id=='102' or block.id=='47' or block.id=='48' or block.id=='49' or block.id=='9':
                     if fish_instance.direction=='left':
                         fish_instance.direction='right'
-                elif block.id=='154' or block.id=='183' or block.id=='211' or block.id=='209' or block.id=='180' or block.id=='152' or block.id=='150' or block.id=='179' or block.id=='208' or block.id=='67' or block.id=='3' or block.id=='4' or block.id=='5':
+                elif block.id=='79' or block.id=='93' or block.id=='106' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='75' or block.id=='89' or block.id=='103' or block.id=='37' or block.id=='3' or block.id=='4' or block.id=='5':
                     if fish_instance.direction=='right':
                         fish_instance.direction='left'
             for player in player_sprite_group:
@@ -1358,53 +1358,53 @@ class rock(pygame.sprite.Sprite):
                     rock_instance.roll=False
                     rock_instance.rect.midbottom=block.rect.midtop
                 else:
-                    if block.id=='145':
+                    if block.id=='70':
                         if rock_instance.rect.left-block.rect.left<=17:
                             rock_instance.rect.bottom=48-(3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom)-18 #y = 3.399023*x - 6.511401
-                    elif block.id=='174':
+                    elif block.id=='84':
                         if rock_instance.rect.left-block.rect.left>=14:
                             rock_instance.rect.bottom=1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='177':
+                    elif block.id=='87':
                         if rock_instance.rect.left-block.rect.left<=32:
                             rock_instance.rect.bottom=48-(-1.7*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='206':
+                    elif block.id=='101':
                         if rock_instance.rect.left-block.rect.left>=29:
                             rock_instance.rect.bottom=48-(-2.38*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='149':
+                    elif block.id=='74':
                         if rock_instance.rect.left-block.rect.left<=11:
                             rock_instance.rect.bottom=48-(-5.56*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='178':
+                    elif block.id=='88':
                         if rock_instance.rect.left-block.rect.left<=25:
                             rock_instance.rect.bottom=48-(-3.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='207':
+                    elif block.id=='102':
                         if rock_instance.rect.left-block.rect.left>=22:
                             rock_instance.rect.bottom=48-(-1.9*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='204' or block.id=='147':#45degreethingy
+                    elif block.id=='99' or block.id=='72':#45degreethingy
                         rock_instance.rect.bottom=0.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    if block.id=='154':
+                    if block.id=='79':
                         if rock_instance.rect.left-block.rect.left>=31:
                             rock_instance.rect.bottom=3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18 #y = 3.399023*x - 6.511401
-                    elif block.id=='183':
+                    elif block.id=='93':
                         if rock_instance.rect.left-block.rect.left<=33:
                             rock_instance.rect.bottom=-1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18#y = -1.655013*x + 54.31424
-                    elif block.id=='180':#y = -1.7*x + 74.49683
+                    elif block.id=='90':#y = -1.7*x + 74.49683
                         if rock_instance.rect.left-block.rect.left>=16:
                             rock_instance.rect.bottom=-1.7*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='209':#y = -2.38*x + 42.61518
+                    elif block.id=='104':#y = -2.38*x + 42.61518
                         if rock_instance.rect.left-block.rect.left<=19:
                             rock_instance.rect.bottom=-2.38*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='150':#y = -5.56*x + 265.5725
+                    elif block.id=='75':#y = -5.56*x + 265.5725
                         if rock_instance.rect.left-block.rect.left>=37:
                             rock_instance.rect.bottom=-5.56*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='179':#y = -3.5*x + 137.3384
+                    elif block.id=='89':#y = -3.5*x + 137.3384
                         if rock_instance.rect.left-block.rect.left>=23:
                             rock_instance.rect.bottom=-3.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='208':#y = -1.9*x + 47.14072
+                    elif block.id=='103':#y = -1.9*x + 47.14072
                         if rock_instance.rect.left-block.rect.left<=26:
                             rock_instance.rect.bottom=-1.9*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='211' or block.id=='152':
+                    elif block.id=='106' or block.id=='77':
                         rock_instance.rect.bottom=48-(0.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='203' or block.id=='176' or block.id=='205' or block.id=='181' or block.id=='210' or block.id=='212' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
+                    elif block.id=='98' or block.id=='86' or block.id=='100' or block.id=='91' or block.id=='105' or block.id=='107' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
                         rock_instance.rect.bottom=block.rect.top
         else:
             for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
