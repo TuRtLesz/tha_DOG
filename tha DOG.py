@@ -343,6 +343,25 @@ class player(pygame.sprite.Sprite):
                 player.pos.y+=400*delta_time
                 player.rect.center=player.pos
                 player.jump=False
+        if player.jump:
+            if abs(player.pos.y-player.jump_height)<150:
+                if player.jump_counter<=0:
+                    player.image_frame+=5*delta_time
+                    if round(player.image_frame)>=len(player.jump_image_list_right)-1:
+                        player.image_frame=len(player.jump_image_list_right)-1
+                    if player.direction=='right':  
+                        player.image=player.jump_image_list_right[round(player.image_frame)]
+                    elif player.direction=='left':  
+                        player.image=player.jump_image_list_left[round(player.image_frame)] 
+                    player.stamina-=50*delta_time
+                    player.pos.y-=300*delta_time
+                    if player.velocity.x<100 and player.direction=='right':
+                        player.velocity.x=150
+                    elif player.velocity.x<-100 and player.direction=='left':
+                        player.velocity.x=-150
+                    player.rect.center=player.pos
+                else:
+                    player.jump=False
         for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
@@ -363,18 +382,22 @@ class player(pygame.sprite.Sprite):
                 player.rect.bottom=block.rect.top+30
             elif block.id=='40':
                 player.rect.bottom=block.rect.top
-            elif block.id=='3':#ramps
+            elif block.id=='3' and not player.jump:#ramps
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-52#ramp_up
-            elif block.id=='4':
+            elif block.id=='4' and not player.jump:
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-37
-            elif block.id=='5':
+            elif block.id=='5' and not player.jump:
                 player.rect.bottom=round(0.3488603*(block.rect.x-player.pos.x))+block.rect.bottom-22
-            elif block.id=='47':
+            elif block.id=='47' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-            elif block.id=='48':
+            elif block.id=='48' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-            elif block.id=='49':
+            elif block.id=='49' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
+            elif block.id=='9' and not player.jump:#45degree scure
+                player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
+            elif block.id=='37' and not player.jump:#45degree scure
+                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.bottom
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -386,14 +409,14 @@ class player(pygame.sprite.Sprite):
                     player.rect.left=block.rect.right-53
                     player.velocity.xy=0,0
                     player.state='idle'
-            elif block.id=='7' or block.id=='29':
+            elif (block.id=='7' or block.id=='29') and not player.jump:
                 if block.rect.collidepoint(player.rect.centerx,player.rect.bottom):
                     player.rect.bottom=block.rect.top+26
-            elif block.id == '6' or block.id == '28':#top curve right
+            elif (block.id == '6' or block.id == '28') and not player.jump:#top curve right
                 if player.pos.x-block.rect.x>18:
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
-            elif block.id == '8':#top curve left
+            elif block.id == '8' and not player.jump:#top curve left
                 if player.pos.x-block.rect.x<=23:
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
@@ -409,25 +432,6 @@ class player(pygame.sprite.Sprite):
             #    if player.pos.x-block.rect.x>23:
             #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             player.pos.xy=player.rect.center
-        if player.jump:
-            if abs(player.pos.y-player.jump_height)<150:
-                if player.jump_counter<=0:
-                    player.image_frame+=5*delta_time
-                    if round(player.image_frame)>=len(player.jump_image_list_right)-1:
-                        player.image_frame=len(player.jump_image_list_right)-1
-                    if player.direction=='right':  
-                        player.image=player.jump_image_list_right[round(player.image_frame)]
-                    elif player.direction=='left':  
-                        player.image=player.jump_image_list_left[round(player.image_frame)] 
-                    player.stamina-=50*delta_time
-                    player.pos.y-=300*delta_time
-                    if player.velocity.x<100 and player.direction=='right':
-                        player.velocity.x=150
-                    elif player.velocity.x<-100 and player.direction=='left':
-                        player.velocity.x=-150
-                    player.rect.center=player.pos
-                else:
-                    player.jump=False
         for water_line in water_hitlines:
             if player.rect.clipline(water_line)!=():
                 if player.state=='swim' or player.state=='swim_fast':
