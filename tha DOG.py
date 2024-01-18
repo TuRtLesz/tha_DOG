@@ -397,7 +397,7 @@ class player(pygame.sprite.Sprite):
             elif block.id=='9' and not player.jump:#45degree scure
                 player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
             elif block.id=='37' and not player.jump:#45degree scure
-                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.bottom
+                player.rect.bottom=(48+1*abs(player.pos.x-block.rect.x))+block.rect.bottom
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -1364,7 +1364,7 @@ class rock(pygame.sprite.Sprite):
                 else:
                     if block.id=='70':
                         if rock_instance.rect.left-block.rect.left<=17:
-                            rock_instance.rect.bottom=48-(3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom)-18 #y = 3.399023*x - 6.511401
+                            rock_instance.rect.bottom=48-(3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom)#-18 #y = 3.399023*x - 6.511401
                     elif block.id=='84':
                         if rock_instance.rect.left-block.rect.left>=14:
                             rock_instance.rect.bottom=1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
@@ -1383,31 +1383,9 @@ class rock(pygame.sprite.Sprite):
                     elif block.id=='102':
                         if rock_instance.rect.left-block.rect.left>=22:
                             rock_instance.rect.bottom=48-(-1.9*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
-                    elif block.id=='99' or block.id=='72':#45degreethingy
-                        rock_instance.rect.bottom=0.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    if block.id=='79':
-                        if rock_instance.rect.left-block.rect.left>=31:
-                            rock_instance.rect.bottom=3.4*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18 #y = 3.399023*x - 6.511401
-                    elif block.id=='93':
-                        if rock_instance.rect.left-block.rect.left<=33:
-                            rock_instance.rect.bottom=-1.655*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18#y = -1.655013*x + 54.31424
                     elif block.id=='90':#y = -1.7*x + 74.49683
                         if rock_instance.rect.left-block.rect.left>=16:
                             rock_instance.rect.bottom=-1.7*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='104':#y = -2.38*x + 42.61518
-                        if rock_instance.rect.left-block.rect.left<=19:
-                            rock_instance.rect.bottom=-2.38*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='75':#y = -5.56*x + 265.5725
-                        if rock_instance.rect.left-block.rect.left>=37:
-                            rock_instance.rect.bottom=-5.56*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='89':#y = -3.5*x + 137.3384
-                        if rock_instance.rect.left-block.rect.left>=23:
-                            rock_instance.rect.bottom=-3.5*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='103':#y = -1.9*x + 47.14072
-                        if rock_instance.rect.left-block.rect.left<=26:
-                            rock_instance.rect.bottom=-1.9*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
-                    elif block.id=='106' or block.id=='77':
-                        rock_instance.rect.bottom=48-(0.5*(rock_instance.rect.left-block.rect.x))+block.rect.bottom-18
                     elif block.id=='98' or block.id=='86' or block.id=='100' or block.id=='91' or block.id=='105' or block.id=='107' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
                         rock_instance.rect.bottom=block.rect.top
         else:
@@ -1624,6 +1602,7 @@ class bubble(pygame.sprite.Sprite):
         bubble_instance.image=pygame.transform.scale_by(bubble.bubble_image,bubble_size)
         bubble_instance.rect=bubble_instance.image.get_rect(center=(x,y))
     def update(bubble_instance,delta_time):
+        for block in pygame.sprite.spritecollide(bubble_instance,block_sprite_instance_group,dokill=False):bubble_instance.kill()
         game_window.blit(bubble_instance.image,bubble_instance.rect)
         bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
         for water_line in water_hitlines:
