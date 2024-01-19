@@ -399,9 +399,9 @@ class player(pygame.sprite.Sprite):
             elif block.id=='49' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             elif block.id=='9' and not player.jump:#45degree scure
-                player.rect.bottom=(48+1*abs(player.pos.x-block.rect.x))+block.rect.bottom
-            elif block.id=='37' and not player.jump:#45degree scure
                 player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
+            elif block.id=='37' and not player.jump:#45degree scure
+                player.rect.bottom=(48+1*abs(player.pos.x-block.rect.x))+block.rect.bottom
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -472,13 +472,13 @@ class player(pygame.sprite.Sprite):
                         player.sound_channel.set_volume(1,0)
                     else:
                         player.sound_pan=abs(player.pos.x-sound_distance)/(display_size[0]//2)-0.1
-                        player.sound_channel.set_volume(1-player.sound_pan,0)
+                        player.sound_channel.set_volume(1-player.sound_pan,0.1)
                 else:
                     if abs(sound_distance-player.pos.x)>display_size[0]//2:
                         player.sound_channel.set_volume(0,1)
                     else:
                         player.sound_pan=abs(sound_distance-player.pos.x)/(display_size[0]//2)-0.1
-                        player.sound_channel.set_volume(0,1-player.sound_pan)
+                        player.sound_channel.set_volume(0.1,1-player.sound_pan)
             player.sound_channel.play(sound)
 
 class dog(pygame.sprite.Sprite):
@@ -1273,7 +1273,7 @@ class spike(pygame.sprite.Sprite):
     def update(spike_instance,delta_time):
         for player in pygame.sprite.spritecollide(spike_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             if not spike_instance.player_collide:
-                spike_instance.rect.top=player.rect.bottom
+                spike_instance.rect.top-=12
                 player.life-=1
                 player.score-=350
                 game.spike_shake_timer=1
