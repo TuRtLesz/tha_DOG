@@ -399,9 +399,9 @@ class player(pygame.sprite.Sprite):
             elif block.id=='49' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             elif block.id=='9' and not player.jump:#45degree scure
-                player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
-            elif block.id=='37' and not player.jump:#45degree scure
                 player.rect.bottom=(48+1*abs(player.pos.x-block.rect.x))+block.rect.bottom
+            elif block.id=='37' and not player.jump:#45degree scure
+                player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -2162,7 +2162,8 @@ while True:
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
         #print(str(clock.get_fps()))
         clock.tick()
-    elif game_settings['mode']=='game_over':
+    else:pygame.mouse.set_visible(True)
+    if game_settings['mode']=='game_over':
         pygame.mouse.set_visible(True)
         game_window.blit(game_over_image,(display_size[0]//2-game_over_image.get_width()//2,100))
         game_window.blit(exit_image,(exit_rect.topleft))
@@ -2215,13 +2216,11 @@ while True:
                     pygame.quit()
                     sys.exit()
     elif game_settings['mode']=='paused':
-        pygame.mouse.set_visible(True)
         game_window.blit(paused_image,(display_size[0]//2-paused_image.get_width()//2,100))
         game_window.blit(exit_image,(exit_rect.topleft))
-        if round(menu_image_frame)>1:
+        menu_image_frame+=5*delta_time
+        if int(menu_image_frame)>1:
             menu_image_frame=0
-        else:
-            menu_image_frame+=5*delta_time
         game_window.blit(play_list[int(menu_image_frame)],(play_rect.topleft))
         if game_settings['negative_screen']:#when hit fat_guy
             white_screen=pygame.Surface(game_window.get_size())
