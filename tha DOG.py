@@ -134,6 +134,7 @@ class player(pygame.sprite.Sprite):
         player.rock_throw_sound=pygame.mixer.Sound('Data/player/rock_throw.wav')
         player.game_end_pos=0
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
+        if player.stamina>=2500:player.stamina=2500#max_stamina
         if player.pos.x>player.game_end_pos:game_settings['mode']='game_complete'
         for check_point in check_point_list:
             if player.pos.x>=check_point.right:
@@ -156,11 +157,10 @@ class player(pygame.sprite.Sprite):
             elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
                 player.score+=500
         if player.stamina<1000 and not player.water:
-                if player.state=='idle' and not player.jump:
-                    player.state='pant'
-                    player.image_frame=0
+            if player.state=='idle' and not player.jump:
+                player.state='pant'
+                player.image_frame=0
         elif player.stamina>=1000:
-            player.stamina=1000
             if player.state=='pant':
                 player.state='idle'
         if player.state=='idle':
@@ -175,7 +175,8 @@ class player(pygame.sprite.Sprite):
             player.idle_timer=0
         if player.state=='explode':
             player.velocity.x=0
-            player.stamina+=200*delta_time
+            if player.stamina<=1000:
+                player.stamina+=200*delta_time
             if player.image_frame>=len(player.explode_image_list_left)-1:
                 player.image_frame=len(player.explode_image_list_left)-1
                 if player.explode_timer>1:
