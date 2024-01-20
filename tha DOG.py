@@ -875,6 +875,9 @@ class big_fat_guy(pygame.sprite.Sprite):
                 if int(fat_guy.image_frame)>=len(big_fat_guy.death_image_list_left)-1:
                     game_settings['negative_screen']=False
                     fat_guy.state='dead'
+                    pygame.mixer.music.load('Data/music/fat_guy_outro.wav')
+                    pygame.mixer.music.play()
+                    #pygame.mixer.music.queue()#queue post credits music
                     for player in player_sprite_group:player.score+=2500
                 else:
                     if fat_guy.direction=='left':
@@ -903,6 +906,9 @@ class big_fat_guy(pygame.sprite.Sprite):
                         if player.rect.colliderect(fat_guy.body_rect):
                             fat_guy.start_fight=True
                             game.fat_guy_hit=True
+                            pygame.mixer.music.load('Data/music/fat_guy_intro.wav')
+                            pygame.mixer.music.play()
+                            pygame.mixer.music.queue('Data/music/fat_guy_theme.wav',loops=-1)
                             player.velocity.xy=0,0
                     if fat_guy.state=='whack':
                         if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
