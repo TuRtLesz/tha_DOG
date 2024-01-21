@@ -439,7 +439,6 @@ class player(pygame.sprite.Sprite):
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
             #elif block.id == '20':#sideleft
-            #    if pygame.sprite.collide_mask(player,block):
             #        if player.rect.bottom!=block.rect.bottom+1:
             #            print('test')
             #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
@@ -521,7 +520,6 @@ class dog(pygame.sprite.Sprite):
         dog_instance.image=dog.dog_run_image_list_right[0]
         dog_instance.rect=dog_instance.image.get_rect(topleft=(x*48,y*48-16))
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
-        dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
         dog_instance.stun_timer=0
         dog_instance.bite_timer=0
     def update(dog_instance,delta_time):
@@ -600,7 +598,6 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                     elif dog_instance.state=='stop_rat':
                         dog_instance.state='idle'#edit later
-                    dog_instance.mask=pygame.mask.from_surface(dog_instance.image)
                     if dog_instance.velocity.x>=dog_instance.max_velocity.x:
                         dog_instance.velocity.x=dog_instance.max_velocity.x
                     if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
@@ -1319,16 +1316,15 @@ class bomb(pygame.sprite.Sprite):
         bomb_instance.image=bomb_instance.bomb_image_list[0]
         bomb_instance.rect=bomb_instance.image.get_rect(topleft=(x*48-117,y*48-96))
         bomb_instance.frame=0
-        bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
-        for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-            if not bomb_instance.explode:
-                player.life-=1
-                player.score-=300
-            bomb_instance.explode=True
-            player.image_frame=0
-            player.state='explode'
+        #for player in pygame.sprite.spritecollide(bomb_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
+        #    if not bomb_instance.explode:
+        #        player.life-=1
+        #        player.score-=300
+        #    bomb_instance.explode=True
+        #    player.image_frame=0
+        #    player.state='explode'
         if bomb_instance.explode:
             bomb_instance.frame+=4*delta_time
             if bomb_instance.frame>len(bomb_instance.bomb_image_list)-1:
@@ -1355,7 +1351,6 @@ class bomb_land(pygame.sprite.Sprite):
                 bomb.kill()
             else:
                 bomb.image=bomb_land.image_list[int(bomb.frame)]
-                bomb.mask=pygame.mask.from_surface(bomb.image)
             for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
                 if dog.life>0:
                     dog.image_frame=0
@@ -1433,7 +1428,6 @@ class rock(pygame.sprite.Sprite):
 class little_rock(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
-    mask=pygame.mask.from_surface(image_list[0])
     water_resistance=pygame.math.Vector2(0,100)
     water_jump_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/little_rock_water.wav')
     def __init__(rock_instance,x,y):
@@ -1441,7 +1435,6 @@ class little_rock(pygame.sprite.Sprite):
         rock_instance.life=3
         rock_instance.image_frame=0
         rock_instance.image=little_rock.image_list[0]
-        rock_instance.mask=little_rock.mask
         rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.velocity=pygame.math.Vector2()
@@ -1462,12 +1455,12 @@ class little_rock(pygame.sprite.Sprite):
                         rock_instance.life-=1
                         player.score+=200
                 if rock_instance.velocity.y!=0:
-                    for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_mask):
+                    for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                         if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
                             reactive_block.explode=True
                             rock_instance.life-=1
                         elif type(reactive_block)==spike:
-                            reactive_block.rect.top=rock_instance.rect.bottom
+                            reactive_block.rect.y+=33
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
