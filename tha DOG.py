@@ -146,16 +146,29 @@ class player(pygame.sprite.Sprite):
                     player.water=True
             else:
                 break
-        for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
-                player.life-=1
-                player.score-=250
-                player.velocity.xy=0,0
-                player.state='idle'
-                dog.bite_timer=3
-                dog.image_frame=0
-            elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
-                player.score+=500
+        for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False):#6,23
+            if dog.direction=='left':
+                if player.rect.collidepoint((dog.rect.left+6,dog.rect.top+23)):
+                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
+                        player.life-=1
+                        player.score-=250
+                        player.velocity.xy=0,0
+                        player.state='idle'
+                        dog.bite_timer=3
+                        dog.image_frame=0
+                    elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
+                        player.score+=500
+            elif dog.direction=='left':
+                if player.rect.collidepoint((dog.rect.right-6,dog.rect.top+23)):
+                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
+                        player.life-=1
+                        player.score-=250
+                        player.velocity.xy=0,0
+                        player.state='idle'
+                        dog.bite_timer=3
+                        dog.image_frame=0
+                    elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
+                        player.score+=500
         if player.stamina<1000 and not player.water:
             if player.state=='idle' and not player.jump:
                 player.state='pant'
@@ -786,13 +799,25 @@ class ostrich(pygame.sprite.Sprite):
                     ostrich_instance.velocity+=ostrich_instance.acceleration*delta_time
                     ostrich_instance.rect.center+=ostrich_instance.velocity*delta_time
                     ostrich_instance.image_frame+=10*delta_time
-                    for player in pygame.sprite.spritecollide(ostrich_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-                        if player.state!='dodge' and player.state!='grass':
-                            player.life-=1
-                            player.score-=500
-                            player.velocity.x=0
-                            player.state='idle'
-                            ostrich_instance.stun_timer=2
+                    for player in pygame.sprite.spritecollide(ostrich_instance,player_sprite_group,dokill=False):
+                        if ostrich_instance.acceleration.x<0:
+                            if player.rect.collidepoint((ostrich_instance.rect.left,ostrich_instance.rect.top+41)):#if colliding face
+                                if player.state!='dodge' and player.state!='grass':
+                                    player.life-=1
+                                    player.score-=500
+                                    player.velocity.x=0
+                                    player.state='idle'
+                                    ostrich_instance.stun_timer=2
+                                    ostrich_instance.velocity.x=0
+                        if ostrich_instance.acceleration.x>0:
+                            if player.rect.collidepoint((ostrich_instance.rect.right,ostrich_instance.rect.top+41)):#if colliding face
+                                if player.state!='dodge' and player.state!='grass':
+                                    player.life-=1
+                                    player.score-=500
+                                    player.velocity.x=0
+                                    player.state='idle'
+                                    ostrich_instance.stun_timer=2
+                                    ostrich_instance.velocity.x=0   
                     for dog in pygame.sprite.spritecollide(ostrich_instance,dog_sprite_group,dokill=False):
                         if dog.life>0:
                             if ostrich_instance.acceleration.x<0 and ostrich_instance.rect.centerx-dog.rect.centerx>0:
