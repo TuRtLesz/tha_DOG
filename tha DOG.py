@@ -223,7 +223,7 @@ class player(pygame.sprite.Sprite):
             player.image_frame+=10*delta_time
         if player.state=='pant':
             player.idle_timer+=delta_time
-            player.stamina+=200*delta_time
+            if player.stamina<=1000:player.stamina+=200*delta_time
             if player.image_frame>=len(player.pant_image_list_left)-1:
                 player.image_frame=len(player.pant_image_list_left)-1
             if player.direction=='right':
