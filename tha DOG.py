@@ -148,7 +148,7 @@ class player(pygame.sprite.Sprite):
                 break
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False):#6,23
             if dog.direction=='left':
-                if player.rect.collidepoint((dog.rect.left+6,dog.rect.top+23)):
+                if player.rect.collidepoint((dog.rect.right+6,dog.rect.top+23)):
                     if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
                         player.life-=1
                         player.score-=250
@@ -159,7 +159,7 @@ class player(pygame.sprite.Sprite):
                     elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
                         player.score+=500
             elif dog.direction=='left':
-                if player.rect.collidepoint((dog.rect.right-6,dog.rect.top+23)):
+                if player.rect.collidepoint((dog.rect.left-6,dog.rect.top+23)):
                     if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
                         player.life-=1
                         player.score-=250
@@ -554,7 +554,7 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.prev_direction=dog_instance.direction
                     for player in player_sprite_group:
                         if player.state!='grass':
-                            if dog_instance.state!='stomp_rat' or dog_instance.state!='chase_rat':
+                            if dog_instance.state!='stomp_rat' and dog_instance.state!='chase_rat' and dog_instance.bite_timer<=0:
                                 dog_instance.state='run'
                             if player.rect.x-dog_instance.rect.centerx<0:
                                 dog_instance.direction='left'
@@ -1302,7 +1302,7 @@ class spike(pygame.sprite.Sprite):
     def update(spike_instance,delta_time):
         for player in pygame.sprite.spritecollide(spike_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
             if not spike_instance.player_collide:
-                spike_instance.rect.top-=12
+                spike_instance.rect.y+=33
                 player.life-=1
                 player.score-=350
                 game.spike_shake_timer=1
@@ -1314,7 +1314,8 @@ class bomb(pygame.sprite.Sprite):
         super().__init__()
         bomb_instance.bomb_image_list=bomb.image_list
         bomb_instance.image=bomb_instance.bomb_image_list[0]
-        bomb_instance.rect=bomb_instance.image.get_rect(topleft=(x*48-117,y*48-96))
+        bomb_instance.rect=bomb_instance.image.get_rect(topleft=(x*48-117,y*48-96))#92 85
+        bomb_instance.bomb_rect=pygame.Rect(bomb_instance.rect.x+92,bomb_instance.rect.y+85,61,57)#61 57
         bomb_instance.frame=0
         bomb_instance.explode=False
     def update(bomb_instance,delta_time):
@@ -1340,6 +1341,7 @@ class bomb_land(pygame.sprite.Sprite):
         super().__init__()
         bomb_instance.image=bomb_land.image_list[0]
         bomb_instance.rect=bomb_instance.image.get_rect(topleft=((x-2)*48,(y-2)*48))
+        bomb_instance.bomb_rect=pygame.Rect(bomb_instance.rect.x+93,bomb_instance.rect.y+89,61,57)#61 57
         bomb_instance.frame=0
         bomb_instance.mask=pygame.mask.from_surface(bomb_instance.image)
         bomb_instance.explode=False
@@ -1367,7 +1369,6 @@ class bomb_land(pygame.sprite.Sprite):
                     bomb.explode=True
                     player.image_frame=0
                     player.state='explode'
-                
 class chain(pygame.sprite.Sprite):
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
     def __init__(chain_instance,x,y):
@@ -1457,8 +1458,9 @@ class little_rock(pygame.sprite.Sprite):
                 if rock_instance.velocity.y!=0:
                     for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                         if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
-                            reactive_block.explode=True
-                            rock_instance.life-=1
+                            if reactive_block.bomb_rect.colliderect(rock_instance.rect):
+                                reactive_block.explode=True
+                                rock_instance.life-=1
                         elif type(reactive_block)==spike:
                             reactive_block.rect.y+=33
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
