@@ -1431,7 +1431,7 @@ class rock(pygame.sprite.Sprite):
                             rock_instance.rect.bottom=-1.7*(rock_instance.rect.left-block.rect.x)+block.rect.bottom-18
                     elif block.id=='98' or block.id=='86' or block.id=='100' or block.id=='91' or block.id=='105' or block.id=='107' or block.id=='0' or block.id=='1' or block.id=='2':#203 176 205 181 210 212
                         rock_instance.rect.bottom=block.rect.top
-            for dog in pygame.sprite.spritecollide(bomb,dog_sprite_group,dokill=False):
+            for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                 if dog.life>0:
                     dog.image_frame=0
                     dog.life=0
