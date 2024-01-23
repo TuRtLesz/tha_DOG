@@ -169,7 +169,7 @@ class player(pygame.sprite.Sprite):
                         dog.image_frame=0
                     elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
                         player.score+=500
-        if player.stamina<1000 and not player.water:
+        if player.stamina<1000 and not player.water and player.pos.x<player.fat_guy_pan:
             if player.state=='idle' and not player.jump:
                 player.state='pant'
                 player.image_frame=0
@@ -2136,7 +2136,7 @@ while True:
                             player.state='sprint'
                     if keys_pressed[pygame.K_SPACE]:
                         if not player.water:
-                            if player.stamina>=100:
+                            if player.stamina>=100 or player.pos.x>=player.fat_guy_pan:
                                 player.state='dodge'
                             else:
                                 player.state='run'
@@ -2181,7 +2181,7 @@ while True:
                         if player.state!='pant' and player.state!='explode' and player.state!='grass':
                             player.state='idle'
         pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
-        if player.stamina>0:
+        if player.stamina>0 and player.pos.x<player.fat_guy_pan:
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x+(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
