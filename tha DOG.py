@@ -1225,16 +1225,16 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
 
 class block(pygame.sprite.Sprite):
     sprite_sheet=pygame.image.load('Data/blocks/blocks.png').convert()
-    block_list=[]
+    block_image_list=[]
     for block_y in range(0,sprite_sheet.get_height()//48):
         for block_x in range(0,sprite_sheet.get_width()//48):
             image=pygame.Surface((48,48))
             image.blit(sprite_sheet,(0,0),(block_x*48,block_y*48,48,48))
-            block_list.append(image)
+            block_image_list.append(image)
     def __init__(block_instance,block_id,x,y):
         super().__init__()
         block_instance.id=block_id
-        block_instance.image=block.block_list[int(block_id)]
+        block_instance.image=block.block_image_list[int(block_id)]
         block_instance.rect=block_instance.image.get_rect(topleft=(x*48,y*48))
 
 class grass(pygame.sprite.Sprite):
