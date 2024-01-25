@@ -89,6 +89,8 @@ class player(pygame.sprite.Sprite):
         player.life=40#change later
         player.life_image_frame=0
         player.prev_life=player.life
+        player.no_damage_timer=0
+        player.prev_life_ui=player.life
         player.explode_timer=0
         player.stamina=1000
         player.state='idle'
@@ -149,7 +151,7 @@ class player(pygame.sprite.Sprite):
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False):#6,23
             if dog.direction=='left':
                 if player.rect.collidepoint((dog.rect.right+6,dog.rect.top+23)):
-                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
+                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0 and player.no_damage_timer<=0:
                         player.life-=1
                         player.score-=250
                         player.velocity.xy=0,0
@@ -160,7 +162,7 @@ class player(pygame.sprite.Sprite):
                         player.score+=500
             elif dog.direction=='left':
                 if player.rect.collidepoint((dog.rect.left-6,dog.rect.top+23)):
-                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0:
+                    if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0 and player.no_damage_timer<=0:
                         player.life-=1
                         player.score-=250
                         player.velocity.xy=0,0
@@ -610,17 +612,11 @@ class dog(pygame.sprite.Sprite):
                     dog_instance.velocity+=dog_instance.acceleration*delta_time
                     dog_instance.rect.center+=dog_instance.velocity*delta_time
                     for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False):
-                        if block.id == '0':
-                            dog_instance.rect.bottom=block.rect.top
-                        elif block.id == '1':
-                            dog_instance.rect.bottom=block.rect.top
-                        elif block.id == '2':
+                        if block.id == '0' or block.id == '1' or block.id == '2':
                             dog_instance.rect.bottom=block.rect.top
                         elif block.id == '10':
                             dog_instance.rect.bottom=block.rect.top+4
-                        elif block.id == '12':
-                            dog_instance.rect.bottom=block.rect.top+30
-                        elif block.id == '13':
+                        elif block.id == '12' or block.id=='13':
                             dog_instance.rect.bottom=block.rect.top+30
                         elif block.id == '40':
                             dog_instance.rect.bottom=block.rect.top
@@ -730,7 +726,7 @@ class bird(pygame.sprite.Sprite):
                     else:bird_instance.velocity.y=0
                 else:bird_instance.velocity.y=0
                 bird_instance.rect.center+=bird_instance.velocity*delta_time
-                if player.rect.colliderect(bird_instance.rect) and player.state!='dodge' and player.state!='grass':
+                if player.rect.colliderect(bird_instance.rect) and player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                     player.score-=100
                     player.life-=1
                     bird_instance.dead=True
@@ -793,7 +789,7 @@ class ostrich(pygame.sprite.Sprite):
                     for player in pygame.sprite.spritecollide(ostrich_instance,player_sprite_group,dokill=False):
                         if ostrich_instance.acceleration.x<0:
                             if player.rect.collidepoint((ostrich_instance.rect.left,ostrich_instance.rect.top+41)):#if colliding face
-                                if player.state!='dodge' and player.state!='grass':
+                                if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                                     player.life-=1
                                     player.score-=500
                                     player.velocity.x=0
@@ -802,7 +798,7 @@ class ostrich(pygame.sprite.Sprite):
                                     ostrich_instance.velocity.x=0
                         if ostrich_instance.acceleration.x>0:
                             if player.rect.collidepoint((ostrich_instance.rect.right,ostrich_instance.rect.top+41)):#if colliding face
-                                if player.state!='dodge' and player.state!='grass':
+                                if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                                     player.life-=1
                                     player.score-=500
                                     player.velocity.x=0
@@ -955,7 +951,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     fat_guy.whack_rect.topleft=fat_guy.rect.x+304,fat_guy.rect.y+232
                                 elif int(fat_guy.image_frame)==29 or int(fat_guy.image_frame)==30 or int(fat_guy.image_frame)==31:
                                     fat_guy.whack_rect.topleft=fat_guy.rect.x+309,fat_guy.rect.y+274
-                            if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge':
+                            if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge' and player.no_damage_timer<=0:
                                 player.life-=2
                                 fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
@@ -1286,7 +1282,6 @@ class spike(pygame.sprite.Sprite):
     mask_2=pygame.mask.from_surface(image_2)
     def __init__(spike_instance,x,y,variant):
         super().__init__()
-        spike_instance.player_collide=False
         if variant==1:
             spike_instance.image=spike.image_1
             spike_instance.rect=spike_instance.image.get_rect(topleft=(x*48,((y+1)*48)-28))
@@ -1295,12 +1290,11 @@ class spike(pygame.sprite.Sprite):
             spike_instance.rect=spike_instance.image.get_rect(topleft=(x*48,((y+1)*48)-22))
     def update(spike_instance,delta_time):
         for player in pygame.sprite.spritecollide(spike_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
-            if not spike_instance.player_collide:
+            if player.no_damage_timer<=0:
                 spike_instance.rect.y+=33
                 player.life-=1
                 player.score-=350
                 game.spike_shake_timer=1
-                spike_instance.player_collide=True
 class bomb(pygame.sprite.Sprite):
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
@@ -1356,7 +1350,7 @@ class bomb_land(pygame.sprite.Sprite):
                     reactive_block.explode=True
         else:
             for player in pygame.sprite.spritecollide(bomb,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask): 
-                if player.state!='dodge':
+                if player.state!='dodge' and player.no_damage_timer<=0:
                     if not bomb.explode:
                         player.life-=2
                         player.score-=500
@@ -1795,6 +1789,17 @@ class game():
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
                         if type(sprite)==big_fat_guy and sprite.state=='rope':
                             sprite.hook_offset=cam.offset
+            if player_sprite.no_damage_timer<=0:
+                player_sprite.no_damage_timer=0
+                player.image.set_alpha(255)
+            else:
+                player_sprite.no_damage_timer-=3*delta_time
+                if int(player.no_damage_timer)%2==0:
+                    player.image.set_alpha(150)
+                elif int(player_sprite.no_damage_timer)<=0:
+                    player_sprite.no_damage_timer=0
+                    player.image.set_alpha(255)
+                else:player_sprite.image.set_alpha(255)
             game_window.blit(player_sprite.image,((game_window.get_width()//2)-player_sprite.image.get_width()//2-cam.player_offset.x+cam.screen_shake.x,player_sprite.rect.top-cam.player_offset.y+cam.screen_shake.y))
             for sprite_group in above_player_sprite_group_list:
                 for sprite in sprite_group:
@@ -2059,6 +2064,9 @@ while True:
         for player in player_sprite_group:
             if player.life<=0:
                 game_settings['mode']='game_over'
+            if player.prev_life>player.life:
+                player.no_damage_timer=9
+            player.prev_life=player.life
             if player.state!='aim':
                 game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
                             delta_time)
@@ -2094,27 +2102,27 @@ while True:
                 white_screen.fill((255,255,255))
                 white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
                 game_window=white_screen
-            if player.prev_life>player.life:
-                for life_count in range(player.prev_life-1):
+            if player.prev_life_ui>player.life:
+                for life_count in range(player.prev_life_ui-1):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
                 if player.life_image_frame>=len(life_death_image_list):
                     player.life_image_frame=0
-                    player.prev_life=player.life
+                    player.prev_life_ui=player.life
                 else:
                     game_window.blit(life_death_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life,24))
                     player.life_image_frame+=9*delta_time#chnage to 10 later?
-            elif player.prev_life<player.life:
-                for life_count in range(player.prev_life):
+            elif player.prev_life_ui<player.life:
+                for life_count in range(player.prev_life_ui):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
                 if player.life_image_frame>=len(new_life_image_list):
                     player.life_image_frame=0
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*player.life+30,30))
-                    player.prev_life=player.life
+                    player.prev_life_ui=player.life
                 else:
                     game_window.blit(new_life_image_list[int(player.life_image_frame)],(display_size[0]-230-30*player.life+30,30))
                     player.life_image_frame+=5*delta_time#chnage to 10 later?
             else:
-                for life_count in range(player.prev_life):
+                for life_count in range(player.prev_life_ui):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
             if player.state!='explode'and player.state!='dodge':
                 if keys_pressed[pygame.K_d]:
