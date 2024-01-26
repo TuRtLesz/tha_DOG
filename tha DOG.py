@@ -75,10 +75,10 @@ life_death_image_list=[]
 load_spritesheet(pygame.image.load('Data/life/new_life.png').convert_alpha(),new_life_image_list,5,image_scale=2)
 load_spritesheet(pygame.image.load('Data/life/life_death.png').convert_alpha(),life_death_image_list,6,image_scale=2)
 
-def text(text,color,size,text_pos):
+def text(text,color,size,text_pos,output_screen=game_window):
         font=pygame.font.Font('Data/font/font.ttf',int(size))
         text_data=font.render(text,False,color)
-        game_window.blit(text_data,text_pos)
+        output_screen.blit(text_data,text_pos)
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -1659,6 +1659,98 @@ class tutorial_block(pygame.sprite.Sprite):
             tut_block.image_frame=0
         tut_block.image=tut_block.image_list[int(tut_block.image_frame)]
         tut_block.image_frame+=5*delta_time
+class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mouse input stuff
+    small_key_image_list=[]
+    mid_key_image_list=[]
+    space_key_image_list=[]
+    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_small.png').convert_alpha(),small_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_mid.png').convert_alpha(),mid_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_space.png').convert_alpha(),space_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    down_arrow=pygame.image.load('Data/blocks/tut_blocks/input_tuts/down_arrow.png').convert()
+    left_arrow=pygame.transform.rotate(down_arrow,90)
+    up_arrow=pygame.transform.rotate(left_arrow,90)
+    right_arrow=pygame.transform.rotate(up_arrow,90)
+    image_frame=0
+    def __init__(tut_block,name,x,y,mode):#name-name of key in keybinds eg 'interact'  mode -mouse or key board
+        super().__init__()
+        if mode=='mouse':
+            if mouse_mode_keybinds[name]==pygame.K_SPACE:
+                tut_block.image_list=input_tutorial_block.space_key_image_list
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+            elif mouse_mode_keybinds[name]==pygame.K_RSHIFT:#add all mid size buttons
+                tut_block.image_list=input_tutorial_block.mid_key_image_list
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+            else:
+                tut_block.image_list=input_tutorial_block.small_key_image_list
+                if mouse_mode_keybinds[name]==pygame.K_RIGHT:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,10,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,20,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                elif mouse_mode_keybinds[name]==pygame.K_LEFT:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,10,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,20,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                elif mouse_mode_keybinds[name]==pygame.K_UP:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,10,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,20,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                elif mouse_mode_keybinds[name]==pygame.K_DOWN:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,10,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,20,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                else:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
+                        else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+        else:
+            if keyboard_mode_keybinds[name]==pygame.K_SPACE:
+                tut_block.image_list=input_tutorial_block.space_key_image_list
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+            elif keyboard_mode_keybinds[name]==pygame.K_RSHIFT:#add all mid size buttons
+                tut_block.image_list=input_tutorial_block.mid_key_image_list
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+            else:
+                tut_block.image_list=input_tutorial_block.small_key_image_list
+                if keyboard_mode_keybinds[name]==pygame.K_RIGHT:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,10,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,20,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                elif keyboard_mode_keybinds[name]==pygame.K_LEFT:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,10,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,20,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                elif keyboard_mode_keybinds[name]==pygame.K_UP:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,10,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,20,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                elif keyboard_mode_keybinds[name]==pygame.K_DOWN:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,10,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,20,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                else:
+                    for index,tut_image in enumerate(tut_block.image_list):
+                        if index==0:
+                            text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
+                        else:text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
+                tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
+    def update(tut_block,delta_time):
+        tut_block.image=tut_block.image_list[int(tut_block.image_frame)]
 class water_spring:
     tension = 0.025
     dampening = 0.020
@@ -1839,6 +1931,9 @@ class game():
             for mouse_tut in mouse_mode_tuts:mouse_tut.update(delta_time)
         else:
             for keyboard_tut in keyboard_mode_tuts:keyboard_tut.update(delta_time)
+        input_tutorial_block.image_frame+=5*delta_time
+        if input_tutorial_block.image_frame>=len(input_tutorial_block.small_key_image_list):#updatin image frame
+            input_tutorial_block.image_frame=0
         wave_update(water_spring_instance_list,water_spring_list)
 
 player_sprite_group=pygame.sprite.Group()
@@ -1900,45 +1995,6 @@ with open('Data/worlds/0/0_water_blocks.csv') as map:
         for block_number,block_id in enumerate(row):
             if block_id=='0':
                 water_blocks_rect_list.append(pygame.Rect(block_number*48,row_number*48,48,48))
-with open('Data/worlds/0/0_tut_blocks.csv') as map:
-    world_reader=csv.reader(map,delimiter=',')
-    for row_number,row in enumerate(world_reader):
-        for block_number,block_id in enumerate(row):    
-            if block_id=='0':
-                tutorial_block_sprite_group.add(tutorial_block(90,'move_right',block_number,row_number))
-            elif block_id=='1':
-                tutorial_block_sprite_group.add(tutorial_block(90,'move_left',block_number,row_number))
-            elif block_id=='2':
-                tutorial_block_sprite_group.add(tutorial_block(146,'move_up',block_number,row_number))
-            elif block_id=='3':
-                tutorial_block_sprite_group.add(tutorial_block(127,'pick_up',block_number,row_number))
-            elif block_id=='4':
-                tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
-            elif block_id=='5':
-                tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
-            elif block_id=='7':
-                tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
-            elif block_id=='8':
-                tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
-            elif block_id=='9':
-                tutorial_block_sprite_group.add(tutorial_block(204,'dodge',block_number,row_number))
-                tut_end=block_number*48+500
-            elif block_id=='10':
-                tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
-            elif block_id=='11':
-                tutorial_block_sprite_group.add(tutorial_block(132,'shiny',block_number,row_number))
-            elif block_id=='12':
-                tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
-            elif block_id=='13':
-                tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
-            elif block_id=='14':
-                tutorial_block_sprite_group.add(tutorial_block(244,'info_tha_dog',block_number,row_number))
-            elif block_id=='15':
-                tutorial_block_sprite_group.add(tutorial_block(588,'info_thanks',block_number,row_number))
-            elif block_id=='16':
-                tutorial_block_sprite_group.add(tutorial_block(245,'info_turtle',block_number,row_number))
-            elif block_id=='17':
-                tutorial_block_sprite_group.add(tutorial_block(150,'crush_it',block_number,row_number))
 with open('Data/worlds/0/0_checkpoints.csv') as map:
     world_reader=csv.reader(map,delimiter=',')
     check_point_list=[]
@@ -1950,6 +2006,50 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 game=game()
 
 player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+
+tut_end=0
+def tut_blocks_load(tut_end):
+    with open('Data/worlds/0/0_tut_blocks.csv') as map:
+        world_reader=csv.reader(map,delimiter=',')
+        for row_number,row in enumerate(world_reader):
+            for block_number,block_id in enumerate(row):    
+                if block_id=='0':
+                    tutorial_block_sprite_group.add(tutorial_block(90,'move_right',block_number,row_number))
+                elif block_id=='1':
+                    tutorial_block_sprite_group.add(tutorial_block(90,'move_left',block_number,row_number))
+                elif block_id=='2':
+                    tutorial_block_sprite_group.add(tutorial_block(146,'move_up',block_number,row_number))
+                elif block_id=='3':
+                    tutorial_block_sprite_group.add(tutorial_block(127,'pick_up',block_number,row_number))
+                elif block_id=='4':
+                    tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
+                elif block_id=='5':
+                    tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
+                elif block_id=='7':
+                    tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
+                elif block_id=='8':
+                    tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
+                elif block_id=='9':
+                    tutorial_block_sprite_group.add(tutorial_block(204,'dodge',block_number,row_number))
+                    tut_end=block_number*48+500
+                elif block_id=='10':
+                    tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
+                elif block_id=='11':
+                    tutorial_block_sprite_group.add(tutorial_block(132,'shiny',block_number,row_number))
+                elif block_id=='12':
+                    tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
+                elif block_id=='13':
+                    tutorial_block_sprite_group.add(tutorial_block(196,'apple_tut',block_number,row_number))
+                elif block_id=='14':
+                    tutorial_block_sprite_group.add(tutorial_block(244,'info_tha_dog',block_number,row_number))
+                elif block_id=='15':
+                    tutorial_block_sprite_group.add(tutorial_block(588,'info_thanks',block_number,row_number))
+                elif block_id=='16':
+                    tutorial_block_sprite_group.add(tutorial_block(245,'info_turtle',block_number,row_number))
+                elif block_id=='17':
+                    tutorial_block_sprite_group.add(tutorial_block(150,'crush_it',block_number,row_number))
+    return tut_end
+tut_blocks_load(tut_end)
 
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
