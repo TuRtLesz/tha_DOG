@@ -1667,9 +1667,10 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
     load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_mid.png').convert_alpha(),mid_key_image_list,frames=3,alpha_sur=True,image_scale=2)
     load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_space.png').convert_alpha(),space_key_image_list,frames=3,alpha_sur=True,image_scale=2)
     down_arrow=pygame.image.load('Data/blocks/tut_blocks/input_tuts/down_arrow.png').convert()
-    left_arrow=pygame.transform.rotate(down_arrow,90)
-    up_arrow=pygame.transform.rotate(left_arrow,90)
-    right_arrow=pygame.transform.rotate(up_arrow,90)
+    down_arrow=pygame.transform.scale2x(down_arrow)
+    left_arrow=pygame.transform.rotate(down_arrow,-90)
+    up_arrow=pygame.transform.rotate(left_arrow,-90)
+    right_arrow=pygame.transform.rotate(up_arrow,-90)
     image_frame=0
     def __init__(tut_block,name,x,y,mode):#name-name of key in keybinds eg 'interact'  mode -mouse or key board
         super().__init__()
@@ -1687,23 +1688,23 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 if mouse_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,10,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,20,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.right_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(10,12))
                 elif mouse_mode_keybinds[name]==pygame.K_LEFT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,10,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,20,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.left_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(10,12))
                 elif mouse_mode_keybinds[name]==pygame.K_UP:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,10,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,20,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.up_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(10,12))
                 elif mouse_mode_keybinds[name]==pygame.K_DOWN:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,10,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,20,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.down_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(10,12))
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
@@ -1725,28 +1726,28 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 if keyboard_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,10,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.right_arrow,(0,0),(10,20,input_tutorial_block.right_arrow.get_width(),input_tutorial_block.right_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.right_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(10,12))
                 elif keyboard_mode_keybinds[name]==pygame.K_LEFT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,10,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.left_arrow,(0,0),(10,20,input_tutorial_block.left_arrow.get_width(),input_tutorial_block.left_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.left_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(10,12))
                 elif keyboard_mode_keybinds[name]==pygame.K_UP:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,10,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.up_arrow,(0,0),(10,20,input_tutorial_block.up_arrow.get_width(),input_tutorial_block.up_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.up_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(10,12))
                 elif keyboard_mode_keybinds[name]==pygame.K_DOWN:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,10,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
-                        else:tut_image.blit(input_tutorial_block.down_arrow,(0,0),(10,20,input_tutorial_block.down_arrow.get_width(),input_tutorial_block.down_arrow.get_height()))
+                            tut_image.blit(input_tutorial_block.down_arrow,(10,10))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(10,12))
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
                             text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
-                        else:text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                        else:text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,12),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
     def update(tut_block,delta_time):
@@ -2015,6 +2016,7 @@ def tut_blocks_load(tut_end):
             for block_number,block_id in enumerate(row):    
                 if block_id=='0':
                     tutorial_block_sprite_group.add(tutorial_block(90,'move_right',block_number,row_number))
+                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'keyboard'))
                 elif block_id=='1':
                     tutorial_block_sprite_group.add(tutorial_block(90,'move_left',block_number,row_number))
                 elif block_id=='2':
