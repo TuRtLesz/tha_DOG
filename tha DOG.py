@@ -10,7 +10,9 @@ clock=pygame.time.Clock()
 
 save_data={'high_score':0}#add lsat check point?
 
-game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game'}
+game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game','mouse_mode':False}
+mouse_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT}#add mode to edit later
+keyboard_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT,'interact':pygame.K_SPACE}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
     sprite_list.clear()
@@ -1718,7 +1720,7 @@ class game():
         game.spike_shake_timer=0
         game.pressure_switch_pan=False
         game.fat_guy_hit=False
-    def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list):
+    def draw(cam,delta_time,above_player_sprite_group_list,player_sprite_group,below_player_sprite_group_list,mouse_mode_tuts,keyboard_mode_tuts):
         for player_sprite in player_sprite_group:
             if player.state=='explode':
                 cam.screen_shake.xy=(numpy.random.randint(-10,10),numpy.random.randint(-10,10))
@@ -1789,6 +1791,10 @@ class game():
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
                         if type(sprite)==big_fat_guy and sprite.state=='rope':
                             sprite.hook_offset=cam.offset
+            if game_settings['mouse_mode']:
+                for mouse_tut in mouse_mode_tuts:game_window.blit(mouse_tut.image,(mouse_tut.rect.x-cam.offset.x+cam.screen_shake.x,mouse_tut.rect.y-cam.offset.y+cam.screen_shake.y))
+            else:
+                for keyboard_tut in keyboard_mode_tuts:game_window.blit(keyboard_tut.image,(keyboard_tut.rect.x-cam.offset.x+cam.screen_shake.x,keyboard_tut.rect.y-cam.offset.y+cam.screen_shake.y))
             if player_sprite.no_damage_timer<=0:
                 player_sprite.no_damage_timer=0
                 player.image.set_alpha(255)
@@ -1808,7 +1814,7 @@ class game():
             for water_spring in water_spring_instance_list:
                 if cam.draw_rect.left<water_spring.x<cam.draw_rect.right:
                     pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
-    def update(update_instance,update_sprite_group_list,delta_time):
+    def update(update_instance,update_sprite_group_list,delta_time,mouse_mode_tuts,keyboard_mode_tuts):
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
@@ -1829,6 +1835,10 @@ class game():
                 reactive_instance_block.update(delta_time)
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
+        if game_settings['mouse_mode']:
+            for mouse_tut in mouse_mode_tuts:mouse_tut.update(delta_time)
+        else:
+            for keyboard_tut in keyboard_mode_tuts:keyboard_tut.update(delta_time)
         wave_update(water_spring_instance_list,water_spring_list)
 
 player_sprite_group=pygame.sprite.Group()
@@ -1853,6 +1863,9 @@ tutorial_block_sprite_group=pygame.sprite.Group()
 bomb_rect_list=[]
 water_blocks_rect_list=[]
 water_hitlines=[]
+
+mouse_mode_tuts=[]
+keyboard_mode_tuts=[]
 
 #loading map
 with open('Data/worlds/0/0_blocks.csv') as map:
@@ -2054,7 +2067,7 @@ while True:
                         game_settings['mode']='paused'
                     elif game_settings['mode']=='paused':
                         game_settings['mode']='in_game'
-                if event.key==pygame.K_w:
+                if event.key==keyboard_mode_keybinds['up']:
                     if player.state!='explode' and player.state!='dodge':
                         player.jump=True
                         player.image_frame=0
@@ -2069,18 +2082,21 @@ while True:
             player.prev_life=player.life
             if player.state!='aim':
                 game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,big_fat_guy_sprite_group,bubble_sprite_group,tutorial_block_sprite_group],
-                            delta_time)
+                            delta_time,mouse_mode_tuts,keyboard_mode_tuts)
             elif player.state=='aim' or player.state=='throw':
                 player.update(delta_time)
                 big_fat_guy_sprite_group.update(delta_time)
         game.draw(delta_time,[reactive_block_sprite_instance_group,fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,bubble_sprite_group],
                     player_sprite_group,
-                    [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group])
+                    [big_fat_guy_sprite_group,tree_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group]
+                    ,mouse_mode_tuts,keyboard_mode_tuts)
+        
         for player in player_sprite_group:
             print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
-            #    if event.key==pygame.K_w:
+            #    if event.key==keyboard_mode_keybinds['up']:
             #        for player in player_sprite_group:
             #            player.image_frame=0
             #            #player.jump_counter=0
@@ -2125,7 +2141,7 @@ while True:
                 for life_count in range(player.prev_life_ui):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
             if player.state!='explode'and player.state!='dodge':
-                if keys_pressed[pygame.K_d]:
+                if keys_pressed[keyboard_mode_keybinds['right']]:
                     if player.direction=='left':
                         player.velocity.x=0
                     player.direction='right'
@@ -2137,12 +2153,12 @@ while True:
                         if player.state=='jump':player.state='sprint'
                         if player.state!='sprint' and player.state!='dodge':
                             player.state='run'
-                    if keys_pressed[pygame.K_LSHIFT]:
+                    if keys_pressed[keyboard_mode_keybinds['sprint']]:
                         if player.water:
                             player.state='swim_fast'
                         else:
                             player.state='sprint'
-                    if keys_pressed[pygame.K_SPACE]:
+                    if keys_pressed[keyboard_mode_keybinds['interact']]:
                         if not player.water:
                             if player.stamina>=100 or player.pos.x>=player.fat_guy_pan:
                                 player.state='dodge'
@@ -2150,7 +2166,7 @@ while True:
                                 player.state='run'
                         else:
                             player.state='swim'
-                if keys_pressed[pygame.K_a]:
+                if keys_pressed[keyboard_mode_keybinds['left']]:
                     if player.direction=='right':
                         player.velocity.x=0
                     player.direction='left'
@@ -2162,12 +2178,12 @@ while True:
                         if player.state=='jump':player.state='sprint'
                         if player.state!='sprint' and player.state!='dodge':
                             player.state='run'
-                    if keys_pressed[pygame.K_LSHIFT]:
+                    if keys_pressed[keyboard_mode_keybinds['sprint']]:
                         if player.water:
                             player.state='swim_fast'
                         else:
                             player.state='sprint'
-                    if keys_pressed[pygame.K_SPACE]:
+                    if keys_pressed[keyboard_mode_keybinds['interact']]:
                         if not player.water:
                             if player.stamina>=100:
                                 player.state='dodge'
@@ -2175,14 +2191,14 @@ while True:
                                 player.state='run'
                         else:
                             player.state='swim'
-                if keys_pressed[pygame.K_SPACE] and player.state!='dodge':
+                if keys_pressed[keyboard_mode_keybinds['interact']] and player.state!='dodge':
                     if player.hand=='rock':
                         player.state='aim'
                     else:
                         player.state='interact'
-                if keys_pressed[pygame.K_s] and not player.water:
+                if keys_pressed[keyboard_mode_keybinds['down']] and not player.water:
                     player.state='pick'
-                if not (keys_pressed[pygame.K_a] or keys_pressed[pygame.K_d] or keys_pressed[pygame.K_s] or keys_pressed[pygame.K_w] or keys_pressed[pygame.K_SPACE] or player.state=='pant'):
+                if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
                     if player.state=='aim' or player.state=='throw':
                         player.state='throw'
                     else:
