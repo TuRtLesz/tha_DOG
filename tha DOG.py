@@ -1892,30 +1892,28 @@ with open('Data/worlds/0/0_tut_blocks.csv') as map:
     for row_number,row in enumerate(world_reader):
         for block_number,block_id in enumerate(row):    
             if block_id=='0':
-                tutorial_block_sprite_group.add(tutorial_block(151,'move_right',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(90,'move_right',block_number,row_number))
             elif block_id=='1':
-                tutorial_block_sprite_group.add(tutorial_block(151,'move_left',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(90,'move_left',block_number,row_number))
             elif block_id=='2':
-                tutorial_block_sprite_group.add(tutorial_block(221,'move_up',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(146,'move_up',block_number,row_number))
             elif block_id=='3':
-                tutorial_block_sprite_group.add(tutorial_block(183,'pick_up',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(127,'pick_up',block_number,row_number))
             elif block_id=='4':
                 tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
             elif block_id=='5':
-                tutorial_block_sprite_group.add(tutorial_block(381,'rock_throw',block_number,row_number))
-            elif block_id=='6':
-                tutorial_block_sprite_group.add(tutorial_block(158,'sniff',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
             elif block_id=='7':
                 tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
             elif block_id=='8':
                 tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
             elif block_id=='9':
-                tutorial_block_sprite_group.add(tutorial_block(324,'dodge',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(204,'dodge',block_number,row_number))
                 tut_end=block_number*48+500
             elif block_id=='10':
-                tutorial_block_sprite_group.add(tutorial_block(301,'sprint',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
             elif block_id=='11':
-                tutorial_block_sprite_group.add(tutorial_block(100,'shiny',block_number,row_number))
+                tutorial_block_sprite_group.add(tutorial_block(132,'shiny',block_number,row_number))
             elif block_id=='12':
                 tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
             elif block_id=='13':
@@ -1926,6 +1924,8 @@ with open('Data/worlds/0/0_tut_blocks.csv') as map:
                 tutorial_block_sprite_group.add(tutorial_block(588,'info_thanks',block_number,row_number))
             elif block_id=='16':
                 tutorial_block_sprite_group.add(tutorial_block(245,'info_turtle',block_number,row_number))
+            elif block_id=='17':
+                tutorial_block_sprite_group.add(tutorial_block(150,'crush_it',block_number,row_number))
 with open('Data/worlds/0/0_checkpoints.csv') as map:
     world_reader=csv.reader(map,delimiter=',')
     check_point_list=[]
