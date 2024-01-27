@@ -1660,12 +1660,15 @@ class tutorial_block(pygame.sprite.Sprite):
         tut_block.image=tut_block.image_list[int(tut_block.image_frame)]
         tut_block.image_frame+=5*delta_time
 class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mouse input stuff
-    small_key_image_list=[]
-    mid_key_image_list=[]
-    space_key_image_list=[]
-    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_small.png').convert_alpha(),small_key_image_list,frames=3,alpha_sur=True,image_scale=2)
-    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_mid.png').convert_alpha(),mid_key_image_list,frames=3,alpha_sur=True,image_scale=2)
-    load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_space.png').convert_alpha(),space_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    #small_key_image_list=[]
+    #mid_key_image_list=[]
+    #space_key_image_list=[]
+    key_small_spritesheet=pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_small.png').convert_alpha()
+    key_mid_spritesheet=pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_mid.png').convert_alpha()
+    key_space_spritesheet=pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_space.png').convert_alpha()
+    #load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_small.png').convert_alpha(),small_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    #load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_mid.png').convert_alpha(),mid_key_image_list,frames=3,alpha_sur=True,image_scale=2)
+    #load_spritesheet(pygame.image.load('Data/blocks/tut_blocks/input_tuts/key_space.png').convert_alpha(),space_key_image_list,frames=3,alpha_sur=True,image_scale=2)
     down_arrow=pygame.image.load('Data/blocks/tut_blocks/input_tuts/down_arrow.png').convert()
     down_arrow=pygame.transform.scale2x(down_arrow)
     left_arrow=pygame.transform.rotate(down_arrow,-90)
@@ -1676,15 +1679,22 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
         super().__init__()
         if mode=='mouse':
             if mouse_mode_keybinds[name]==pygame.K_SPACE:
-                tut_block.image_list=input_tutorial_block.space_key_image_list
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_space_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
-            elif mouse_mode_keybinds[name]==pygame.K_RSHIFT:#add all mid size buttons
-                tut_block.image_list=input_tutorial_block.mid_key_image_list
+            elif mouse_mode_keybinds[name]==pygame.K_LSHIFT:#add all mid size buttons
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
+                for index,tut_image in enumerate(tut_block.image_list):
+                    if index==0:
+                        text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
+                    else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
-                tut_block.image_list=input_tutorial_block.small_key_image_list
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_small_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 if mouse_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
@@ -1714,15 +1724,22 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
         else:
             if keyboard_mode_keybinds[name]==pygame.K_SPACE:
-                tut_block.image_list=input_tutorial_block.space_key_image_list
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_space_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
-            elif keyboard_mode_keybinds[name]==pygame.K_RSHIFT:#add all mid size buttons
-                tut_block.image_list=input_tutorial_block.mid_key_image_list
+            elif keyboard_mode_keybinds[name]==pygame.K_LSHIFT:#add all mid size buttons
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
+                for index,tut_image in enumerate(tut_block.image_list):
+                    if index==0:
+                        text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
+                    else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
-                tut_block.image_list=input_tutorial_block.small_key_image_list
+                tut_block.image_list=[]
+                load_spritesheet(input_tutorial_block.key_small_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 if keyboard_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
@@ -1933,7 +1950,7 @@ class game():
         else:
             for keyboard_tut in keyboard_mode_tuts:keyboard_tut.update(delta_time)
         input_tutorial_block.image_frame+=5*delta_time
-        if input_tutorial_block.image_frame>=len(input_tutorial_block.small_key_image_list):#updatin image frame
+        if input_tutorial_block.image_frame>=3:#updatin image frame
             input_tutorial_block.image_frame=0
         wave_update(water_spring_instance_list,water_spring_list)
 
@@ -2052,9 +2069,9 @@ def tut_blocks_load(tut_end):
                     tut_end=block_number*48+500
                 elif block_id=='10':
                     tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('sprint',block_number,row_number,'keyboard'))
+                    keyboard_mode_tuts.append(input_tutorial_block('sprint',block_number+3,row_number,'keyboard'))
                     keyboard_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('sprint',block_number,row_number,'mouse'))
+                    mouse_mode_tuts.append(input_tutorial_block('sprint',block_number+3,row_number,'mouse'))
                     mouse_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'mouse'))
                 elif block_id=='11':
                     tutorial_block_sprite_group.add(tutorial_block(132,'shiny',block_number,row_number))
