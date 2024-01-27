@@ -2157,29 +2157,29 @@ def tut_blocks_load(tut_end):
             for block_number,block_id in enumerate(row):    
                 if block_id=='0':
                     tutorial_block_sprite_group.add(tutorial_block(90,'move_right',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'mouse'))
+                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number-3,row_number,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('right',block_number-3,row_number,'mouse'))
                 elif block_id=='1':
                     tutorial_block_sprite_group.add(tutorial_block(90,'move_left',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('left',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('left',block_number,row_number,'mouse'))
+                    keyboard_mode_tuts.append(input_tutorial_block('left',block_number+3,row_number,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('left',block_number+3,row_number,'mouse'))
                 elif block_id=='2':
                     tutorial_block_sprite_group.add(tutorial_block(146,'move_up',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('up',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('up',block_number,row_number,'mouse'))
+                    keyboard_mode_tuts.append(input_tutorial_block('up',block_number-4,row_number-2,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('up',block_number-4,row_number-2,'mouse'))
                 elif block_id=='3':
                     tutorial_block_sprite_group.add(tutorial_block(127,'pick_up',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('down',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number,row_number))
+                    keyboard_mode_tuts.append(input_tutorial_block('down',block_number,row_number-4,'keyboard'))
+                    mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number,row_number-4))
                 elif block_id=='4':
                     tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(211,'scroll_up',block_number,row_number))
+                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number+2,row_number-3,'keyboard'))
+                    mouse_mode_tuts.append(tutorial_block(211,'scroll_up',block_number+2,row_number-3))
                 elif block_id=='5':
                     tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number,row_number))
-                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number,row_number))
+                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number-5,row_number-2,'keyboard'))
+                    mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number-5,row_number-2))
+                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number-5,row_number-2))
                 elif block_id=='7':
                     tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
                 elif block_id=='8':
@@ -2193,14 +2193,14 @@ def tut_blocks_load(tut_end):
                     tut_end=block_number*48+500
                 elif block_id=='10':
                     tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('sprint',block_number+3,row_number,'keyboard'))
-                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('sprint',block_number+3,row_number,'mouse'))
-                    mouse_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'mouse'))
+                    keyboard_mode_tuts.append(input_tutorial_block('sprint',block_number+1,row_number-2,'keyboard'))
+                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number-3,row_number-2,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('sprint',block_number+1,row_number-2,'mouse'))
+                    mouse_mode_tuts.append(input_tutorial_block('right',block_number-3,row_number-2,'mouse'))
                 elif block_id=='11':
                     tutorial_block_sprite_group.add(tutorial_block(132,'shiny',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('down',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('down',block_number,row_number,'mouse'))
+                    keyboard_mode_tuts.append(input_tutorial_block('down',block_number-3,row_number,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('down',block_number-3,row_number,'mouse'))
                 elif block_id=='12':
                     tutorial_block_sprite_group.add(tutorial_block(81,'ninja_time',block_number,row_number))
                 elif block_id=='13':
