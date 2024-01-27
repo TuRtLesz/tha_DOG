@@ -1675,6 +1675,129 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
     up_arrow=pygame.transform.rotate(left_arrow,-90)
     right_arrow=pygame.transform.rotate(up_arrow,-90)
     image_frame=0
+    key_names={'delete':'DEL',
+               'underscore':'_',
+               'grave':'`',
+               'keypad 0':'k0',
+            'keypad 1':'k1',
+            'keypad 2':'k2',
+            'keypad 3':'k3',
+            'keypad 4':'k4',
+            'keypad 5':'k5',
+            'keypad 6':'k6',
+            'keypad 7':'k7',
+            'keypad 8':'k8',
+            'keypad 9':'k9',
+            'keypad period':'.',
+            'keypad divide':'k/',
+            'keypad multiply':'k*',
+            'keypad minus':'k-',
+            'keypad plus':'k+',
+            'keypad enter':'kENTER',
+            'keypad equals':'k=',
+            'insert':'INS',
+            'home':'HOM',
+            'end':'END',
+            'page up':'P_UP',
+            'page down':'P_DO',
+            'F1':'F1',
+            'F2':'F2',
+            'F3':'F3',
+            'F4':'F4',
+            'F5':'F5',
+            'F6':'F6',
+            'F7':'F7',
+            'F8':'F8',
+            'F9':'F9',
+            'F10':'F10',
+            'F11':'F11',
+            'F12':'F12',
+            'F13':'F13',
+            'F14':'F14',
+            'F15':'F15',
+            'numlock':'NUM',
+            'capslock':'CAPS',
+            'scrollock':'SCR',
+            'right shift':'RSHIFT',
+            'left shift':'LSHIFT',
+            'right control':'RCTRL',
+            'left control':'LCTRL',
+            'right alt':'RALT',
+            'left alt':'LALT',
+            'print screen':'PRT',
+            'sysrq':'SYS',
+            'break':'BREAK',
+            'menu':'MENU',
+            'Euro':'€',
+            'backspace':'BACK',
+            'tab':'TAB',
+            'clear':'CLR',
+            'return':'ENTER',
+            'pause':'| |',
+            'escape':'EXC',
+            'exclaim':'!',
+            'quotedbl':'"',
+            'hash':'#',
+            'dollar':'$',
+            'ampersand':'&',
+            'quote':"'",
+            'left parenthesis':'(',
+            'right parenthesis':')',
+            'asterisk':'*',
+            'plus sign':'+',
+            'comma':',',
+            'minus sign':'-',
+            'period':'.',
+            'forward slash':'/',
+            '0':'0',
+            '1':'1',
+            '2':'2',
+            '3':'3',
+            '4':'4',
+            '5':'5',
+            '6':'6',
+            '7':'7',
+            '8':'8',
+            '9':'9',
+            'colon':':',
+            'semicolon':';',
+            'less-than sign':'<',
+            'equals sign':'=',
+            'greater-than sign':'>',
+            'question mark':'?',
+            'at':'@',
+            'left bracket':'[',
+            'backslash':"\\",
+            'right bracket':']',
+            'caret':'^',     
+            'underscore':'_',
+            'a':'A',
+            'b':'B',
+            'c':'C',
+            'd':'D',
+            'e':'E',
+            'f':'F',
+            'g':'G',
+            'h':'H',
+            'i':'I',
+            'j':'J',
+            'k':'K',
+            'l':'L',
+            'm':'M',
+            'n':'N',
+            'o':'O',
+            'p':'P',
+            'q':'Q',
+            'r':'R',
+            's':'S',
+            't':'T',
+            'u':'U',
+            'v':'V',
+            'w':'W',
+            'x':'X',
+            'y':'Y',
+            'z':'Z',
+}
     def __init__(tut_block,name,x,y,mode):#name-name of key in keybinds eg 'interact'  mode -mouse or key board
         super().__init__()
         if mode=='mouse':
@@ -1688,8 +1811,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 for index,tut_image in enumerate(tut_block.image_list):
                     if index==0:
-                        text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
-                    else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
+                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
@@ -1718,8 +1841,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
-                        else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
+                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
         else:
@@ -1733,8 +1856,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 for index,tut_image in enumerate(tut_block.image_list):
                     if index==0:
-                        text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
-                    else:text(pygame.key.name(mouse_mode_keybinds[name]).upper(),(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
+                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
@@ -1763,8 +1886,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,10),output_screen=tut_image)
-                        else:text(pygame.key.name(keyboard_mode_keybinds[name]).upper(),(0,0,0),40,(10,12),output_screen=tut_image)#key_down
+                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
+                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,12),output_screen=tut_image)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
     def update(tut_block,delta_time):
