@@ -75,10 +75,11 @@ life_death_image_list=[]
 load_spritesheet(pygame.image.load('Data/life/new_life.png').convert_alpha(),new_life_image_list,5,image_scale=2)
 load_spritesheet(pygame.image.load('Data/life/life_death.png').convert_alpha(),life_death_image_list,6,image_scale=2)
 
-def text(text,color,size,text_pos,output_screen=game_window):
+def text(text,color,size,text_pos,output_screen=game_window,mid_alline=False):
         font=pygame.font.Font('Data/font/font.ttf',int(size))
         text_data=font.render(text,False,color)
-        output_screen.blit(text_data,text_pos)
+        if mid_alline:output_screen.blit(text_data,(text_pos[0]-text_data.get_width()//2,text_pos[1]-text_data.get_height()//2))
+        else:output_screen.blit(text_data,text_pos)
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -1811,8 +1812,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 for index,tut_image in enumerate(tut_block.image_list):
                     if index==0:
-                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
-                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),35,(90,41),output_screen=tut_image,mid_alline=True)
+                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),35,(90,45),output_screen=tut_image,mid_alline=True)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
@@ -1821,28 +1822,28 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 if mouse_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.right_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.right_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.right_arrow,(41-input_tutorial_block.right_arrow.get_width()//2,42-input_tutorial_block.right_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(41-input_tutorial_block.right_arrow.get_width()//2,46-input_tutorial_block.right_arrow.get_height()//2))
                 elif mouse_mode_keybinds[name]==pygame.K_LEFT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.left_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.left_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.left_arrow,(41-input_tutorial_block.left_arrow.get_width()//2,42-input_tutorial_block.left_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(41-input_tutorial_block.left_arrow.get_width()//2,46-input_tutorial_block.left_arrow.get_height()//2))
                 elif mouse_mode_keybinds[name]==pygame.K_UP:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.up_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.up_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.up_arrow,(41-input_tutorial_block.up_arrow.get_width()//2,42-input_tutorial_block.up_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(41-input_tutorial_block.up_arrow.get_width()//2,46-input_tutorial_block.up_arrow.get_height()//2))
                 elif mouse_mode_keybinds[name]==pygame.K_DOWN:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.down_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.down_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.down_arrow,(41-input_tutorial_block.down_arrow.get_width()//2,42-input_tutorial_block.down_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(41-input_tutorial_block.down_arrow.get_width()//2,46-input_tutorial_block.down_arrow.get_height()//2))
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
-                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(41,42),output_screen=tut_image,mid_alline=True)
+                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(41,46),output_screen=tut_image,mid_alline=True)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
         else:
@@ -1856,8 +1857,8 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 load_spritesheet(input_tutorial_block.key_mid_spritesheet,tut_block.image_list,frames=3,alpha_sur=True,image_scale=2)
                 for index,tut_image in enumerate(tut_block.image_list):
                     if index==0:
-                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
-                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,20),output_screen=tut_image)#key_down
+                        text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),35,(90,41),output_screen=tut_image,mid_alline=True)
+                    else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),35,(90,45),output_screen=tut_image,mid_alline=True)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
             else:
@@ -1866,28 +1867,28 @@ class input_tutorial_block(pygame.sprite.Sprite):#use  normal tut block for mous
                 if keyboard_mode_keybinds[name]==pygame.K_RIGHT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.right_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.right_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.right_arrow,(41-input_tutorial_block.right_arrow.get_width()//2,42-input_tutorial_block.right_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.right_arrow,(41-input_tutorial_block.right_arrow.get_width()//2,46-input_tutorial_block.right_arrow.get_height()//2))
                 elif keyboard_mode_keybinds[name]==pygame.K_LEFT:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.left_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.left_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.left_arrow,(41-input_tutorial_block.left_arrow.get_width()//2,42-input_tutorial_block.left_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.left_arrow,(41-input_tutorial_block.left_arrow.get_width()//2,46-input_tutorial_block.left_arrow.get_height()//2))
                 elif keyboard_mode_keybinds[name]==pygame.K_UP:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.up_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.up_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.up_arrow,(41-input_tutorial_block.up_arrow.get_width()//2,42-input_tutorial_block.up_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.up_arrow,(41-input_tutorial_block.up_arrow.get_width()//2,46-input_tutorial_block.up_arrow.get_height()//2))
                 elif keyboard_mode_keybinds[name]==pygame.K_DOWN:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            tut_image.blit(input_tutorial_block.down_arrow,(10,10))
-                        else:tut_image.blit(input_tutorial_block.down_arrow,(10,12))
+                            tut_image.blit(input_tutorial_block.down_arrow,(41-input_tutorial_block.down_arrow.get_width()//2,42-input_tutorial_block.down_arrow.get_height()//2))
+                        else:tut_image.blit(input_tutorial_block.down_arrow,(41-input_tutorial_block.down_arrow.get_width()//2,46-input_tutorial_block.down_arrow.get_height()//2))
                 else:
                     for index,tut_image in enumerate(tut_block.image_list):
                         if index==0:
-                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,10),output_screen=tut_image)
-                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(10,12),output_screen=tut_image)#key_down
+                            text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(41,42),output_screen=tut_image,mid_alline=True)
+                        else:text(input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[name])],(0,0,0),40,(41,46),output_screen=tut_image,mid_alline=True)#key_down
                 tut_block.image=tut_block.image_list[input_tutorial_block.image_frame]
                 tut_block.rect=tut_block.image.get_rect(center=(x*48,y*48))
     def update(tut_block,delta_time):
