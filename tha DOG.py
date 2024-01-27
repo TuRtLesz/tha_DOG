@@ -2186,10 +2186,10 @@ def tut_blocks_load(tut_end):
                     tutorial_block_sprite_group.add(tutorial_block(101,'squishy',block_number,row_number))
                 elif block_id=='9':
                     tutorial_block_sprite_group.add(tutorial_block(204,'dodge',block_number,row_number))
-                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number,row_number,'keyboard'))
-                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'keyboard'))
-                    mouse_mode_tuts.append(input_tutorial_block('right',block_number,row_number,'mouse'))
-                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number,row_number))
+                    keyboard_mode_tuts.append(input_tutorial_block('interact',block_number+1,row_number-3,'keyboard'))
+                    keyboard_mode_tuts.append(input_tutorial_block('right',block_number-4,row_number-3,'keyboard'))
+                    mouse_mode_tuts.append(input_tutorial_block('right',block_number-4,row_number-3,'mouse'))
+                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number+1,row_number-3))
                     tut_end=block_number*48+500
                 elif block_id=='10':
                     tutorial_block_sprite_group.add(tutorial_block(133,'sprint',block_number,row_number))
