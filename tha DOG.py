@@ -42,12 +42,16 @@ def load_spritesheet_2dir(spritesheet_image,sprite_list,sprite_list_fliped,frame
     return sprite_list,sprite_list_fliped
 
 menu_image_frame=0
-exit_image=pygame.image.load('Data/menu_buttons/exit.png').convert()
-exit_image=pygame.transform.scale2x(exit_image)
-game_over_image=pygame.image.load('Data/menu_buttons/game_over.png').convert()
-game_over_image=pygame.transform.scale2x(game_over_image)
-paused_image=pygame.image.load('Data/menu_buttons/paused.png').convert()
-paused_image=pygame.transform.scale2x(paused_image)
+exit_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/exit.png').convert())
+back_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/back.png').convert())
+mouse_mode_image_list=[]
+load_spritesheet(pygame.image.load('Data/menu_buttons/mouse_button.png').convert(),mouse_mode_image_list,alpha_sur=False,image_scale=2)
+mouse_mode_rect=mouse_mode_image_list[0].get_rect(topleft=(50,display_size[1]-100))
+keyboard_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/keyboard.png').convert())
+keyboard_rect=keyboard_image.get_rect(topleft=(display_size[0]-250,display_size[1]-150))
+game_over_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/game_over.png').convert())
+paused_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/paused.png').convert())
+edit_keybinds_image=pygame.image.load('Data/menu_buttons/edit_keybinds.png').convert()
 high_score_image=pygame.image.load('Data/menu_buttons/high_score.png').convert_alpha()
 score_image=pygame.Surface((72,28),pygame.SRCALPHA)
 score_image.blit(high_score_image,(0,0),(62,0,72,28))
@@ -66,8 +70,10 @@ load_spritesheet(pygame.image.load('Data/menu_buttons/game_complete.png').conver
 load_spritesheet(pygame.image.load('Data/menu_buttons/cookie.png').convert(),cookie_list,frames=7,alpha_sur=False,image_scale=2)
 exit_rect=exit_image.get_rect(topleft=(display_size[0]//2-exit_image.get_width()//2,display_size[1]-200))
 exit_game_complete_rect=exit_game_complete_list[1].get_rect(topleft=(display_size[0]//2+(200+exit_game_complete_list[0].get_width()//2),display_size[1]-200))
+back_rect=back_image.get_rect(topleft=(display_size[0]//2+(200+exit_game_complete_list[0].get_width()//2),display_size[1]-200))
 cookie_rect=cookie_list[0].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),100+game_complete_list[0].get_height()))
 play_rect=play_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
+play_rect_edit_keybind=play_list[1].get_rect(topleft=(display_size[0]//2-(200+replay_list[0].get_width()//2),display_size[1]-200))
 retry_rect=retry_list[1].get_rect(topleft=(display_size[0]//2-(retry_list[1].get_width()//2),display_size[1]//2-retry_list[1].get_height()//2))
 replay_rect=replay_list[0].get_rect(topleft=(display_size[0]//2-(200+replay_list[0].get_width()//2),display_size[1]-200))
 new_life_image_list=[]
@@ -1076,7 +1082,7 @@ class rat(pygame.sprite.Sprite):
         rat_instance.velocity=pygame.math.Vector2(-10,0)
     def update(rat_instance,delta_time):
         if rat_instance.dead:
-            if rat_instance.frame>=len(rat.rat_death_right_list)-1:
+            if int(rat_instance.frame)>=len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
             if rat_instance.velocity.x>0:
                 rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
@@ -2532,6 +2538,10 @@ while True:
     elif game_settings['mode']=='paused':
         game_window.blit(paused_image,(display_size[0]//2-paused_image.get_width()//2,100))
         game_window.blit(exit_image,(exit_rect.topleft))
+        if game_settings['mouse_mode']:
+            game_window.blit(mouse_mode_image_list[1],(mouse_mode_rect.topleft))
+        else:game_window.blit(mouse_mode_image_list[0],(mouse_mode_rect.topleft))
+        game_window.blit(keyboard_image,(keyboard_rect.topleft))
         menu_image_frame+=5*delta_time
         if int(menu_image_frame)>1:
             menu_image_frame=0
@@ -2550,6 +2560,12 @@ while True:
                     sys.exit()
                 elif play_rect.collidepoint(mouse_pos):
                     game_settings['mode']='in_game'
+                elif keyboard_rect.collidepoint(mouse_pos):
+                    game_settings['mode']='edit_keybinds'
+                elif mouse_mode_rect.collidepoint(mouse_pos):
+                    if game_settings['mouse_mode']:
+                        game_settings['mouse_mode']=False
+                    else:game_settings['mouse_mode']=True
             else:
                 if exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
@@ -2557,6 +2573,24 @@ while True:
                     sys.exit()
                 elif play_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     game_settings['mode']='in_game'
+                elif keyboard_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    game_settings['mode']='edit_keybinds'
+                elif mouse_mode_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    if game_settings['mouse_mode']:
+                        game_settings['mouse_mode']=False
+                    else:game_settings['mouse_mode']=True
+    elif game_settings['mode']=='edit_keybinds':
+        game_window.blit(edit_keybinds_image,((display_size[0]//2-edit_keybinds_image.get_width()//2,100)))
+        game_window.blit(back_image,(back_rect.topleft))
+        game_window.blit(play_list[int(menu_image_frame)],(play_rect_edit_keybind.topleft))
+        menu_image_frame+=5*delta_time
+        if int(menu_image_frame)>1:
+            menu_image_frame=0
+        if game_settings['negative_screen']:#when hit fat_guy
+            white_screen=pygame.Surface(game_window.get_size())
+            white_screen.fill((255,255,255))
+            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
+            game_window=white_screen
     elif game_settings['mode']=='game_complete':
         if player.score>save_data['high_score']:
             save_data['high_score']=player.score
