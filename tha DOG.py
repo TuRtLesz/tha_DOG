@@ -11,7 +11,7 @@ clock=pygame.time.Clock()
 save_data={'high_score':0}#add lsat check point?
 
 game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game','mouse_mode':False}
-mouse_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT}#add mode to edit later
+mouse_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT}
 keyboard_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT,'interact':pygame.K_SPACE}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
@@ -651,7 +651,7 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.direction_lock=True
                             dog_instance.direction='left'
                         for water_line in water_hitlines:
-                            if dog_instance.rect.clipline(water_line)==():
+                            if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
                                 for water_spring_obj in water_spring_instance_list:
                                     if dog_instance.rect.centerx-2<water_spring_obj.x<dog_instance.rect.centerx+2:
                                         if abs(water_spring_obj.speed)==0:
@@ -1645,7 +1645,7 @@ class bubble(pygame.sprite.Sprite):
         game_window.blit(bubble_instance.image,bubble_instance.rect)
         bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
         for water_line in water_hitlines:
-            if bubble_instance.rect.clipline(water_line)!=():
+            if bubble_instance.rect.clipline(water_line)!=() and game.draw_rect.collidepoint(bubble_instance.rect.center):
                 for water_spring_obj in water_spring_instance_list:
                     if bubble_instance.rect.centerx-2<water_spring_obj.x<bubble_instance.rect.centerx+2:
                         if abs(water_spring_obj.speed)<10:
@@ -2059,8 +2059,7 @@ class game():
                     if cam.draw_rect.colliderect(sprite.rect):
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
             for water_spring in water_spring_instance_list:
-                if cam.draw_rect.left<water_spring.x<cam.draw_rect.right:
-                    pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
+                pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
     def update(update_instance,update_sprite_group_list,delta_time,mouse_mode_tuts,keyboard_mode_tuts):
         for player in player_sprite_group:
             player.update(delta_time)
