@@ -424,9 +424,9 @@ class player(pygame.sprite.Sprite):
             elif block.id=='49' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             elif block.id=='9' and not player.jump:#45degree scure
-                player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.bottom
+                player.rect.bottom=48-abs(player.pos.x-block.rect.x)+block.rect.top
             elif block.id=='37' and not player.jump:#45degree scure
-                player.rect.bottom=(48+1*abs(player.pos.x-block.rect.x))+block.rect.bottom
+                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.top
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -1084,11 +1084,12 @@ class rat(pygame.sprite.Sprite):
         if rat_instance.dead:
             if int(rat_instance.frame)>=len(rat.rat_death_right_list)-1:
                 rat_instance.kill()
-            if rat_instance.velocity.x>0:
-                rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
-            elif rat_instance.velocity.x<0:
-                rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
-            rat_instance.frame+=8*delta_time
+            else:
+                if rat_instance.velocity.x>0:
+                    rat_instance.image=rat.rat_death_right_list[int(rat_instance.frame)]
+                elif rat_instance.velocity.x<0:
+                    rat_instance.image=rat.rat_death_left_list[int(rat_instance.frame)]
+                rat_instance.frame+=8*delta_time
         else:
             for player in pygame.sprite.spritecollide(rat_instance,player_sprite_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if player.state!='pant' and player.state!='idle' and player.state!='aim' and player.state!='interact' and player.state!='throw':
@@ -1916,10 +1917,9 @@ class water_spring:
 def wave_update(water_spring_instance_list,water_spring_list):
     water_spring_instance_list.clear()
     for water_spring_obj in water_spring_list:
-        if game.update_rect.left<water_spring_obj.x<game.update_rect.right:
+        if game.draw_rect.left<water_spring_obj.x<game.draw_rect.right:
             water_spring_instance_list.append(water_spring_obj)
-    for water_spring in water_spring_instance_list:
-        water_spring.update()
+            water_spring_obj.update()
     lDeltas = list(water_spring_instance_list)
     rDeltas = list(water_spring_instance_list)
     for j in range(5):# Number of loop round // Warning with a too hight value on this variable, the script will be very slower
@@ -2032,9 +2032,13 @@ class game():
                         if type(sprite)==big_fat_guy and sprite.state=='rope':
                             sprite.hook_offset=cam.offset
             if game_settings['mouse_mode']:
-                for mouse_tut in mouse_mode_tuts:game_window.blit(mouse_tut.image,(mouse_tut.rect.x-cam.offset.x+cam.screen_shake.x,mouse_tut.rect.y-cam.offset.y+cam.screen_shake.y))
+                for mouse_tut in mouse_mode_tuts:
+                    if cam.draw_rect.left<mouse_tut.rect.centerx<cam.draw_rect.right:
+                        game_window.blit(mouse_tut.image,(mouse_tut.rect.x-cam.offset.x+cam.screen_shake.x,mouse_tut.rect.y-cam.offset.y+cam.screen_shake.y))
             else:
-                for keyboard_tut in keyboard_mode_tuts:game_window.blit(keyboard_tut.image,(keyboard_tut.rect.x-cam.offset.x+cam.screen_shake.x,keyboard_tut.rect.y-cam.offset.y+cam.screen_shake.y))
+                for keyboard_tut in keyboard_mode_tuts:
+                    if cam.draw_rect.left<keyboard_tut.rect.centerx<cam.draw_rect.right:
+                        game_window.blit(keyboard_tut.image,(keyboard_tut.rect.x-cam.offset.x+cam.screen_shake.x,keyboard_tut.rect.y-cam.offset.y+cam.screen_shake.y))
             if player_sprite.no_damage_timer<=0:
                 player_sprite.no_damage_timer=0
                 player.image.set_alpha(255)
@@ -2076,9 +2080,11 @@ class game():
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
         if game_settings['mouse_mode']:
-            for mouse_tut in mouse_mode_tuts:mouse_tut.update(delta_time)
+            for mouse_tut in mouse_mode_tuts:
+                if update_instance.update_rect.left<mouse_tut.rect.x<update_instance.update_rect.right:mouse_tut.update(delta_time)
         else:
-            for keyboard_tut in keyboard_mode_tuts:keyboard_tut.update(delta_time)
+            for keyboard_tut in keyboard_mode_tuts:
+                if update_instance.update_rect.left<keyboard_tut.rect.x<update_instance.update_rect.right:keyboard_tut.update(delta_time)
         input_tutorial_block.image_frame+=5*delta_time
         if input_tutorial_block.image_frame>=3:#updatin image frame
             input_tutorial_block.image_frame=0
