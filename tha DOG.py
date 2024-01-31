@@ -42,6 +42,9 @@ def load_spritesheet_2dir(spritesheet_image,sprite_list,sprite_list_fliped,frame
     return sprite_list,sprite_list_fliped
 
 menu_image_frame=0
+key_edit_input=False
+key_edit_index=0
+key_edit_function='right'
 exit_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/exit.png').convert())
 back_image=pygame.transform.scale2x(pygame.image.load('Data/menu_buttons/back.png').convert())
 mouse_mode_image_list=[]
@@ -2186,12 +2189,12 @@ def tut_blocks_load(tut_end):
                 elif block_id=='4':
                     tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
                     keyboard_mode_tuts.append(input_tutorial_block('interact',block_number+2,row_number-3,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(211,'scroll_up',block_number+2,row_number-3))
+                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number+2,row_number-3))
                 elif block_id=='5':
                     tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
                     keyboard_mode_tuts.append(input_tutorial_block('interact',block_number-5,row_number-2,'keyboard'))
                     mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number-5,row_number-2))
-                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number-5,row_number-2))
+                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number+5,row_number-4))
                 elif block_id=='7':
                     tutorial_block_sprite_group.add(tutorial_block(185,'rock_roll',block_number,row_number))
                 elif block_id=='8':
@@ -2485,8 +2488,10 @@ while True:
         if player.stamina>0 and player.pos.x<player.fat_guy_pan:
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x+(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
+
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-        #print(str(clock.get_fps()))
+        print(str(clock.get_fps()))
+
         clock.tick()
     else:pygame.mouse.set_visible(True)
     if game_settings['mode']=='game_over':
@@ -2545,8 +2550,8 @@ while True:
         game_window.blit(paused_image,(display_size[0]//2-paused_image.get_width()//2,100))
         game_window.blit(exit_image,(exit_rect.topleft))
         if game_settings['mouse_mode']:
-            game_window.blit(mouse_mode_image_list[1],(mouse_mode_rect.topleft))
-        else:game_window.blit(mouse_mode_image_list[0],(mouse_mode_rect.topleft))
+            game_window.blit(mouse_mode_image_list[0],(mouse_mode_rect.topleft))
+        else:game_window.blit(mouse_mode_image_list[1],(mouse_mode_rect.topleft))
         game_window.blit(keyboard_image,(keyboard_rect.topleft))
         menu_image_frame+=5*delta_time
         if int(menu_image_frame)>1:
@@ -2586,9 +2591,71 @@ while True:
                         game_settings['mouse_mode']=False
                     else:game_settings['mouse_mode']=True
     elif game_settings['mode']=='edit_keybinds':
-        game_window.blit(edit_keybinds_image,((display_size[0]//2-edit_keybinds_image.get_width()//2,100)))
+        game_window.blit(edit_keybinds_image,((display_size[0]//2-edit_keybinds_image.get_width()//2,10)))
         game_window.blit(back_image,(back_rect.topleft))
         game_window.blit(play_list[int(menu_image_frame)],(play_rect_edit_keybind.topleft))
+        text('MOUSE MODE',(0,0,0),35,(200,150))
+        for index,function in enumerate(mouse_mode_keybinds):
+            try:
+                text(function+'                '+input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[function])],(0,0,0),30,(150,200+60*index))
+            except:text(function+'                '+pygame.key.name(mouse_mode_keybinds[function]),(0,0,0),30,(150,200+60*index))
+            if key_edit_input and key_edit_mode=='mouse' and key_edit_index==index:
+                key_edit_function=function
+        pygame.draw.line(game_window,(0,0,0),(display_size[0]//2,150),(display_size[0]//2,display_size[1]-200))
+        text('KEYBOARD MODE',(0,0,0),35,(display_size[0]//2+200,150))
+        for index,function in enumerate(keyboard_mode_keybinds):
+            try:
+                text(function+'             '+input_tutorial_block.key_names[pygame.key.name(keyboard_mode_keybinds[function])],(0,0,0),30,(display_size[0]//2+150,200+60*index))
+            except:text(function+'             '+pygame.key.name(keyboard_mode_keybinds[function]),(0,0,0),30,(display_size[0]//2+150,200+60*index))
+            if key_edit_input and key_edit_mode=='keyboard' and key_edit_index==index:
+                key_edit_function=function
+        if any(pygame.mouse.get_pressed()):
+            mouse_pos=pygame.mouse.get_pos()
+            if game_settings['fullscreen']:
+                if back_rect.collidepoint(mouse_pos):
+                    game_settings['mode']='paused'
+                elif play_rect_edit_keybind.collidepoint(mouse_pos):
+                    game_settings['mode']='in_game'
+                if mouse_pos[0]>display_size[0]//2:
+                    if 200<mouse_pos[1]<560:
+                        key_edit_mode='keyboard'
+                        key_edit_index=int((mouse_pos[1]-200)/60)
+                        key_edit_input=True
+                elif mouse_pos[0]<display_size[0]//2:
+                    if 200<mouse_pos[1]<500:
+                        key_edit_mode='mouse'
+                        key_edit_index=int((mouse_pos[1]-200)/60)
+                        key_edit_input=True
+            else:
+                if back_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    game_settings['mode']='paused'
+                elif play_rect_edit_keybind.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
+                    game_settings['mode']='in_game'
+                if mouse_pos[0]*2>display_size[0]//2:
+                    if 200<mouse_pos[1]*2<560:
+                        key_edit_mode='keyboard'
+                        key_edit_index=int((mouse_pos[1]*2-200)/60)
+                        key_edit_input=True
+                elif mouse_pos[0]*2<display_size[0]//2:
+                    if 200<mouse_pos[1]*2<500:
+                        key_edit_mode='mouse'
+                        key_edit_index=int((mouse_pos[1]*2-200)/60)
+                        key_edit_input=True
+        if key_edit_input:
+            pygame.draw.rect(game_window,(255,255,255),(display_size[0]//2-300,display_size[1]//2-200,600,400))
+            text('press the key to assigin!',(0,0,0),35,(display_size[0]//2-250,display_size[1]//2))
+            pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2-200),(display_size[0]//2+300,display_size[1]//2-200),width=4)
+            pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2+200),(display_size[0]//2+300,display_size[1]//2+200),width=4)
+            pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2-200),(display_size[0]//2-300,display_size[1]//2+200),width=4)
+            pygame.draw.line(game_window,(0,0,0),(display_size[0]//2+300,display_size[1]//2-200),(display_size[0]//2+300,display_size[1]//2+200),width=4)
+            for event in pygame.event.get():
+                if event.type==pygame.KEYDOWN:
+                    if event.key!=pygame.K_ESCAPE and event.key!=pygame.K_F11:
+                        if key_edit_mode=='mouse':
+                            mouse_mode_keybinds[key_edit_function]=event.key
+                        else:
+                            keyboard_mode_keybinds[key_edit_function]=event.key
+                        key_edit_input=False
         menu_image_frame+=5*delta_time
         if int(menu_image_frame)>1:
             menu_image_frame=0
