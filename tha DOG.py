@@ -2392,10 +2392,10 @@ while True:
                 if player.prev_flower_count!=player.flower_count:
                     player.prev_flower_count=player.flower_count
                     player.flower_timer=4
-                text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
+                #text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
                 #font=pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))
-                #text_data=font.render(str(player.flower_count),False,(0,0,0))
-                #game_window.blit(text_data,(display_size[0]-100,30))
+                #text_data=(pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))).render(str(player.flower_count),False,(0,0,0))
+                game_window.blit((pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))).render(str(player.flower_count),False,(0,0,0)),(display_size[0]-100,30))
                 if player.flower_timer>2:
                     player.flower_timer-=2*delta_time
                     game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
@@ -2710,10 +2710,12 @@ while True:
                 elif cookie_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     cookie_image_frame+=1
     game_window.blit(high_score_image,(10,10))
-    text(str(save_data['high_score']),(0,0,0),40,(156,5))
+    #text(str(save_data['high_score']),(0,0,0),40,(156,5))
+    game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(save_data['high_score']),False,(0,0,0)),(156,5))
     game_window.blit(score_image,(10,50))
     if player.score<0:player.score=0
-    text(str(player.score),(0,0,0),40,(92,45))
+    #text(str(player.score),(0,0,0),40,(92,45))
+    game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(player.score),False,(0,0,0)),(92,45))
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
