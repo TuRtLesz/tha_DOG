@@ -85,10 +85,9 @@ load_spritesheet(pygame.image.load('Data/life/new_life.png').convert_alpha(),new
 load_spritesheet(pygame.image.load('Data/life/life_death.png').convert_alpha(),life_death_image_list,6,image_scale=2)
 
 def text(text,color,size,text_pos,output_screen=game_window,mid_alline=False):
-        font=pygame.font.Font('Data/font/font.ttf',int(size))
-        text_data=font.render(text,False,color)
-        if mid_alline:output_screen.blit(text_data,(text_pos[0]-text_data.get_width()//2,text_pos[1]-text_data.get_height()//2))
-        else:output_screen.blit(text_data,text_pos)
+    text_data=(pygame.font.Font('Data/font/font.ttf',int(size))).render(text,False,color)
+    if mid_alline:output_screen.blit(text_data,(text_pos[0]-text_data.get_width()//2,text_pos[1]-text_data.get_height()//2))
+    else:output_screen.blit(text_data,text_pos)
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -427,9 +426,10 @@ class player(pygame.sprite.Sprite):
             elif block.id=='49' and not player.jump:
                 player.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-22
             elif block.id=='9' and not player.jump:#45degree scure
-                player.rect.bottom=48-abs(player.pos.x-block.rect.x)+block.rect.top
+                player.rect.bottom=48-abs(player.pos.x-block.rect.x)+block.rect.y
             elif block.id=='37' and not player.jump:#45degree scure
-                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.top
+                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.y
+                print(-1*abs(player.pos.x-block.rect.x))
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -2380,16 +2380,7 @@ while True:
             #            player.image_frame=0
             #            #player.jump_counter=0
         for player in player_sprite_group:
-            if player.prev_flower_count!=player.flower_count:
-                player.prev_flower_count=player.flower_count
-                player.flower_timer=4
-            text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
-            if player.flower_timer>2:
-                player.flower_timer-=2*delta_time
-                game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
-            else:
-                player.flower_timer=2
-                game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
+            if player.pos.x>=player.fat_guy_pan:player.stamina=2000#unlimted stmina
             if player.hand=='rock':
                 game_window.blit(pygame.transform.scale2x(little_rock.image_list[0]),(display_size[0]-100,120))
             if game_settings['negative_screen']:#when hit fat_guy
@@ -2397,6 +2388,21 @@ while True:
                 white_screen.fill((255,255,255))
                 white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
                 game_window=white_screen
+            else:
+                if player.prev_flower_count!=player.flower_count:
+                    player.prev_flower_count=player.flower_count
+                    player.flower_timer=4
+                text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
+                #font=pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))
+                #text_data=font.render(str(player.flower_count),False,(0,0,0))
+                #game_window.blit(text_data,(display_size[0]-100,30))
+                if player.flower_timer>2:
+                    player.flower_timer-=2*delta_time
+                    game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
+                    if player.flower_timer<=2:player.flower_timer=2
+                else:
+                    player.flower_timer=2
+                    game_window.blit(pygame.transform.scale2x(flower.image),(display_size[0]-150-48,10))
             if player.prev_life_ui>player.life:
                 for life_count in range(player.prev_life_ui-1):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
@@ -2483,8 +2489,8 @@ while True:
                     else:
                         if player.state!='pant' and player.state!='explode' and player.state!='grass':
                             player.state='idle'
-        pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
         if player.stamina>0 and player.pos.x<player.fat_guy_pan:
+            pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x+(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
 
