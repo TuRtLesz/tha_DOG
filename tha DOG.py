@@ -2085,7 +2085,7 @@ class game():
                         sprite.update(delta_time)
             update_instance.pressure_switch_pan=False
             for reactive_instance_block in reactive_block_sprite_group:
-                if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
+                if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked and reactive_instance_block.rect.x<update_instance.pressure_switch_pan_x+2000:
                     update_instance.pressure_switch_pan=True
         if game_settings['mouse_mode']:
             for mouse_tut in mouse_mode_tuts:
