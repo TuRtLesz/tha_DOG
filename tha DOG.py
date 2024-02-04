@@ -10,9 +10,11 @@ clock=pygame.time.Clock()
 
 save_data={'high_score':0}#add lsat check point?
 
-game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game','mouse_mode':False}
+game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game','mouse_mode':True}
 mouse_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT}
 keyboard_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT,'interact':pygame.K_SPACE}
+
+mouse_scroll={'up':False,'down':False}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
     sprite_list.clear()
@@ -177,37 +179,45 @@ class player(pygame.sprite.Sprite):
                     player.state='idle'
                     reactive_block.kill()
             elif type(reactive_block)==little_rock:
-                if player.state=='pick' and player.hand=='':
+                if player.state=='pick':
                     player.hand='rock'
                     reactive_block.kill()
             elif type(reactive_block)==rock_pile:
-                if player.state=='pick':player.hand='rock'
+                if player.state=='pick':
+                    player.hand='rock'
             elif type(reactive_block)==switch:
-                if player.state=='interact':
-                    if reactive_block.frame>=len(reactive_block.switch_image_list)-1:
-                        reactive_block.image=reactive_block.switch_image_list[len(reactive_block.switch_image_list)-1]
-                        for bomb_rect in bomb_rect_list:
-                            if bomb_rect.colliderect(reactive_block.rect):
-                                for reactive_block_obj in reactive_block_sprite_group:
-                                    if type(reactive_block_obj)==bomb or type(reactive_block_obj)==bomb_land:
-                                        if bomb_rect.collidepoint(reactive_block_obj.rect.center):
-                                            reactive_block.connected=True
-                                            reactive_block_obj.explode=True
-                                            reactive_block_obj.add(reactive_block_sprite_update_group)
-                                    elif type(reactive_block_obj)==chain:
-                                        if reactive_block_obj.rect.colliderect(bomb_rect):
-                                            reactive_block_obj.kill()
-                                if reactive_block.connected:
-                                    for fish in fish_sprite_group:
-                                        if bomb_rect.colliderect(fish.rect):
-                                            fish.death=True
-                                            fish.image_frame=0
-                    else:
+                if player.state=='interact' or (game_settings['mouse_mode'] and player.state=='pick' and (mouse_scroll['up'] or mouse_scroll['down'])):
+                    if not game_settings['mouse_mode'] or mouse_scroll['up']:
+                        if reactive_block.frame>=len(reactive_block.switch_image_list)-1:
+                            reactive_block.image=reactive_block.switch_image_list[len(reactive_block.switch_image_list)-1]
+                            for bomb_rect in bomb_rect_list:
+                                if bomb_rect.colliderect(reactive_block.rect):
+                                    for reactive_block_obj in reactive_block_sprite_group:
+                                        if type(reactive_block_obj)==bomb or type(reactive_block_obj)==bomb_land:
+                                            if bomb_rect.collidepoint(reactive_block_obj.rect.center):
+                                                reactive_block.connected=True
+                                                reactive_block_obj.explode=True
+                                                reactive_block_obj.add(reactive_block_sprite_update_group)
+                                        elif type(reactive_block_obj)==chain:
+                                            if reactive_block_obj.rect.colliderect(bomb_rect):
+                                                reactive_block_obj.kill()
+                                    if reactive_block.connected:
+                                        for fish in fish_sprite_group:
+                                            if bomb_rect.colliderect(fish.rect):
+                                                fish.death=True
+                                                fish.image_frame=0
+                        else:
+                            reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
+                            if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
+                                switch.switch_rotate_sound.play()
+                            reactive_block.prev_frame=int(reactive_block.frame)
+                            reactive_block.frame+=15*delta_time
+                    elif mouse_scroll['down']:
                         reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
                         if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
                             switch.switch_rotate_sound.play()
                         reactive_block.prev_frame=int(reactive_block.frame)
-                        reactive_block.frame+=15*delta_time
+                        reactive_block.frame-=15*delta_time
         if player.reactive_block_collide:
             for reactive_block in pygame.sprite.spritecollide(player,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if type(reactive_block)==grass:
@@ -327,14 +337,36 @@ class player(pygame.sprite.Sprite):
             elif player.direction=='right':
                 player.image=player.throw_image_list_right[int(player.image_frame)]
             player.image_frame+=5*delta_time
-            if player.throw_angle>=45:
-                player.throw_angle=45
-                player.throw_power+=40*delta_time
+            if game_settings['mouse_mode']:
+                if keys_pressed_mouse[1]:
+                    player.state='throw'
+                if mouse_scroll['up']:
+                    if player.throw_angle>=45:
+                        player.throw_angle=45
+                        player.throw_power+=40*delta_time
+                    else:
+                        if player.throw_power>=300:
+                            player.throw_angle+=10*delta_time
+                        else:
+                            player.throw_power+=100*delta_time
+                elif mouse_scroll['down']:
+                    if player.throw_angle>=45:
+                        player.throw_angle=45
+                        player.throw_power-=40*delta_time
+                    else:
+                        if player.throw_power>=300:
+                            player.throw_angle-=10*delta_time
+                        else:
+                            player.throw_power-=100*delta_time
             else:
-                if player.throw_power>=300:
-                    player.throw_angle+=10*delta_time
+                if player.throw_angle>=45:
+                    player.throw_angle=45
+                    player.throw_power+=40*delta_time
                 else:
-                    player.throw_power+=100*delta_time
+                    if player.throw_power>=300:
+                        player.throw_angle+=10*delta_time
+                    else:
+                        player.throw_power+=100*delta_time
             player.arc_eq_a=numpy.tan(numpy.deg2rad(player.throw_angle))
             player.arc_eq_b=250/((numpy.cos(numpy.deg2rad(player.throw_angle)**2)*(player.throw_power**2)))
             if player.direction=='right':
@@ -2335,6 +2367,8 @@ while True:
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     game_window.fill((255,255,255))
+    mouse_scroll['up']=False
+    mouse_scroll['down']=False
     for player in player_sprite_group:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -2354,11 +2388,24 @@ while True:
                         game_settings['mode']='paused'
                     elif game_settings['mode']=='paused':
                         game_settings['mode']='in_game'
-                if event.key==keyboard_mode_keybinds['up']:
-                    if player.state!='explode' and player.state!='dodge':
-                        player.jump=True
-                        player.image_frame=0
-                        player.state='jump'
+                if game_settings['mouse_mode']:
+                    if event.key==mouse_mode_keybinds['up']:
+                        if player.state!='explode' and player.state!='dodge':
+                            player.jump=True
+                            player.image_frame=0
+                            player.state='jump'
+                else:
+                    if event.key==keyboard_mode_keybinds['up']:
+                        if player.state!='explode' and player.state!='dodge':
+                            player.jump=True
+                            player.image_frame=0
+                            player.state='jump'
+            if game_settings['mouse_mode']:
+                if event.type==pygame.MOUSEWHEEL:
+                    if event.y==-1:
+                        mouse_scroll['down']=True
+                    elif event.y==1:
+                        mouse_scroll['up']=True
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -2434,69 +2481,134 @@ while True:
                 for life_count in range(player.prev_life_ui):
                     game_window.blit(new_life_image_list[-1],(display_size[0]-230-30*life_count,30))
             if player.state!='explode'and player.state!='dodge':
-                if keys_pressed[keyboard_mode_keybinds['right']]:
-                    if player.direction=='left':
-                        player.velocity.x=0
-                    player.direction='right'
-                    if player.water:
-                        if player.state=='jump':player.state='swim_fast'
-                        if player.state!='swim_fast':
-                            player.state='swim'
-                    else:
-                        if player.state=='jump':player.state='sprint'
-                        if player.state!='sprint' and player.state!='dodge':
-                            player.state='run'
-                    if keys_pressed[keyboard_mode_keybinds['sprint']]:
+                if not game_settings['mouse_mode']:
+                    if keys_pressed[keyboard_mode_keybinds['right']]:
+                        if player.direction=='left':
+                            player.velocity.x=0
+                        player.direction='right'
                         if player.water:
-                            player.state='swim_fast'
+                            if player.state=='jump':player.state='swim_fast'
+                            if player.state!='swim_fast':
+                                player.state='swim'
                         else:
-                            player.state='sprint'
-                    if keys_pressed[keyboard_mode_keybinds['interact']]:
-                        if not player.water:
-                            if player.stamina>=100 or player.pos.x>=player.fat_guy_pan:
-                                player.state='dodge'
-                            else:
+                            if player.state=='jump':player.state='sprint'
+                            if player.state!='sprint' and player.state!='dodge':
                                 player.state='run'
-                        else:
-                            player.state='swim'
-                if keys_pressed[keyboard_mode_keybinds['left']]:
-                    if player.direction=='right':
-                        player.velocity.x=0
-                    player.direction='left'
-                    if player.water:
-                        if player.state=='jump':player.state='swim_fast'
-                        if player.state!='swim_fast':
-                            player.state='swim'
-                    else:
-                        if player.state=='jump':player.state='sprint'
-                        if player.state!='sprint' and player.state!='dodge':
-                            player.state='run'
-                    if keys_pressed[keyboard_mode_keybinds['sprint']]:
+                        if keys_pressed[keyboard_mode_keybinds['sprint']]:
+                            if player.water:
+                                player.state='swim_fast'
+                            else:
+                                player.state='sprint'
+                        if keys_pressed[keyboard_mode_keybinds['interact']]:
+                            if not player.water:
+                                if player.stamina>=100 or player.pos.x>=player.fat_guy_pan:
+                                    player.state='dodge'
+                                else:
+                                    player.state='run'
+                            else:
+                                player.state='swim'
+                    if keys_pressed[keyboard_mode_keybinds['left']]:
+                        if player.direction=='right':
+                            player.velocity.x=0
+                        player.direction='left'
                         if player.water:
-                            player.state='swim_fast'
+                            if player.state=='jump':player.state='swim_fast'
+                            if player.state!='swim_fast':
+                                player.state='swim'
                         else:
-                            player.state='sprint'
-                    if keys_pressed[keyboard_mode_keybinds['interact']]:
-                        if not player.water:
-                            if player.stamina>=100:
-                                player.state='dodge'
-                            else:
+                            if player.state=='jump':player.state='sprint'
+                            if player.state!='sprint' and player.state!='dodge':
                                 player.state='run'
+                        if keys_pressed[keyboard_mode_keybinds['sprint']]:
+                            if player.water:
+                                player.state='swim_fast'
+                            else:
+                                player.state='sprint'
+                        if keys_pressed[keyboard_mode_keybinds['interact']]:
+                            if not player.water:
+                                if player.stamina>=100:
+                                    player.state='dodge'
+                                else:
+                                    player.state='run'
+                            else:
+                                player.state='swim'
+                    if keys_pressed[keyboard_mode_keybinds['interact']] and player.state!='dodge':
+                        if player.hand=='rock':
+                            player.state='aim'
                         else:
-                            player.state='swim'
-                if keys_pressed[keyboard_mode_keybinds['interact']] and player.state!='dodge':
-                    if player.hand=='rock':
-                        player.state='aim'
-                    else:
-                        player.state='interact'
-                if keys_pressed[keyboard_mode_keybinds['down']] and not player.water:
-                    player.state='pick'
-                if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
-                    if player.state=='aim' or player.state=='throw':
-                        player.state='throw'
-                    else:
-                        if player.state!='pant' and player.state!='explode' and player.state!='grass':
-                            player.state='idle'
+                            player.state='interact'
+                    if keys_pressed[keyboard_mode_keybinds['down']] and not player.water:
+                        player.state='pick'
+                    if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
+                        if player.state=='aim' or player.state=='throw':
+                            player.state='throw'
+                        else:
+                            if player.state!='pant' and player.state!='explode' and player.state!='grass':
+                                player.state='idle'
+                else:
+                    keys_pressed_mouse=pygame.mouse.get_pressed()
+                    if keys_pressed[mouse_mode_keybinds['right']]:
+                        if player.direction=='left':
+                            player.velocity.x=0
+                        player.direction='right'
+                        if player.water:
+                            if player.state=='jump':player.state='swim_fast'
+                            if player.state!='swim_fast':
+                                player.state='swim'
+                        else:
+                            if player.state=='jump':player.state='sprint'
+                            if player.state!='sprint' and player.state!='dodge':
+                                player.state='run'
+                        if keys_pressed[mouse_mode_keybinds['sprint']]:
+                            if player.water:
+                                player.state='swim_fast'
+                            else:
+                                player.state='sprint'
+                        if mouse_scroll['up']:
+                            if not player.water:
+                                if player.stamina>=100:
+                                    player.state='dodge'
+                                else:
+                                    player.state='run'
+                            else:
+                                player.state='swim'
+                    if keys_pressed[mouse_mode_keybinds['left']]:
+                        if player.direction=='right':
+                            player.velocity.x=0
+                        player.direction='left'
+                        if player.water:
+                            if player.state=='jump':player.state='swim_fast'
+                            if player.state!='swim_fast':
+                                player.state='swim'
+                        else:
+                            if player.state=='jump':player.state='sprint'
+                            if player.state!='sprint' and player.state!='dodge':
+                                player.state='run'
+                        if keys_pressed[mouse_mode_keybinds['sprint']]:
+                            if player.water:
+                                player.state='swim_fast'
+                            else:
+                                player.state='sprint'
+                        if mouse_scroll['up']:
+                            if not player.water:
+                                if player.stamina>=100:
+                                    player.state='dodge'
+                                else:
+                                    player.state='run'
+                            else:
+                                player.state='swim'
+                    if keys_pressed[mouse_mode_keybinds['down']] and not player.water:
+                        player.state='pick'
+                    if keys_pressed_mouse[1]:
+                        if player.hand=='rock':
+                            if player.state=='aim':player.state='throw'
+                            else:player.state='aim'
+                    if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
+                        if player.state=='aim' or player.state=='throw':
+                            player.state='throw'
+                        else:
+                            if player.state!='pant' and player.state!='explode' and player.state!='grass':
+                                player.state='idle'
         if player.stamina>0 and player.pos.x<player.fat_guy_pan:
             pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
