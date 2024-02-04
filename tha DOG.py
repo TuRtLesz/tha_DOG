@@ -191,7 +191,7 @@ class player(pygame.sprite.Sprite):
                                 for reactive_block_obj in reactive_block_sprite_group:
                                     if type(reactive_block_obj)==bomb or type(reactive_block_obj)==bomb_land:
                                         if bomb_rect.collidepoint(reactive_block_obj.rect.center):
-                                            reactive_block_obj.connected=True
+                                            reactive_block.connected=True
                                             reactive_block_obj.explode=True
                                             reactive_block_obj.add(reactive_block_sprite_update_group)
                                     elif type(reactive_block_obj)==chain:
@@ -212,7 +212,7 @@ class player(pygame.sprite.Sprite):
             for reactive_block in pygame.sprite.spritecollide(player,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if type(reactive_block)==grass:
                     player.stamina+=200*delta_time
-                    if player.state!='throw' and player.state!='aim':
+                    if player.state=='idle' or player.state=='pant':
                         player.state='grass'   
                         if player.direction=='left':
                             player.image=player.pant_image_list_left[-1]
@@ -906,6 +906,7 @@ class ostrich(pygame.sprite.Sprite):
                                 ostrich_instance.life=0
                                 ostrich_instance.image_frame=0
                                 reactive_block.explode=True
+                                reactive_block_sprite_update_group.add(reactive_block)
                         elif type(reactive_block)==little_rock:
                             if reactive_block.velocity.x!=0:
                                 ostrich_instance.stun_timer=4
@@ -1404,6 +1405,7 @@ class bomb_land(pygame.sprite.Sprite):#reactive_block
         for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
             if type(reactive_block)==bomb_land:
                 reactive_block.explode=True
+                reactive_block_sprite_update_group.add(reactive_block)
 class chain(pygame.sprite.Sprite):#reactive_block
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
     def __init__(chain_instance,x,y):
@@ -1440,6 +1442,7 @@ class rock(pygame.sprite.Sprite):#reactive_block
                                         if bomb_rect.collidepoint(reative_block.rect.center):
                                             switch_instance.connected=True
                                             reative_block.explode=True
+                                            reactive_block_sprite_update_group.add(reative_block)
                                     elif type(reative_block)==chain:
                                         if reative_block.rect.colliderect(bomb_rect):
                                             reative_block.kill()
@@ -1494,7 +1497,7 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
         rock_instance.life=3
         rock_instance.image_frame=0
         rock_instance.image=little_rock.image_list[0]
-        rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y))
+        rock_instance.rect=rock_instance.image.get_rect(topleft=(x+17,y-14))
         rock_instance.pos=pygame.math.Vector2(rock_instance.rect.center)
         rock_instance.velocity=pygame.math.Vector2()
         rock_instance.acceleration=pygame.math.Vector2()
@@ -1515,8 +1518,13 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                             if reactive_block.bomb_rect.colliderect(rock_instance.rect):
                                 reactive_block.explode=True
                                 rock_instance.life-=1
+                                reactive_block_sprite_update_group.add(reactive_block)
                         elif type(reactive_block)==spike:
                             reactive_block.rect.y+=33
+                            reactive_block_sprite_update_group.add(reactive_block)
+                        elif type(reactive_block)==rock:
+                            reactive_block.roll=True
+                            reactive_block_sprite_update_group.add(reactive_block)
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
@@ -1524,7 +1532,7 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                     rock_instance.velocity.xy=0,0
                     rock_instance.acceleration.xy=0,0
                     if block.id=='0' or block.id=='1' or block.id=='2':
-                        rock_instance.rect.bottom=block.rect.top-24
+                        rock_instance.rect.bottom=block.rect.top+24
                     rock_instance.pos.xy=rock_instance.rect.center
                     rock_instance.add(reactive_block_sprite_group)
                     rock_instance.remove(reactive_block_sprite_update_group)
@@ -2076,7 +2084,7 @@ class game():
                     if update_instance.update_rect.colliderect(sprite.rect):
                         sprite.update(delta_time)
             update_instance.pressure_switch_pan=False
-            for reactive_instance_block in reactive_block_sprite_instance_group:
+            for reactive_instance_block in reactive_block_sprite_group:
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked:
                     update_instance.pressure_switch_pan=True
         if game_settings['mouse_mode']:
