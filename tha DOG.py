@@ -14,7 +14,7 @@ game_settings={'fullscreen':False,'negative_screen':False,'mode':'in_game','mous
 mouse_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT}
 keyboard_mode_keybinds={'right':pygame.K_d,'left':pygame.K_a,'up':pygame.K_w,'down':pygame.K_s,'sprint':pygame.K_LSHIFT,'interact':pygame.K_SPACE}
 
-mouse_scroll={'up':False,'down':False}
+mouse_stuff={'up':False,'down':False,'mid_button_lock':False}
 
 def load_spritesheet(spritesheet_image,sprite_list,frames=2,alpha_sur=True,image_scale=1):
     sprite_list.clear()
@@ -179,15 +179,21 @@ class player(pygame.sprite.Sprite):
                     player.state='idle'
                     reactive_block.kill()
             elif type(reactive_block)==little_rock:
-                if player.state=='pick':
-                    player.hand='rock'
-                    reactive_block.kill()
+                if game_settings['mouse_mode']:
+                    if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
+                        mouse_stuff['mid_button_lock']=True
+                        player.hand='rock'
+                        reactive_block.kill()
+                else:
+                    if player.state=='pick':
+                        player.hand='rock'
+                        reactive_block.kill()
             elif type(reactive_block)==rock_pile:
                 if player.state=='pick':
                     player.hand='rock'
             elif type(reactive_block)==switch:
-                if player.state=='interact' or (game_settings['mouse_mode'] and player.state=='pick' and (mouse_scroll['up'] or mouse_scroll['down'])):
-                    if not game_settings['mouse_mode'] or mouse_scroll['up']:
+                if player.state=='interact' or (game_settings['mouse_mode'] and player.state=='pick' and (mouse_stuff['up'] or mouse_stuff['down'])):
+                    if not game_settings['mouse_mode'] or mouse_stuff['up']:
                         if reactive_block.frame>=len(reactive_block.switch_image_list)-1:
                             reactive_block.image=reactive_block.switch_image_list[len(reactive_block.switch_image_list)-1]
                             for bomb_rect in bomb_rect_list:
@@ -211,13 +217,17 @@ class player(pygame.sprite.Sprite):
                             if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
                                 switch.switch_rotate_sound.play()
                             reactive_block.prev_frame=int(reactive_block.frame)
-                            reactive_block.frame+=15*delta_time
-                    elif mouse_scroll['down']:
+                            if not game_settings['mouse_mode']:
+                                reactive_block.frame+=15*delta_time
+                            else:reactive_block.frame+=30*delta_time
+                    elif mouse_stuff['down']:
                         reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
                         if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
                             switch.switch_rotate_sound.play()
                         reactive_block.prev_frame=int(reactive_block.frame)
-                        reactive_block.frame-=15*delta_time
+                        reactive_block.frame-=30*delta_time
+                        if reactive_block.frame<0:
+                            reactive_block.frame=0
         if player.reactive_block_collide:
             for reactive_block in pygame.sprite.spritecollide(player,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_mask):
                 if type(reactive_block)==grass:
@@ -338,9 +348,10 @@ class player(pygame.sprite.Sprite):
                 player.image=player.throw_image_list_right[int(player.image_frame)]
             player.image_frame+=5*delta_time
             if game_settings['mouse_mode']:
-                if keys_pressed_mouse[1]:
+                if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
                     player.state='throw'
-                if mouse_scroll['up']:
+                    mouse_stuff['mid_button_lock']=True
+                if mouse_stuff['up']:
                     if player.throw_angle>=45:
                         player.throw_angle=45
                         player.throw_power+=40*delta_time
@@ -349,7 +360,7 @@ class player(pygame.sprite.Sprite):
                             player.throw_angle+=10*delta_time
                         else:
                             player.throw_power+=100*delta_time
-                elif mouse_scroll['down']:
+                elif mouse_stuff['down']:
                     if player.throw_angle>=45:
                         player.throw_angle=45
                         player.throw_power-=40*delta_time
@@ -2367,8 +2378,9 @@ while True:
     delta_time=time.perf_counter()-prevoius_time
     prevoius_time=time.perf_counter()
     game_window.fill((255,255,255))
-    mouse_scroll['up']=False
-    mouse_scroll['down']=False
+    mouse_stuff['up']=False
+    mouse_stuff['down']=False
+    mouse_stuff['mid_button_lock']=False
     for player in player_sprite_group:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -2403,9 +2415,9 @@ while True:
             if game_settings['mouse_mode']:
                 if event.type==pygame.MOUSEWHEEL:
                     if event.y==-1:
-                        mouse_scroll['down']=True
+                        mouse_stuff['down']=True
                     elif event.y==1:
-                        mouse_scroll['up']=True
+                        mouse_stuff['up']=True
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -2564,7 +2576,7 @@ while True:
                                 player.state='swim_fast'
                             else:
                                 player.state='sprint'
-                        if mouse_scroll['up']:
+                        if mouse_stuff['up']:
                             if not player.water:
                                 if player.stamina>=100:
                                     player.state='dodge'
@@ -2589,7 +2601,7 @@ while True:
                                 player.state='swim_fast'
                             else:
                                 player.state='sprint'
-                        if mouse_scroll['up']:
+                        if mouse_stuff['up']:
                             if not player.water:
                                 if player.stamina>=100:
                                     player.state='dodge'
@@ -2599,10 +2611,10 @@ while True:
                                 player.state='swim'
                     if keys_pressed[mouse_mode_keybinds['down']] and not player.water:
                         player.state='pick'
-                    if keys_pressed_mouse[1]:
+                    if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
                         if player.hand=='rock':
-                            if player.state=='aim':player.state='throw'
-                            else:player.state='aim'
+                            mouse_stuff['mid_button_lock']=True
+                            player.state='aim'
                     if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
                         if player.state=='aim' or player.state=='throw':
                             player.state='throw'
