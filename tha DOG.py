@@ -210,7 +210,7 @@ class player(pygame.sprite.Sprite):
                             reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
                             if int(reactive_block.frame)<=int(reactive_block.prev_frame)+1 and (int(reactive_block.frame)%2==0 or game_settings['mouse_mode']):
                                 switch.switch_rotate_sound.play()
-                                reactive_block.prev_frame=reactive_block.frame
+                            reactive_block.prev_frame=reactive_block.frame
                             if not game_settings['mouse_mode']:
                                 reactive_block.frame+=15*delta_time
                             else:reactive_block.frame+=30*delta_time
@@ -220,7 +220,7 @@ class player(pygame.sprite.Sprite):
                         reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
                         if int(reactive_block.frame)+1>=int(reactive_block.prev_frame):
                             switch.switch_rotate_sound.play()
-                            reactive_block.prev_frame=reactive_block.frame
+                        reactive_block.prev_frame=reactive_block.frame
                         reactive_block.frame-=30*delta_time
                         if reactive_block.frame<0:
                             reactive_block.frame=0
@@ -375,10 +375,10 @@ class player(pygame.sprite.Sprite):
             player.arc_eq_b=250/((numpy.cos(numpy.deg2rad(player.throw_angle)**2)*(player.throw_power**2)))
             if player.direction=='right':
                 for x in range(0,300,10):#change later
-                    pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
+                    pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,(display_size[1]//2)-26-player.arc_eq_a*x+player.arc_eq_b*x**2+game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,(display_size[1]//2)-26-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2+game.player_offset.y))
             elif player.direction=='left':
                 for x in range(0,300,10):
-                    pygame.draw.line(game_window,(0,0,0),((display_size[0]//2)-50-game.player_offset.x-x,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),((display_size[0]//2)-50-game.player_offset.x-x-5,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
+                    pygame.draw.line(game_window,(0,0,0),((display_size[0]//2)-50-game.player_offset.x-x,(display_size[1]//2)-26-player.arc_eq_a*x+player.arc_eq_b*x**2+game.player_offset.y),((display_size[0]//2)-50-game.player_offset.x-x-5,(display_size[1]//2)-26-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2+game.player_offset.y))
         elif player.state=='throw':
             player.idle_timer+=delta_time
             if player.image_frame>len(player.throw_image_list_left):
@@ -1563,7 +1563,6 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                             reactive_block_sprite_update_group.add(reactive_block)
                         elif type(reactive_block)==nest:
                             reactive_block.fall=True
-                    for player in player_sprite_group:player.score+=650 
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
