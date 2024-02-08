@@ -208,9 +208,9 @@ class player(pygame.sprite.Sprite):
                                                 fish.image_frame=0
                         else:
                             reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
-                            if int(reactive_block.frame)!=reactive_block.prev_frame and (int(reactive_block.frame)%2==0 or game_settings['mouse_mode']):
+                            if int(reactive_block.frame)<=int(reactive_block.prev_frame)+1 and (int(reactive_block.frame)%2==0 or game_settings['mouse_mode']):
                                 switch.switch_rotate_sound.play()
-                            reactive_block.prev_frame=int(reactive_block.frame)
+                                reactive_block.prev_frame=reactive_block.frame
                             if not game_settings['mouse_mode']:
                                 reactive_block.frame+=15*delta_time
                             else:reactive_block.frame+=30*delta_time
@@ -218,9 +218,9 @@ class player(pygame.sprite.Sprite):
                                 reactive_block.frame=len(reactive_block.switch_image_list)-1
                     elif mouse_stuff['down']:
                         reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
-                        if int(reactive_block.frame)!=reactive_block.prev_frame:
+                        if int(reactive_block.frame)+1>=int(reactive_block.prev_frame):
                             switch.switch_rotate_sound.play()
-                        reactive_block.prev_frame=int(reactive_block.frame)
+                            reactive_block.prev_frame=reactive_block.frame
                         reactive_block.frame-=30*delta_time
                         if reactive_block.frame<0:
                             reactive_block.frame=0
@@ -1561,6 +1561,9 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                         elif type(reactive_block)==rock:
                             reactive_block.roll=True
                             reactive_block_sprite_update_group.add(reactive_block)
+                        elif type(reactive_block)==nest:
+                            reactive_block.fall=True
+                    for player in player_sprite_group:player.score+=650 
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
@@ -1648,10 +1651,6 @@ class nest(pygame.sprite.Sprite):#reactive_block
                 nest_instance.bird_count-=1
             else:
                 nest_instance.timer+=delta_time
-            for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_instance_group,dokill=False):
-                if type(reactive_block)==little_rock:
-                    nest_instance.fall=True
-                    for player in player_sprite_group:player.score+=650 
         else:
             for block in pygame.sprite.spritecollide(nest_instance,block_sprite_instance_group,dokill=False):
                 nest_instance.rect.bottom=block.rect.top
@@ -2103,11 +2102,11 @@ class game():
                         game_window.blit(sprite.image,(sprite.rect.x-cam.offset.x+cam.screen_shake.x,sprite.rect.y-cam.offset.y+cam.screen_shake.y))
             for water_spring in water_spring_instance_list:
                 pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
-            reactive_block_sprite_instance_group.empty()
-            for reactive_block in reactive_block_sprite_group:
-                if reactive_block.rect.colliderect(cam.draw_rect):
-                    reactive_block_sprite_instance_group.add(reactive_block)
     def update(update_instance,update_sprite_group_list,delta_time,mouse_mode_tuts,keyboard_mode_tuts):
+        reactive_block_sprite_instance_group.empty()
+        for reactive_block in reactive_block_sprite_group:
+            if reactive_block.rect.colliderect(update_instance.update_rect):
+                reactive_block_sprite_instance_group.add(reactive_block)
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
