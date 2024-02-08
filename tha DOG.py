@@ -179,15 +179,9 @@ class player(pygame.sprite.Sprite):
                     player.state='idle'
                     reactive_block.kill()
             elif type(reactive_block)==little_rock:
-                if game_settings['mouse_mode']:
-                    if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
-                        mouse_stuff['mid_button_lock']=True
-                        player.hand='rock'
-                        reactive_block.kill()
-                else:
-                    if player.state=='pick':
-                        player.hand='rock'
-                        reactive_block.kill()
+                if player.state=='pick':
+                    player.hand='rock'
+                    reactive_block.kill()
             elif type(reactive_block)==rock_pile:
                 if player.state=='pick':
                     player.hand='rock'
@@ -214,15 +208,17 @@ class player(pygame.sprite.Sprite):
                                                 fish.image_frame=0
                         else:
                             reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
-                            if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
+                            if int(reactive_block.frame)!=reactive_block.prev_frame and (int(reactive_block.frame)%2==0 or game_settings['mouse_mode']):
                                 switch.switch_rotate_sound.play()
                             reactive_block.prev_frame=int(reactive_block.frame)
                             if not game_settings['mouse_mode']:
                                 reactive_block.frame+=15*delta_time
                             else:reactive_block.frame+=30*delta_time
+                            if reactive_block.frame>=len(reactive_block.switch_image_list)-1:
+                                reactive_block.frame=len(reactive_block.switch_image_list)-1
                     elif mouse_stuff['down']:
                         reactive_block.image=reactive_block.switch_image_list[round(reactive_block.frame)]
-                        if int(reactive_block.frame)!=reactive_block.prev_frame and int(reactive_block.frame)%2==0:
+                        if int(reactive_block.frame)!=reactive_block.prev_frame:
                             switch.switch_rotate_sound.play()
                         reactive_block.prev_frame=int(reactive_block.frame)
                         reactive_block.frame-=30*delta_time
@@ -346,29 +342,26 @@ class player(pygame.sprite.Sprite):
                 player.image=player.throw_image_list_left[int(player.image_frame)]
             elif player.direction=='right':
                 player.image=player.throw_image_list_right[int(player.image_frame)]
-            player.image_frame+=5*delta_time
+            player.image_frame+=15*delta_time
             if game_settings['mouse_mode']:
-                if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
-                    player.state='throw'
-                    mouse_stuff['mid_button_lock']=True
                 if mouse_stuff['up']:
                     if player.throw_angle>=45:
                         player.throw_angle=45
-                        player.throw_power+=40*delta_time
+                        player.throw_power+=320*delta_time
                     else:
                         if player.throw_power>=300:
-                            player.throw_angle+=10*delta_time
+                            player.throw_angle+=80*delta_time
                         else:
-                            player.throw_power+=100*delta_time
+                            player.throw_power+=800*delta_time
                 elif mouse_stuff['down']:
                     if player.throw_angle>=45:
                         player.throw_angle=45
-                        player.throw_power-=40*delta_time
+                        player.throw_power-=320*delta_time
                     else:
                         if player.throw_power>=300:
-                            player.throw_angle-=10*delta_time
+                            player.throw_angle-=80*delta_time
                         else:
-                            player.throw_power-=100*delta_time
+                            player.throw_power-=800*delta_time
             else:
                 if player.throw_angle>=45:
                     player.throw_angle=45
@@ -385,7 +378,7 @@ class player(pygame.sprite.Sprite):
                     pygame.draw.line(game_window,(0,0,0),(x-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),(x+5-game.player_offset.x+(display_size[0]//2)+50,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
             elif player.direction=='left':
                 for x in range(0,300,10):
-                    pygame.draw.line(game_window,(0,0,0),(game.player_offset.x+(display_size[0]//2)-50-x,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),(game.player_offset.x+(display_size[0]//2)-50-x-5,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
+                    pygame.draw.line(game_window,(0,0,0),((display_size[0]//2)-50-game.player_offset.x-x,550-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),((display_size[0]//2)-50-game.player_offset.x-x-5,550-player.arc_eq_a*x+player.arc_eq_b*(x+5)**2-game.player_offset.y))
         elif player.state=='throw':
             player.idle_timer+=delta_time
             if player.image_frame>len(player.throw_image_list_left):
@@ -2380,7 +2373,6 @@ while True:
     game_window.fill((255,255,255))
     mouse_stuff['up']=False
     mouse_stuff['down']=False
-    mouse_stuff['mid_button_lock']=False
     for player in player_sprite_group:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -2418,6 +2410,9 @@ while True:
                         mouse_stuff['down']=True
                     elif event.y==1:
                         mouse_stuff['up']=True
+                elif event.type==pygame.MOUSEBUTTONUP:
+                    if event.button==2:
+                        mouse_stuff['mid_button_lock']=False
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
         for player in player_sprite_group:
@@ -2613,14 +2608,16 @@ while True:
                         player.state='pick'
                     if keys_pressed_mouse[1] and not mouse_stuff['mid_button_lock']:
                         if player.hand=='rock':
-                            mouse_stuff['mid_button_lock']=True
-                            player.state='aim'
-                    if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
-                        if player.state=='aim' or player.state=='throw':
-                            player.state='throw'
+                            if player.state=='aim':
+                                player.state='throw'
+                            else:
+                                player.state='aim'
                         else:
-                            if player.state!='pant' and player.state!='explode' and player.state!='grass':
-                                player.state='idle'
+                            player.state='pick'
+                        mouse_stuff['mid_button_lock']=True
+                    if not (keys_pressed[keyboard_mode_keybinds['left']] or keys_pressed[keyboard_mode_keybinds['right']] or keys_pressed[keyboard_mode_keybinds['down']] or keys_pressed[keyboard_mode_keybinds['up']] or keys_pressed[keyboard_mode_keybinds['interact']] or player.state=='pant'):
+                        if player.state!='pant' and player.state!='explode' and player.state!='grass' and player.state!='aim' and player.state!='throw':
+                            player.state='idle'
         if player.stamina>0 and player.pos.x<player.fat_guy_pan:
             pygame.draw.rect(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-50,(player.stamina/1000)*200,6))
             pygame.draw.circle(game_window,(0,0,0),(display_size[0]//2-game.player_offset.x-(((player.stamina/1000)*200)//2),player.rect.top-game.player_offset.y-47),3)
