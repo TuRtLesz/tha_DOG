@@ -1462,7 +1462,7 @@ class rock(pygame.sprite.Sprite):#reactive_block
             rock_instance.angle+=360
         rock_instance.image=pygame.transform.rotate(rock_instance.origin_image,rock_instance.angle)
         if rock_instance.roll:
-            rock_instance.rect.x+=150*delta_time
+            rock_instance.rect.x+=100*delta_time
             rock_instance.rect.y+=450*delta_time
             rock_instance.angle-=70*delta_time
             for switch_instance in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
