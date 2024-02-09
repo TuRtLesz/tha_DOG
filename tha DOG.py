@@ -2221,11 +2221,13 @@ def tut_blocks_load(tut_end):
                 elif block_id=='3':
                     tutorial_block_sprite_group.add(tutorial_block(127,'pick_up',block_number,row_number))
                     keyboard_mode_tuts.append(input_tutorial_block('down',block_number,row_number-4,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number,row_number-4))
+                    #mouse_mode_tuts.append(input_tutorial_block('down',block_number,row_number-4,'mouse'))
+                    #mouse_mode_tuts.append(tutorial_block(211,'middle_mouse',block_number,row_number-4))
                 elif block_id=='4':
                     tutorial_block_sprite_group.add(tutorial_block(178,'interact',block_number,row_number))
                     keyboard_mode_tuts.append(input_tutorial_block('interact',block_number+2,row_number-3,'keyboard'))
-                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number+2,row_number-3))
+                    mouse_mode_tuts.append(tutorial_block(145,'scroll_up',block_number+3,row_number-3))
+                    mouse_mode_tuts.append(input_tutorial_block('down',block_number-2,row_number-3,'mouse'))
                 elif block_id=='5':
                     tutorial_block_sprite_group.add(tutorial_block(361,'rock_throw',block_number,row_number))
                     keyboard_mode_tuts.append(input_tutorial_block('interact',block_number-5,row_number-2,'keyboard'))
