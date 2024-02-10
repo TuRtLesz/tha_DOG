@@ -639,7 +639,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.bite_timer=0
     def update(dog_instance,delta_time):
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
-            dog_instance.max_velocity.x=150
+            dog_instance.max_velocity.x=80
         else:
             dog_instance.max_velocity.x=250
         if dog_instance.life<=0:
