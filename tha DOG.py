@@ -192,7 +192,7 @@ class player(pygame.sprite.Sprite):
                             reactive_block.image=reactive_block.switch_image_list[len(reactive_block.switch_image_list)-1]
                             for bomb_rect in bomb_rect_list:
                                 if bomb_rect.colliderect(reactive_block.rect):
-                                    for reactive_block_obj in reactive_block_sprite_group:
+                                    for reactive_block_obj in reactive_block_sprite_instance_group:
                                         if type(reactive_block_obj)==bomb or type(reactive_block_obj)==bomb_land:
                                             if bomb_rect.collidepoint(reactive_block_obj.rect.center):
                                                 reactive_block.connected=True
@@ -816,7 +816,7 @@ class bird(pygame.sprite.Sprite):
                 bird_instance.image=bird.death_image_list_left[int(bird_instance.image_frame)]
         else:
             for player in player_sprite_group:
-                for reactive_block in pygame.sprite.spritecollide(bird_instance,reactive_block_sprite_instance_group,dokill=False):
+                for reactive_block in pygame.sprite.spritecollide(bird_instance,reactive_block_sprite_update_group,dokill=False):
                     if type(reactive_block)==little_rock:
                         player.score+=550
                         bird_instance.dead=True
@@ -1027,6 +1027,28 @@ class big_fat_guy(pygame.sprite.Sprite):
                             fat_guy.direction='right'
                         else:
                             fat_guy.direction='left'
+                        for rock_instance in reactive_block_sprite_update_group:
+                            if type(rock_instance)==little_rock:
+                                if rock_instance.rect.colliderect(fat_guy.head_rect):
+                                    fat_guy.life-=2
+                                    player.score+=750
+                                    rock_instance.kill()#make it reflect later?
+                                    if fat_guy.life<=0:
+                                        fat_guy.image_frame=0
+                                        if fat_guy.direction=='left':
+                                            fat_guy.rect.topleft=(fat_guy.body_rect.x-195,fat_guy.body_rect.y-81)
+                                        else:
+                                            fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
+                                elif rock_instance.rect.colliderect(fat_guy.body_rect):
+                                    fat_guy.life-=1
+                                    player.score+=450
+                                    rock_instance.kill()#make it reflect later?
+                                    if fat_guy.life<=0:
+                                        fat_guy.image_frame=0
+                                        if fat_guy.direction=='left':
+                                            fat_guy.rect.topleft=(fat_guy.body_rect.x-195,fat_guy.body_rect.y-81)
+                                        else:
+                                            fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
                     else:
                         if player.rect.colliderect(fat_guy.body_rect):
                             fat_guy.start_fight=True
@@ -1496,10 +1518,6 @@ class rock(pygame.sprite.Sprite):#reactive_block
                 if dog.life>0:
                     dog.image_frame=0
                     dog.life=0
-        else:
-            for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
-                if type(reactive_block)==little_rock:
-                    rock_instance.roll=True
 class little_rock(pygame.sprite.Sprite):#reactive_block
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
@@ -1518,28 +1536,6 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
         if rock_instance.life>0:
             for player in player_sprite_group:
                 if rock_instance.velocity.x!=0:
-                    if game.fat_guy_hit:
-                        for fat_guy in big_fat_guy_sprite_group:
-                            if rock_instance.rect.colliderect(fat_guy.head_rect):
-                                fat_guy.life-=2
-                                player.score+=750
-                                rock_instance.kill()#make it reflect later?
-                                if fat_guy.life<=0:
-                                    fat_guy.image_frame=0
-                                    if fat_guy.direction=='left':
-                                        fat_guy.rect.topleft=(fat_guy.body_rect.x-195,fat_guy.body_rect.y-81)
-                                    else:
-                                        fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
-                            elif rock_instance.rect.colliderect(fat_guy.body_rect):
-                                fat_guy.life-=1
-                                player.score+=450
-                                rock_instance.kill()#make it reflect later?
-                                if fat_guy.life<=0:
-                                    fat_guy.image_frame=0
-                                    if fat_guy.direction=='left':
-                                        fat_guy.rect.topleft=(fat_guy.body_rect.x-195,fat_guy.body_rect.y-81)
-                                    else:
-                                        fat_guy.rect.topleft=(fat_guy.body_rect.x+77,fat_guy.body_rect.y-81)
                     for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
                         dog.stun_timer=5
                         dog.life-=1
@@ -2098,10 +2094,6 @@ class game():
             for water_spring in water_spring_instance_list:
                 pygame.draw.line(game_window,(0,0,0),(water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), (water_spring.x-cam.offset.x+cam.screen_shake.x, water_spring.height-cam.offset.y+cam.screen_shake.y), 2)
     def update(update_instance,update_sprite_group_list,delta_time,mouse_mode_tuts,keyboard_mode_tuts):
-        reactive_block_sprite_instance_group.empty()
-        for reactive_block in reactive_block_sprite_group:
-            if reactive_block.rect.colliderect(update_instance.update_rect):
-                reactive_block_sprite_instance_group.add(reactive_block)
         for player in player_sprite_group:
             player.update(delta_time)
             update_instance.update_rect.center=player.rect.center
@@ -2114,7 +2106,7 @@ class game():
                     if update_instance.update_rect.colliderect(sprite.rect):
                         sprite.update(delta_time)
             update_instance.pressure_switch_pan=False
-            for reactive_instance_block in reactive_block_sprite_group:
+            for reactive_instance_block in reactive_block_sprite_instance_group:
                 if type(reactive_instance_block)==pressure_switch and update_instance.pressure_switch_pan_x<player.pos.x<update_instance.pressure_switch_pan_x+1152 and not reactive_instance_block.clicked and reactive_instance_block.rect.x<update_instance.pressure_switch_pan_x+2000:
                     update_instance.pressure_switch_pan=True
         if game_settings['mouse_mode']:
@@ -2199,7 +2191,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(109968,560))#2067,560,30111,75984,960,boss-109968
 
 tut_end=0
 def tut_blocks_load(tut_end):
@@ -2416,6 +2408,10 @@ while True:
         for water_block_rect in water_blocks_rect_list:#water_block opti
             if game.update_rect.colliderect(water_block_rect):
                 water_blocks_instance_rect_list.append(water_block_rect)
+        reactive_block_sprite_instance_group.empty()
+        for reactive_block in reactive_block_sprite_group:
+            if reactive_block.rect.colliderect(game.update_rect):
+                reactive_block_sprite_instance_group.add(reactive_block)
         for player in player_sprite_group:
             if player.life<=0:
                 game_settings['mode']='game_over'
