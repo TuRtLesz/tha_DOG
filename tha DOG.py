@@ -179,7 +179,7 @@ class player(pygame.sprite.Sprite):
                     player.state='idle'
                     reactive_block.kill()
             elif type(reactive_block)==little_rock:
-                if player.state=='pick':
+                if player.state=='pick' and player.hand=='':
                     player.hand='rock'
                     reactive_block.kill()
             elif type(reactive_block)==rock_pile:
