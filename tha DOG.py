@@ -637,7 +637,6 @@ class dog(pygame.sprite.Sprite):
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
         dog_instance.stun_timer=0
         dog_instance.bite_timer=0
-        dog_instance.direction_lock=False
     def update(dog_instance,delta_time):
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
             dog_instance.max_velocity.x=150
@@ -672,12 +671,10 @@ class dog(pygame.sprite.Sprite):
                         if player.state!='grass':
                             if dog_instance.state!='stomp_rat' and dog_instance.state!='chase_rat' and dog_instance.bite_timer<=0:
                                 dog_instance.state='run'
-                            if not dog_instance.direction_lock:
-                                if player.rect.x-dog_instance.rect.centerx<0:
-                                    dog_instance.direction='left'
-                                elif player.rect.x-dog_instance.rect.centerx>0:
-                                    dog_instance.direction='right'
-                                dog_instance.direction_lock=False
+                            if player.rect.x-dog_instance.rect.centerx<0:
+                                dog_instance.direction='left'
+                            elif player.rect.x-dog_instance.rect.centerx>0:
+                                dog_instance.direction='right'
                     for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
                         dog_instance.state='chase_rat'
                         if rat.rect.centerx-dog_instance.rect.centerx>0:
@@ -698,10 +695,10 @@ class dog(pygame.sprite.Sprite):
                         if dog_instance.image_frame>=len(dog_instance.dog_run_image_list_left)-1:
                             dog_instance.image_frame=12
                         if dog_instance.direction=='right':
-                            dog_instance.acceleration.x=100
+                            dog_instance.acceleration.x=numpy.random.randint(50,150)
                             dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
                         elif dog_instance.direction=='left':
-                            dog_instance.acceleration.x=-100
+                            dog_instance.acceleration.x=numpy.random.randint(-150,-50)
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                     elif dog_instance.state=='swim' or dog_instance.state=='chase_rat':
                         dog_instance.velocity.y=0
@@ -709,10 +706,10 @@ class dog(pygame.sprite.Sprite):
                         if dog_instance.image_frame>=11:
                             dog_instance.image_frame=0
                         if dog_instance.direction=='right':
-                            dog_instance.acceleration.x=80
+                            dog_instance.acceleration.x=numpy.random.randint(50,100)
                             dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
                         elif dog_instance.direction=='left':
-                            dog_instance.acceleration.x=-80
+                            dog_instance.acceleration.x=numpy.random.randint(-100,-50)
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                     elif dog_instance.state=='stop_rat':
                         dog_instance.state='idle'#edit later
@@ -746,11 +743,11 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '49':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                         elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
-                            dog_instance.direction_lock=True
-                            dog_instance.direction='right'
+                            if dog_instance.velocity.x<0:
+                                dog_instance.rect.left=block.rect.right
                         elif block.id=='75' or block.id=='89' or block.id=='103' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='91' or block.id=='79' or block.id=='93' or block.id=='107' or block.id=='106' or block.id=='105':
-                            dog_instance.direction_lock=True
-                            dog_instance.direction='left'
+                            if dog_instance.velocity.x>0:
+                                dog_instance.rect.right=block.rect.left
                         for water_line in water_hitlines:
                             if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
                                 for water_spring_obj in water_spring_instance_list:
@@ -2191,7 +2188,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(109968,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
 tut_end=0
 def tut_blocks_load(tut_end):
