@@ -155,7 +155,7 @@ class player(pygame.sprite.Sprite):
             if player.pos.x>=check_point.right:
                 player.last_check_point=check_point
         player.water=False
-        for water_rect in water_blocks_rect_list:
+        for water_rect in water_blocks_instance_rect_list:
             if not player.water:
                 if player.rect.colliderect(water_rect):
                     player.water=True
@@ -648,7 +648,7 @@ class dog(pygame.sprite.Sprite):
         if dog_instance.state!='dead':
             if dog_instance.bite_timer<=0:
                 if dog_instance.stun_timer<=0:
-                    for water_rect in water_blocks_rect_list:
+                    for water_rect in water_blocks_instance_rect_list:
                         if dog_instance.state!='swim':
                             if dog_instance.rect.colliderect(water_rect):
                                 for bomb_rect in bomb_rect_list:
@@ -1244,7 +1244,7 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                     fish_instance.pos.xy=fish_instance.rect.center
         else:
             fish_instance.water=False
-            for water_rect in water_blocks_rect_list:
+            for water_rect in water_blocks_instance_rect_list:
                 if not fish_instance.water:
                     if water_rect.colliderect(fish_instance.rect):
                         fish_instance.water=True
@@ -2150,6 +2150,7 @@ tutorial_block_sprite_group=pygame.sprite.Group()
 
 bomb_rect_list=[]
 water_blocks_rect_list=[]
+water_blocks_instance_rect_list=[]
 water_hitlines=[]
 
 mouse_mode_tuts=[]
@@ -2411,6 +2412,10 @@ while True:
                         mouse_stuff['mid_button_lock']=False
     if game_settings['mode']=='in_game':
         pygame.mouse.set_visible(False)
+        water_blocks_instance_rect_list=[]
+        for water_block_rect in water_blocks_rect_list:#water_block opti
+            if game.update_rect.colliderect(water_block_rect):
+                water_blocks_instance_rect_list.append(water_block_rect)
         for player in player_sprite_group:
             if player.life<=0:
                 game_settings['mode']='game_over'
