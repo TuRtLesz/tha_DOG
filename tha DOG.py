@@ -1972,7 +1972,7 @@ water_spring_list=[]
 class game():
     def __init__(game):
         game.offset=pygame.math.Vector2()#offest of objects
-        game.player_offset=pygame.math.Vector2()#offset of player from scren center
+        game.player_offset=pygame.math.Vector2(-750,0)#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
         game.draw_rect=pygame.Rect(0,0,display_size[0]+40,display_size[1]+40)
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+400)
@@ -2018,7 +2018,7 @@ class game():
                             cam.player_offset.x-=100*delta_time
                             if cam.player_offset.x<display_size[0]//2-350:cam.player_offset.x=display_size[0]//2-350
                         else:
-                            if cam.player_offset.x<=-(display_size[0]//2-350):
+                            if cam.player_offset.x<=-(display_size[0]//2-350) and player_sprite.direction=='left':
                                 cam.player_offset.x=-(display_size[0]//2-350)
                             else:
                                 if player_sprite.direction=='right':
