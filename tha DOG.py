@@ -272,6 +272,29 @@ class player(pygame.sprite.Sprite):
                         dog.image_frame=0
                     elif player.state=='dodge' and dog.bite_timer<=0 and dog.stun_timer<=0:
                         player.score+=500
+        for ostrich_instance in pygame.sprite.spritecollide(player,ostrich_sprite_group,dokill=False):
+            if ostrich_instance.velocity.x<0:
+                if player.rect.collidepoint((ostrich_instance.rect.left,ostrich_instance.rect.top+41)):#if colliding face
+                    if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
+                        player.life-=1
+                        player.score-=500
+                        player.velocity.x=0
+                        player.rect.x-=1000*delta_time#knockback
+                        player.pos.xy=player.rect.center
+                        player.state='idle'
+                        #ostrich_instance.stun_timer=2
+                        ostrich_instance.velocity.x=500
+            if ostrich_instance.velocity.x>0:
+                if player.rect.collidepoint((ostrich_instance.rect.right,ostrich_instance.rect.top+41)):#if colliding face
+                    if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
+                        player.life-=1
+                        player.score-=500
+                        player.velocity.x=0
+                        player.rect.x+=1000*delta_time#knockback
+                        player.pos.xy=player.rect.center
+                        player.state='idle'
+                        #ostrich_instance.stun_timer=2
+                        ostrich_instance.velocity.x=-500   
         if player.stamina<1000 and not player.water and player.pos.x<player.fat_guy_pan:
             if player.state=='idle' and not player.jump:
                 player.state='pant'
@@ -626,7 +649,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
         dog_instance.stun_timer=0
         dog_instance.bite_timer=0
-    def update(dog_instance,delta_time):
+    def update(dog_instance,delta_time):#add bark state whne stuck in height 
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
             dog_instance.max_velocity.x=150
         else:
@@ -862,84 +885,67 @@ class ostrich(pygame.sprite.Sprite):
         ostrich_instance.image=ostrich.run_image_list_left[0]
         ostrich_instance.rect=ostrich_instance.image.get_rect(midbottom=(x*48,((y+1)*48)+5))
         ostrich_instance.velocity=pygame.math.Vector2()
-        ostrich_instance.acceleration=pygame.math.Vector2()
         if direction=='left':
-            ostrich_instance.acceleration.x=50
+            ostrich_instance.velocity.x=500
         else:
-            ostrich_instance.acceleration.x=-50
+            ostrich_instance.velocity.x=-500
         ostrich_instance.life=4
         ostrich_instance.image_frame=0
         ostrich_instance.stun_timer=0
     def update(ostrich_instance,delta_time):
         if ostrich_instance.life>0:
             if ostrich_instance.stun_timer==0:
-                for player in player_sprite_group:
-                    if player.pos.x-ostrich_instance.rect.left<-500:
-                        ostrich_instance.acceleration.x=-50
-                    elif player.pos.x-ostrich_instance.rect.right>500:
-                        ostrich_instance.acceleration.x=50
-                    for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
-                        if block.id=='42' or block.id=='20' or block.id=='104':
-                            if ostrich_instance.acceleration.x==50:
-                                ostrich_instance.velocity.x=0
-                                ostrich_instance.acceleration.x=-50
-                                ostrich_instance.image_frame=0
-                        elif block.id=='22' or block.id=='46':
-                            if ostrich_instance.acceleration.x==-50:
-                                ostrich_instance.velocity.x=0
-                                ostrich_instance.acceleration.x=50
-                                ostrich_instance.image_frame=0
-                    if int(ostrich_instance.image_frame)>=len(ostrich.run_image_list_left):
-                        ostrich_instance.image_frame=0
-                    if ostrich_instance.acceleration.x>0:
-                        ostrich_instance.image=ostrich.run_image_list_right[int(ostrich_instance.image_frame)]
-                    elif ostrich_instance.acceleration.x<0:
-                        ostrich_instance.image=ostrich.run_image_list_left[int(ostrich_instance.image_frame)]
-                    ostrich_instance.velocity+=ostrich_instance.acceleration*delta_time
-                    ostrich_instance.rect.center+=ostrich_instance.velocity*delta_time
-                    ostrich_instance.image_frame+=10*delta_time
-                    for player in pygame.sprite.spritecollide(ostrich_instance,player_sprite_group,dokill=False):
-                        if ostrich_instance.acceleration.x<0:
-                            if player.rect.collidepoint((ostrich_instance.rect.left,ostrich_instance.rect.top+41)):#if colliding face
-                                if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
-                                    player.life-=1
-                                    player.score-=500
-                                    player.velocity.x=0
-                                    player.state='idle'
-                                    ostrich_instance.stun_timer=2
-                                    ostrich_instance.velocity.x=0
-                        if ostrich_instance.acceleration.x>0:
-                            if player.rect.collidepoint((ostrich_instance.rect.right,ostrich_instance.rect.top+41)):#if colliding face
-                                if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
-                                    player.life-=1
-                                    player.score-=500
-                                    player.velocity.x=0
-                                    player.state='idle'
-                                    ostrich_instance.stun_timer=2
-                                    ostrich_instance.velocity.x=0   
-                    for dog in pygame.sprite.spritecollide(ostrich_instance,dog_sprite_group,dokill=False):
-                        if dog.life>0:
-                            if ostrich_instance.acceleration.x<0 and ostrich_instance.rect.centerx-dog.rect.centerx>0:
-                                dog.image_frame=0
-                                dog.life=0
-                                player.score+=50
-                            elif ostrich_instance.acceleration.x>0 and ostrich_instance.rect.centerx-dog.rect.centerx<0:
-                                dog.image_frame=0
-                                dog.life=0
-                                player.score+=50
-                    for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_instance_group,dokill=False):
-                        if type(reactive_block)==bomb_land:
-                            if ostrich_instance.rect.collidepoint(reactive_block.rect.center):
-                                ostrich_instance.life=0
-                                ostrich_instance.image_frame=0
-                                reactive_block.explode=True
-                                reactive_block_sprite_update_group.add(reactive_block)
-                        elif type(reactive_block)==little_rock:
-                            if reactive_block.velocity.x!=0:
-                                ostrich_instance.stun_timer=4
-                                ostrich_instance.life-=1
-                                if ostrich_instance.life<=0:ostrich_instance.image_frame=0
-                                player.score+=450
+                for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
+                    if block.id=='42' or block.id=='20' or block.id=='104':
+                        if ostrich_instance.velocity.x==500:
+                            ostrich_instance.velocity.x=0
+                            ostrich_instance.velocity.x=-500
+                            ostrich_instance.image_frame=0
+                    elif block.id=='22' or block.id=='46':
+                        if ostrich_instance.velocity.x==-500:
+                            ostrich_instance.velocity.x=0
+                            ostrich_instance.velocity.x=500
+                            ostrich_instance.image_frame=0
+                if int(ostrich_instance.image_frame)>=len(ostrich.run_image_list_left):
+                    ostrich_instance.image_frame=0
+                if ostrich_instance.velocity.x>0:
+                    ostrich_instance.image=ostrich.run_image_list_right[int(ostrich_instance.image_frame)]
+                elif ostrich_instance.velocity.x<0:
+                    ostrich_instance.image=ostrich.run_image_list_left[int(ostrich_instance.image_frame)]
+                ostrich_instance.rect.center+=ostrich_instance.velocity*delta_time
+                ostrich_instance.image_frame+=10*delta_time
+                for dog in pygame.sprite.spritecollide(ostrich_instance,dog_sprite_group,dokill=False):
+                    if dog.life>0:
+                        if ostrich_instance.velocity.x<0 and ostrich_instance.rect.centerx-dog.rect.centerx>0:
+                            dog.image_frame=0
+                            dog.life=0
+                            player.score+=50
+                            ostrich_instance.velocity.x=500
+                        elif ostrich_instance.velocity.x>0 and ostrich_instance.rect.centerx-dog.rect.centerx<0:
+                            dog.image_frame=0
+                            dog.life=0
+                            player.score+=50
+                            ostrich_instance.velocity.x=-500
+                for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_instance_group,dokill=False):
+                    if type(reactive_block)==bomb_land:
+                        if ostrich_instance.rect.collidepoint(reactive_block.rect.center):
+                            ostrich_instance.life-=3
+                            if ostrich_instance.life<=0:ostrich_instance.image_frame=0
+                            ostrich_instance.stun_timer=4
+                            #if ostrich_instance.velocity.x<0:
+                            #    ostrich_instance.velocity.x=500
+                            #elif ostrich_instance.velocity.x>0:ostrich_instance.velocity.x=-500
+                            reactive_block.explode=True
+                            reactive_block_sprite_update_group.add(reactive_block)
+                    elif type(reactive_block)==little_rock:
+                        if reactive_block.velocity.x!=0:
+                            #ostrich_instance.stun_timer=4
+                            ostrich_instance.life-=1
+                            if ostrich_instance.life<=0:ostrich_instance.image_frame=0
+                            if ostrich_instance.velocity.x<0:
+                                ostrich_instance.velocity.x=500
+                            elif ostrich_instance.velocity.x>0:ostrich_instance.velocity.x=-500
+                            player.score+=450
             else:
                 if ostrich_instance.stun_timer<0:
                     ostrich_instance.stun_timer=0
@@ -948,9 +954,9 @@ class ostrich(pygame.sprite.Sprite):
         else:
             if int(ostrich_instance.image_frame)>=len(ostrich.death_image_list_left)-1:
                 ostrich_instance.kill()
-            if ostrich_instance.acceleration.x>0:
+            if ostrich_instance.velocity.x>0:
                 ostrich_instance.image=ostrich.death_image_list_right[int(ostrich_instance.image_frame)]
-            elif ostrich_instance.acceleration.x<0:
+            elif ostrich_instance.velocity.x<0:
                 ostrich_instance.image=ostrich.death_image_list_left[int(ostrich_instance.image_frame)]
             ostrich_instance.image_frame+=5*delta_time
 class big_fat_guy(pygame.sprite.Sprite):
@@ -2118,7 +2124,7 @@ class game():
 
 player_sprite_group=pygame.sprite.Group()
 
-fish_sprite_group=pygame.sprite.Group()
+fish_sprite_group=pygame.sprite.Group()                                                     #make instance groups for collsion of all mobs later?
 rat_sprite_group=pygame.sprite.Group()
 dog_sprite_group=pygame.sprite.Group()
 ostrich_sprite_group=pygame.sprite.Group()
@@ -2315,9 +2321,9 @@ def map_load(water_hitlines,water_spring_list):
                 elif mob_id=='4':
                     fish_sprite_group.add(fish(mob_x,mob_y,'left'))
                 elif mob_id=='5':
-                    fish_sprite_group.add(ostrich(mob_x,mob_y,'left'))
+                    ostrich_sprite_group.add(ostrich(mob_x,mob_y,'left'))
                 elif mob_id=='6':
-                    fish_sprite_group.add(ostrich(mob_x,mob_y,'right'))
+                    ostrich_sprite_group.add(ostrich(mob_x,mob_y,'right'))
     for fat_guy in big_fat_guy_sprite_group:
         for player in player_sprite_group:
             with open('Data/worlds/0/0_fat_guy_effects.csv') as map:
@@ -2428,8 +2434,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,nest_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group]
                     ,mouse_mode_tuts,keyboard_mode_tuts)
         
-        for player in player_sprite_group:
-            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        #for player in player_sprite_group:
+        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
 
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
@@ -2637,7 +2643,7 @@ while True:
         #    pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
 
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-        print(str(clock.get_fps()))
+        #print(str(clock.get_fps()))
 
         clock.tick()
     else:pygame.mouse.set_visible(True)
