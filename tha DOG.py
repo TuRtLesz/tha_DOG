@@ -636,6 +636,7 @@ class dog(pygame.sprite.Sprite):
         if dog_instance.state!='dead':
             if dog_instance.bite_timer<=0:
                 if dog_instance.stun_timer<=0:
+                    dog_instance.state='run'
                     for water_rect in water_blocks_instance_rect_list:
                         if dog_instance.state!='swim':
                             if dog_instance.rect.colliderect(water_rect):
@@ -645,8 +646,7 @@ class dog(pygame.sprite.Sprite):
                                             if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
                                                 dog_instance.life=0
                                                 dog_instance.image_frame=0
-                                if dog_instance.state!='idle':
-                                    dog_instance.state='swim'
+                                dog_instance.state='swim'
                         else:
                             break
                     if dog_instance.state=='swim' or dog_instance.state=='run':
@@ -658,8 +658,9 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.prev_direction=dog_instance.direction
                     for player in player_sprite_group:
                         if player.state!='grass':
-                            if dog_instance.state!='stomp_rat' and dog_instance.state!='chase_rat' and dog_instance.bite_timer<=0:
+                            if dog_instance.state!='stomp_rat' and dog_instance.state!='chase_rat' and dog_instance.state!='swim' and dog_instance.bite_timer<=0:
                                 dog_instance.state='run'
+                            elif dog_instance.state!='swim' and dog_instance.state!='chase_rat':dog_instance.state='idle'
                             if player.rect.x-dog_instance.rect.centerx<0:
                                 dog_instance.direction='left'
                             elif player.rect.x-dog_instance.rect.centerx>0:
@@ -689,7 +690,7 @@ class dog(pygame.sprite.Sprite):
                         elif dog_instance.direction=='left':
                             dog_instance.acceleration.x=numpy.random.randint(-150,-50)
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
-                    elif dog_instance.state=='swim' or dog_instance.state=='chase_rat':
+                    elif dog_instance.state=='swim': #or dog_instance.state=='chase_rat':
                         dog_instance.velocity.y=0
                         dog_instance.image_frame+=15*delta_time
                         if dog_instance.image_frame>=11:
@@ -700,6 +701,18 @@ class dog(pygame.sprite.Sprite):
                         elif dog_instance.direction=='left':
                             dog_instance.acceleration.x=numpy.random.randint(-100,-50)
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
+                        for bomb_rect in bomb_rect_list:
+                            if bomb_rect.x<dog_instance.rect.centerx<bomb_rect.right:
+                                for reactive_block in reactive_block_sprite_instance_group:
+                                    if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
+                                        dog_instance.life=0
+                                        dog_instance.image_frame=0
+                        for water_line in water_hitlines:#optimize later
+                            if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
+                                for water_spring_obj in water_spring_instance_list:
+                                    if dog_instance.rect.centerx-2<water_spring_obj.x<dog_instance.rect.centerx+2:
+                                        if abs(water_spring_obj.speed)==0:
+                                            water_spring_obj.speed=25
                     elif dog_instance.state=='stop_rat':
                         dog_instance.state='idle'#edit later
                     dog_instance.velocity+=dog_instance.acceleration*delta_time
@@ -732,17 +745,17 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '49':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                         elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
-                            if dog_instance.velocity.x<0:
-                                dog_instance.rect.left=block.rect.right
+                            if dog_instance.state=='swim':
+                                dog_instance.rect.bottom=block.rect.top
+                            else:
+                                if dog_instance.velocity.x<0:
+                                    dog_instance.rect.left=block.rect.right
                         elif block.id=='75' or block.id=='89' or block.id=='103' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='91' or block.id=='79' or block.id=='93' or block.id=='107' or block.id=='106' or block.id=='105':
-                            if dog_instance.velocity.x>0:
-                                dog_instance.rect.right=block.rect.left
-                        for water_line in water_hitlines:
-                            if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
-                                for water_spring_obj in water_spring_instance_list:
-                                    if dog_instance.rect.centerx-2<water_spring_obj.x<dog_instance.rect.centerx+2:
-                                        if abs(water_spring_obj.speed)==0:
-                                            water_spring_obj.speed=25
+                            if dog_instance.state=='swim':
+                                dog_instance.rect.bottom=block.rect.top
+                            else:
+                                if dog_instance.velocity.x>0:
+                                    dog_instance.rect.right=block.rect.left
                 else:
                     if dog_instance.stun_timer<=0:
                         dog_instance.state='idle'
@@ -1972,7 +1985,7 @@ water_spring_list=[]
 class game():
     def __init__(game):
         game.offset=pygame.math.Vector2()#offest of objects
-        game.player_offset=pygame.math.Vector2(-750,0)#offset of player from scren center
+        game.player_offset=pygame.math.Vector2(-500,0)#offset of player from scren center
         game.screen_shake=pygame.math.Vector2()
         game.draw_rect=pygame.Rect(0,0,display_size[0]+40,display_size[1]+40)
         game.update_rect=pygame.Rect(0,0,display_size[0]*2,display_size[1]+400)
