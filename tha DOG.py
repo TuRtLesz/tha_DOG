@@ -626,7 +626,6 @@ class dog(pygame.sprite.Sprite):
         dog_instance.pos=pygame.math.Vector2(dog_instance.rect.center)
         dog_instance.stun_timer=0
         dog_instance.bite_timer=0
-        dog_instance.water=False
     def update(dog_instance,delta_time):
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
             dog_instance.max_velocity.x=150
@@ -638,7 +637,6 @@ class dog(pygame.sprite.Sprite):
             if dog_instance.bite_timer<=0:
                 if dog_instance.stun_timer<=0:
                     dog_instance.state='run'
-                    dog_instance.water=False
                     for water_rect in water_blocks_instance_rect_list:
                         if dog_instance.state!='swim':
                             if dog_instance.rect.colliderect(water_rect):
@@ -649,7 +647,6 @@ class dog(pygame.sprite.Sprite):
                                                 dog_instance.life=0
                                                 dog_instance.image_frame=0
                                 dog_instance.state='swim'
-                                dog_instance.water=False
                         else:
                             break
                     if dog_instance.state=='swim' or dog_instance.state=='run':
@@ -748,13 +745,13 @@ class dog(pygame.sprite.Sprite):
                         elif block.id == '49':
                             dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
                         elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
-                            if dog_instance.water:
+                            if dog_instance.state=='swim':
                                 dog_instance.rect.bottom=block.rect.top
                             else:
                                 if dog_instance.velocity.x<0:
                                     dog_instance.rect.left=block.rect.right
                         elif block.id=='75' or block.id=='89' or block.id=='103' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='91' or block.id=='79' or block.id=='93' or block.id=='107' or block.id=='106' or block.id=='105':
-                            if dog_instance.water:
+                            if dog_instance.state=='swim':
                                 dog_instance.rect.bottom=block.rect.top
                             else:
                                 if dog_instance.velocity.x>0:
