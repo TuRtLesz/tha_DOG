@@ -639,7 +639,7 @@ class dog(pygame.sprite.Sprite):
         dog_instance.bite_timer=0
     def update(dog_instance,delta_time):
         if dog_instance.pos.x<dog.tut_end:#tutoiral side
-            dog_instance.max_velocity.x=80
+            dog_instance.max_velocity.x=150
         else:
             dog_instance.max_velocity.x=250
         if dog_instance.life<=0:
@@ -713,13 +713,13 @@ class dog(pygame.sprite.Sprite):
                             dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
                     elif dog_instance.state=='stop_rat':
                         dog_instance.state='idle'#edit later
+                    dog_instance.velocity+=dog_instance.acceleration*delta_time
                     if dog_instance.velocity.x>=dog_instance.max_velocity.x:
                         dog_instance.velocity.x=dog_instance.max_velocity.x
                     if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
                         dog_instance.velocity.x=-(dog_instance.max_velocity.x)
                     if dog_instance.velocity.y>=dog_instance.max_velocity.y:
                         dog_instance.velocity.y=dog_instance.max_velocity.y
-                    dog_instance.velocity+=dog_instance.acceleration*delta_time
                     dog_instance.rect.center+=dog_instance.velocity*delta_time
                     for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False):
                         if block.id == '0' or block.id == '1' or block.id == '2':
@@ -787,7 +787,7 @@ class bird(pygame.sprite.Sprite):
     fly_image_list_right=[]
     death_image_list_right=[]
     load_spritesheet_2dir(pygame.image.load('Data/bird/bird_fly.png').convert_alpha(),fly_image_list_left,fly_image_list_right,3)
-    load_spritesheet_2dir(pygame.image.load('Data/bird/bird_death.png').convert_alpha(),death_image_list_left,death_image_list_right,5)
+    load_spritesheet_2dir(pygame.image.load('Data/bird/bird_death.png').convert_alpha(),death_image_list_left,death_image_list_right,3)
     def __init__(bird_instance,x,y):
         super().__init__()
         bird_instance.velocity=pygame.math.Vector2()
@@ -1677,7 +1677,7 @@ class bubble(pygame.sprite.Sprite):
         game_window.blit(bubble_instance.image,bubble_instance.rect)
         bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
         for water_line in water_hitlines:
-            if bubble_instance.rect.clipline(water_line)!=() and game.draw_rect.collidepoint(bubble_instance.rect.center):
+            if bubble_instance.rect.clipline(water_line)!=():
                 for water_spring_obj in water_spring_instance_list:
                     if bubble_instance.rect.centerx-2<water_spring_obj.x<bubble_instance.rect.centerx+2:
                         if abs(water_spring_obj.speed)<10:
@@ -2190,8 +2190,8 @@ game=game()
 
 player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
 
-tut_end=0
-def tut_blocks_load(tut_end):
+def tut_blocks_load():
+    global tut_end
     with open('Data/worlds/0/0_tut_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
         for row_number,row in enumerate(world_reader):
@@ -2256,8 +2256,7 @@ def tut_blocks_load(tut_end):
                     tutorial_block_sprite_group.add(tutorial_block(245,'info_turtle',block_number,row_number))
                 elif block_id=='17':
                     tutorial_block_sprite_group.add(tutorial_block(150,'crush_it',block_number,row_number))
-    return tut_end
-tut_blocks_load(tut_end)
+tut_blocks_load()
 
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
