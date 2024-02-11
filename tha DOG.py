@@ -1949,12 +1949,9 @@ class water_spring:
         water_spring_instance.y = water_spring_instance.target_height - water_spring_instance.height
         water_spring_instance.speed += water_spring.tension * water_spring_instance.y - water_spring_instance.speed * water_spring.dampening
         water_spring_instance.height += water_spring_instance.speed
-def wave_update(water_spring_instance_list,water_spring_list):
-    water_spring_instance_list.clear()
-    for water_spring_obj in water_spring_list:
-        if game.draw_rect.left<water_spring_obj.x<game.draw_rect.right:
-            water_spring_instance_list.append(water_spring_obj)
-            water_spring_obj.update()
+def wave_update(water_spring_instance_list):
+    for water_spring_obj in water_spring_instance_list:
+        water_spring_obj.update()
     lDeltas = list(water_spring_instance_list)
     rDeltas = list(water_spring_instance_list)
     for j in range(5):# Number of loop round // Warning with a too hight value on this variable, the script will be very slower
@@ -1979,7 +1976,7 @@ def wave_update(water_spring_instance_list,water_spring_list):
             water_spring_instance_list[i].speed = 0
             water_spring_instance_list[i].height = water_spring_instance_list[i].target_height
             water_spring_instance_list[i].y = 0 
-    return water_spring_list,water_spring_instance_list
+    return water_spring_instance_list
 water_spring_instance_list=[]
 water_spring_list=[]
 
@@ -2115,7 +2112,7 @@ class game():
         input_tutorial_block.image_frame+=5*delta_time
         if input_tutorial_block.image_frame>=3:#updatin image frame
             input_tutorial_block.image_frame=0
-        wave_update(water_spring_instance_list,water_spring_list)
+        wave_update(water_spring_instance_list)
 
 player_sprite_group=pygame.sprite.Group()
 
@@ -2408,6 +2405,10 @@ while True:
         for reactive_block in reactive_block_sprite_group:
             if reactive_block.rect.colliderect(game.update_rect):
                 reactive_block_sprite_instance_group.add(reactive_block)
+        water_spring_instance_list.clear()
+        for water_spring_obj in water_spring_list:
+            if game.draw_rect.left<water_spring_obj.x<game.draw_rect.right:
+                water_spring_instance_list.append(water_spring_obj)
         for player in player_sprite_group:
             if player.life<=0:
                 game_settings['mode']='game_over'
@@ -2803,11 +2804,6 @@ while True:
         menu_image_frame+=5*delta_time
         if int(menu_image_frame)>1:
             menu_image_frame=0
-        if game_settings['negative_screen']:#when hit fat_guy
-            white_screen=pygame.Surface(game_window.get_size())
-            white_screen.fill((255,255,255))
-            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
-            game_window=white_screen
     elif game_settings['mode']=='game_complete':
         if player.score>save_data['high_score']:
             save_data['high_score']=player.score
