@@ -497,7 +497,7 @@ class player(pygame.sprite.Sprite):
         for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
-            game.draw_rect.centery=player.jump_height-300#?
+            game.draw_rect.centery=player.jump_height-300#? wot thus
             if block.id=='0' or block.id=='1' or block.id=='2' or block.id=='34' or block.id=='35' or block.id == '36' or block.id == '56' or block.id == '57' or block.id == '58':
                 player.rect.bottom=block.rect.top
             elif block.id=='38':
@@ -529,8 +529,7 @@ class player(pygame.sprite.Sprite):
             elif block.id=='9' and not player.jump:#45degree scure
                 player.rect.bottom=48-abs(player.pos.x-block.rect.x)+block.rect.y
             elif block.id=='37' and not player.jump:#45degree scure
-                player.rect.bottom=abs(player.pos.x-block.rect.x)+block.rect.y
-                print(-1*abs(player.pos.x-block.rect.x))
+                player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.y
             #rock
             elif block.id=='20' or block.id=='42':
                 if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
@@ -553,16 +552,6 @@ class player(pygame.sprite.Sprite):
                 if player.pos.x-block.rect.x<=23:
                     player.rect.bottom=block.rect.top+26
                     #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
-            #elif block.id == '20':#sideleft
-            #        if player.rect.bottom!=block.rect.bottom+1:
-            #            print('test')
-            #            player.rect.bottom= 48-(1.743497*(player.pos.x-block.rect.x))+block.rect.bottom
-            #        else:
-            #            if player.state=='run_right':
-            #                player.rect.right=block.rect.left+48
-            #elif block.id == '22':#side right
-            #    if player.pos.x-block.rect.x>23:
-            #        player.rect.bottom= -1.145418*(player.pos.x-block.rect.x) + 26.91235+block.rect.bottom
             player.pos.xy=player.rect.center
         for water_line in water_hitlines:
             if player.rect.clipline(water_line)!=():
@@ -2754,6 +2743,11 @@ while True:
             except:text(function+'             '+pygame.key.name(keyboard_mode_keybinds[function]),(0,0,0),30,(display_size[0]//2+150,200+60*index))
             if key_edit_input and key_edit_mode=='keyboard' and key_edit_index==index:
                 key_edit_function=function
+        if game_settings['negative_screen']:#when hit fat_guy
+            white_screen=pygame.Surface(game_window.get_size())
+            white_screen.fill((255,255,255))
+            white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
+            game_window=white_screen
         if any(pygame.mouse.get_pressed()):
             mouse_pos=pygame.mouse.get_pos()
             if game_settings['fullscreen']:
