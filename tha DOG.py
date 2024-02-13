@@ -2193,7 +2193,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-109968
+player_sprite_group.add(player(64375,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
@@ -2434,8 +2434,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,nest_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group]
                     ,mouse_mode_tuts,keyboard_mode_tuts)
         
-        #for player in player_sprite_group:
-        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        for player in player_sprite_group:
+            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
 
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
@@ -2643,7 +2643,7 @@ while True:
         #    pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
 
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-        #print(str(clock.get_fps()))
+        print(str(clock.get_fps()))
 
         clock.tick()
     else:pygame.mouse.set_visible(True)
