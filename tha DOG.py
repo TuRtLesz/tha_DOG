@@ -662,6 +662,13 @@ class dog(pygame.sprite.Sprite):
             dog_instance.max_velocity.x=150
         else:
             dog_instance.max_velocity.x=250
+        for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
+            dog_instance.stun_timer=5
+            dog_instance.life-=1
+            dog_instance.image_frame=0
+            reactive_block.velocity.x=0
+            reactive_block.life-=1
+            player.score+=200
         if dog_instance.life<=0:
             dog_instance.state='dead'
         if dog_instance.state!='dead':
@@ -903,7 +910,16 @@ class ostrich(pygame.sprite.Sprite):
         ostrich_instance.stun_timer=0
     def update(ostrich_instance,delta_time):
         if ostrich_instance.life>0:
-            if ostrich_instance.stun_timer==0:
+            for reactive_block in pygame.sprite.spritecollide(ostrich_instance,reactive_block_sprite_update_group,dokill=False):
+                if type(reactive_block)==little_rock:
+                    #ostrich_instance.stun_timer=4
+                    ostrich_instance.life-=1
+                    if ostrich_instance.life<=0:ostrich_instance.image_frame=0
+                    if ostrich_instance.velocity.x<0:
+                        ostrich_instance.velocity.x=500
+                    elif ostrich_instance.velocity.x>0:ostrich_instance.velocity.x=-500
+                    player.score+=450
+            if ostrich_instance.stun_timer<=0:
                 for block in pygame.sprite.spritecollide(ostrich_instance,block_sprite_instance_group,dokill=False):
                     if block.id=='42' or block.id=='20' or block.id=='104':
                         if ostrich_instance.velocity.x==500:
@@ -946,15 +962,6 @@ class ostrich(pygame.sprite.Sprite):
                             #elif ostrich_instance.velocity.x>0:ostrich_instance.velocity.x=-500
                             reactive_block.explode=True
                             reactive_block_sprite_update_group.add(reactive_block)
-                    elif type(reactive_block)==little_rock:
-                        if reactive_block.velocity.x!=0:
-                            #ostrich_instance.stun_timer=4
-                            ostrich_instance.life-=1
-                            if ostrich_instance.life<=0:ostrich_instance.image_frame=0
-                            if ostrich_instance.velocity.x<0:
-                                ostrich_instance.velocity.x=500
-                            elif ostrich_instance.velocity.x>0:ostrich_instance.velocity.x=-500
-                            player.score+=450
             else:
                 if ostrich_instance.stun_timer<0:
                     ostrich_instance.stun_timer=0
@@ -1551,13 +1558,6 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
         if rock_instance.life>0:
             for player in player_sprite_group:
                 if rock_instance.velocity.x!=0:
-                    for dog in pygame.sprite.spritecollide(rock_instance,dog_sprite_group,dokill=False):
-                        dog.stun_timer=5
-                        dog.life-=1
-                        dog.image_frame=0
-                        rock_instance.velocity.x=0
-                        rock_instance.life-=1
-                        player.score+=200
                     for reactive_block in pygame.sprite.spritecollide(rock_instance,reactive_block_sprite_instance_group,dokill=False):
                         if type(reactive_block)==bomb or type(reactive_block)==bomb_land:
                             if reactive_block.bomb_rect.colliderect(rock_instance.rect):
@@ -2210,7 +2210,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(83621,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
+player_sprite_group.add(player(102154,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
