@@ -2197,7 +2197,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(64375,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
+player_sprite_group.add(player(84621,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
