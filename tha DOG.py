@@ -833,12 +833,12 @@ class bird(pygame.sprite.Sprite):
             for block in pygame.sprite.spritecollide(bird_instance,block_sprite_instance_group,dokill=False):
                 bird_instance.kill()
             else:
-                if int(bird_instance.image_frame)>=len(bird.death_image_list_left):
-                    bird_instance.image_frame=len(bird.death_image_list_left)
+                if int(bird_instance.image_frame)>=len(bird.death_image_list_left)-1:
+                    bird_instance.image_frame=len(bird.death_image_list_left)-1
                 else:
                     bird_instance.image_frame+=10*delta_time
-                    if int(bird_instance.image_frame)>=2:
-                        bird_instance.image_frame=2
+                    if int(bird_instance.image_frame)>=len(bird.death_image_list_left)-1:
+                        bird_instance.image_frame=len(bird.death_image_list_left)-1
                 bird_instance.rect.centery+=500*delta_time
             if bird_instance.velocity.x<0:
                 bird_instance.image=bird.death_image_list_right[int(bird_instance.image_frame)]
@@ -1672,6 +1672,10 @@ class nest(pygame.sprite.Sprite):#reactive_block
                     nest_instance.image_frame+=10*delta_time
             else:
                 nest_instance.rect.y+=600*delta_time
+                for dog in pygame.sprite.spritecollide(nest_instance,dog_sprite_group,dokill=False):
+                    if dog.stun_timer<=0:
+                        dog.velocity.x=0
+                        dog.stun_timer=2
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
@@ -2206,7 +2210,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(84621,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
+player_sprite_group.add(player(83621,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
