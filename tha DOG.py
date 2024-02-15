@@ -663,12 +663,13 @@ class dog(pygame.sprite.Sprite):
         else:
             dog_instance.max_velocity.x=250
         for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
-            dog_instance.stun_timer=5
-            dog_instance.life-=1
-            dog_instance.image_frame=0
-            reactive_block.velocity.x=0
-            reactive_block.life-=1
-            player.score+=200
+            if type(reactive_block)==little_rock:
+                dog_instance.stun_timer=5
+                dog_instance.life-=1
+                dog_instance.image_frame=0
+                reactive_block.velocity.x=0
+                reactive_block.life-=1
+                player.score+=200
         if dog_instance.life<=0:
             dog_instance.state='dead'
         if dog_instance.state!='dead':
@@ -2210,7 +2211,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(102154,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
+player_sprite_group.add(player(106054,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
