@@ -235,13 +235,13 @@ class player(pygame.sprite.Sprite):
                         else:
                             player.image=player.pant_image_list_right[-1]
                 elif type(reactive_block)==spike:
-                    if player.no_damage_timer<=0:
-                        reactive_block.rect.y+=33
-                        player.life-=1
-                        player.score-=350
-                        game.spike_shake_timer=1
+                    #if player.no_damage_timer<=0:
+                    reactive_block.rect.y+=33
+                    player.life-=1
+                    player.score-=350
+                    game.spike_shake_timer=1
                 elif type(reactive_block)==bomb_land:
-                    if player.state!='dodge' and player.no_damage_timer<=0:
+                    if player.state!='dodge':# and player.no_damage_timer<=0:
                         if not reactive_block.explode:
                             player.life-=2
                             player.score-=500
@@ -254,6 +254,7 @@ class player(pygame.sprite.Sprite):
                 if player.rect.collidepoint((dog.rect.right+6,dog.rect.top+23)):
                     if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0 and player.no_damage_timer<=0:
                         player.life-=1
+                        player.no_damage_timer=9
                         player.score-=250
                         player.velocity.xy=0,0
                         player.state='idle'
@@ -265,6 +266,7 @@ class player(pygame.sprite.Sprite):
                 if player.rect.collidepoint((dog.rect.left-6,dog.rect.top+23)):
                     if player.state!='grass' and player.state!='dodge'and dog.bite_timer<=0 and dog.stun_timer<=0 and player.no_damage_timer<=0:
                         player.life-=1
+                        player.no_damage_timer=9
                         player.score-=250
                         player.velocity.xy=0,0
                         player.state='idle'
@@ -277,6 +279,7 @@ class player(pygame.sprite.Sprite):
                 if player.rect.collidepoint((ostrich_instance.rect.left,ostrich_instance.rect.top+41)):#if colliding face
                     if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                         player.life-=1
+                        player.no_damage_timer=9
                         player.score-=500
                         player.velocity.x=0
                         player.rect.x-=1000*delta_time#knockback
@@ -288,6 +291,7 @@ class player(pygame.sprite.Sprite):
                 if player.rect.collidepoint((ostrich_instance.rect.right,ostrich_instance.rect.top+41)):#if colliding face
                     if player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                         player.life-=1
+                        player.no_damage_timer=9
                         player.score-=500
                         player.velocity.x=0
                         player.rect.x+=1000*delta_time#knockback
@@ -868,6 +872,7 @@ class bird(pygame.sprite.Sprite):
                 if player.rect.colliderect(bird_instance.rect) and player.state!='dodge' and player.state!='grass' and player.no_damage_timer<=0:
                     player.score-=100
                     player.life-=1
+                    player.no_damage_timer=9
                     bird_instance.dead=True
                     bird_instance.image_frame=0
                 if int(bird_instance.image_frame)>=len(bird.fly_image_list_left):
@@ -1097,6 +1102,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     fat_guy.whack_rect.topleft=fat_guy.rect.x+309,fat_guy.rect.y+274
                             if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge' and player.no_damage_timer<=0:
                                 player.life-=2
+                                player.no_damage_timer=9
                                 fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
                             fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
@@ -2424,8 +2430,6 @@ while True:
         for player in player_sprite_group:
             if player.life<=0:
                 game_settings['mode']='game_over'
-            if player.prev_life>player.life:
-                player.no_damage_timer=9
             player.prev_life=player.life
             if player.state!='aim':
                 game.update([fish_sprite_group,rat_sprite_group,dog_sprite_group,ostrich_sprite_group,bird_sprite_group,big_fat_guy_sprite_group,tutorial_block_sprite_group,reactive_block_sprite_update_group,nest_sprite_group],
