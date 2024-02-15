@@ -612,13 +612,17 @@ class player(pygame.sprite.Sprite):
                         player.sound_channel.set_volume(1,0)
                     else:
                         player.sound_pan=abs(player.pos.x-sound_distance)/(display_size[0]//2)-0.1
-                        player.sound_channel.set_volume(1-player.sound_pan,0.1)
+                        if player.sound_pan>=0.5:
+                            player.sound_channel.set_volume(1-player.sound_pan,player.sound_pan//2)
+                        else:player.sound_channel.set_volume(1-player.sound_pan,0.1)
                 else:
                     if abs(sound_distance-player.pos.x)>display_size[0]//2:
                         player.sound_channel.set_volume(0,1)
                     else:
                         player.sound_pan=abs(sound_distance-player.pos.x)/(display_size[0]//2)-0.1
-                        player.sound_channel.set_volume(0.1,1-player.sound_pan)
+                        if player.sound_pan>=0.5:
+                            player.sound_channel.set_volume(player.sound_pan//2,1-player.sound_pan)
+                        else:player.sound_channel.set_volume(0.1,1-player.sound_pan)
             player.sound_channel.play(sound)
 
 class dog(pygame.sprite.Sprite):
