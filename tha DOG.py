@@ -839,7 +839,7 @@ class bird(pygame.sprite.Sprite):
                     bird_instance.image_frame+=10*delta_time
                     if int(bird_instance.image_frame)>=2:
                         bird_instance.image_frame=2
-                bird_instance.rect.centery+=100*delta_time
+                bird_instance.rect.centery+=500*delta_time
             if bird_instance.velocity.x<0:
                 bird_instance.image=bird.death_image_list_right[int(bird_instance.image_frame)]
             else:
@@ -1570,8 +1570,6 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                         elif type(reactive_block)==rock:
                             reactive_block.roll=True
                             reactive_block_sprite_update_group.add(reactive_block)
-                        elif type(reactive_block)==nest:
-                            reactive_block.fall=True
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
@@ -1653,6 +1651,11 @@ class nest(pygame.sprite.Sprite):#reactive_block
         nest_instance.rect=nest_instance.image.get_rect(topleft=(x*48,y*48))
     def update(nest_instance,delta_time):
         if nest_instance.bird_count>0 and not nest_instance.fall:
+            for reactive_block in pygame.sprite.spritecollide(nest_instance,reactive_block_sprite_update_group,dokill=False):
+                if type(reactive_block)==little_rock:
+                    nest_instance.fall=True
+                    #reactive_block.velocity.x=reactive_block.velocity.x//2#add later?
+                    #reactive_block.velocity.x*=-1
             if nest_instance.timer>=10:
                 nest_instance.timer=0
                 bird_sprite_group.add(bird(nest_instance.rect.centerx,nest_instance.rect.centery))
@@ -1668,7 +1671,7 @@ class nest(pygame.sprite.Sprite):#reactive_block
                     nest_instance.image=nest.image_list[int(nest_instance.image_frame)]
                     nest_instance.image_frame+=10*delta_time
             else:
-                nest_instance.rect.y+=100*delta_time
+                nest_instance.rect.y+=600*delta_time
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
