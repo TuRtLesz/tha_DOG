@@ -560,25 +560,30 @@ class player(pygame.sprite.Sprite):
                 player.rect.bottom=-1*abs(player.pos.x-block.rect.x)+block.rect.y
             #rock
             elif block.id=='20' or block.id=='42':
-                if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
-                    player.rect.right=block.rect.left+53
-                    player.velocity.xy=0,0
-                    player.state='idle'
+                if player.state!='dodge':
+                    if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='right':
+                        player.rect.right=block.rect.left+53
+                        player.velocity.xy=0,0
+                        player.state='idle'
             elif block.id=='22' or block.id=='46':
-                if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='left':
-                    player.rect.left=block.rect.right-53
-                    player.velocity.xy=0,0
-                    player.state='idle'
+                if player.state!='dodge':
+                    if block.rect.collidepoint(player.rect.centerx,player.rect.centery+85) and player.direction=='left':
+                        player.rect.left=block.rect.right-53
+                        player.velocity.xy=0,0
+                        player.state='idle'
             elif (block.id=='7' or block.id=='29') and not player.jump:
-                if block.rect.collidepoint(player.rect.centerx,player.rect.bottom):
-                    player.rect.bottom=block.rect.top+26
+                if player.state!='dodge':
+                    if block.rect.collidepoint(player.rect.centerx,player.rect.bottom):
+                        player.rect.bottom=block.rect.top+26
             elif (block.id == '6' or block.id == '28') and not player.jump:#top curve right
-                if player.pos.x-block.rect.x>18:
-                    player.rect.bottom=block.rect.top+26
+                if player.state!='dodge':
+                    if player.pos.x-block.rect.x>18:
+                        player.rect.bottom=block.rect.top+26
                     #player.rect.bottom=round(1.320033*(player.pos.x-block.rect.x)-(0.0099421*((player.pos.x-block.rect.x)**2)))+block.rect.bottom-26
             elif block.id == '8' and not player.jump:#top curve left
-                if player.pos.x-block.rect.x<=23:
-                    player.rect.bottom=block.rect.top+26
+                if player.state!='dodge':
+                    if player.pos.x-block.rect.x<=23:
+                        player.rect.bottom=block.rect.top+26
                     #player.rect.bottom= 21-round(0.8659639*(player.pos.x-block.rect.x))+block.rect.bottom-26
             player.pos.xy=player.rect.center
         for water_line in water_hitlines:
