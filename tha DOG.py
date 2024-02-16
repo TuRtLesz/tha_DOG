@@ -1053,7 +1053,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                         for rock_instance in reactive_block_sprite_update_group:
                             if type(rock_instance)==little_rock and rock_instance.life>0:
                                 if rock_instance.rect.colliderect(fat_guy.head_rect):
-                                    fat_guy.life-=2
+                                    fat_guy.life-=4
                                     player.score+=750
                                     rock_instance.life=0#make it reflect later?
                                     if fat_guy.life<=0:
