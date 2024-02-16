@@ -1498,7 +1498,7 @@ class rock(pygame.sprite.Sprite):#reactive_block
                 if type(switch_instance)==pressure_switch:
                     switch_instance.image=switch_instance.switch_image_list[1]
                     if not switch_instance.clicked:
-                        pressure_switch.switch_press_sound.play()
+                        player.play_sound_dir(pressure_switch.switch_press_sound,switch_instance.rect.x)
                         switch_instance.clicked=True
                     for bomb_rect in bomb_rect_list:
                             if bomb_rect.colliderect(switch_instance.rect):
@@ -1574,6 +1574,27 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                         elif type(reactive_block)==rock:
                             reactive_block.roll=True
                             reactive_block_sprite_update_group.add(reactive_block)
+                        elif type(reactive_block)==pressure_switch:
+                            reactive_block.image=reactive_block.switch_image_list[1]
+                            if not reactive_block.clicked:
+                                player.play_sound_dir(pressure_switch.switch_press_sound,reactive_block.rect.x)
+                                reactive_block.clicked=True
+                            for bomb_rect in bomb_rect_list:
+                                    if bomb_rect.colliderect(reactive_block.rect):
+                                        for reative_block in reactive_block_sprite_instance_group:
+                                            if type(reative_block)==bomb or type(reative_block)==bomb_land:
+                                                if bomb_rect.collidepoint(reative_block.rect.center):
+                                                    reactive_block.connected=True
+                                                    reative_block.explode=True
+                                                    reactive_block_sprite_update_group.add(reative_block)
+                                            elif type(reative_block)==chain:
+                                                if reative_block.rect.colliderect(bomb_rect):
+                                                    reative_block.kill()
+                                        if reactive_block.connected:
+                                            for fish in fish_sprite_group:
+                                                if bomb_rect.colliderect(fish.rect):
+                                                    fish.death=True
+                                                    fish.image_frame=0
                 rock_instance.velocity+=rock_instance.acceleration*delta_time
                 rock_instance.pos+=rock_instance.velocity*delta_time
                 rock_instance.rect.center=rock_instance.pos.xy
