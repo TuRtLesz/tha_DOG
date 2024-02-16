@@ -90,6 +90,7 @@ def text(text,color,size,text_pos,output_screen=game_window,mid_alline=False):
     text_data=(pygame.font.Font('Data/font/font.ttf',int(size))).render(text,False,color)
     if mid_alline:output_screen.blit(text_data,(text_pos[0]-text_data.get_width()//2,text_pos[1]-text_data.get_height()//2))
     else:output_screen.blit(text_data,text_pos)
+    return output_screen
 
 class player(pygame.sprite.Sprite):
     def __init__(player,spawn_x,spawn_y):
@@ -1001,7 +1002,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.direction='left'
         fat_guy.bat='left'
         fat_guy.state='idle'
-        fat_guy.life=2#tweak later
+        fat_guy.life=50#tweak later
         fat_guy.hook_throw=False
         fat_guy.whack_hit=False
         fat_guy.player_caught=False
@@ -1038,10 +1039,10 @@ class big_fat_guy(pygame.sprite.Sprite):
                 for player in player_sprite_group:
                     if fat_guy.start_fight:#whakc and stuff only if fight started
                         game_settings['negative_screen']=True
-                        if player.pos.x<=fat_guy.left_rope_limit or player.pos.x>=fat_guy.right_rope_limit:
+                        if (player.pos.x<=fat_guy.left_rope_limit or player.pos.x>=fat_guy.right_rope_limit) and fat_guy.state!='whack':
                             fat_guy.state='rope'
                         if fat_guy.state!='rope':
-                            if abs(player.pos.x-fat_guy.body_rect.centerx)>142:
+                            if abs(player.pos.x-fat_guy.body_rect.centerx)>142 and fat_guy.state!='whack':
                                     fat_guy.state='run'
                             else:
                                     fat_guy.state='whack'
@@ -1050,11 +1051,11 @@ class big_fat_guy(pygame.sprite.Sprite):
                         else:
                             fat_guy.direction='left'
                         for rock_instance in reactive_block_sprite_update_group:
-                            if type(rock_instance)==little_rock:
+                            if type(rock_instance)==little_rock and rock_instance.life>0:
                                 if rock_instance.rect.colliderect(fat_guy.head_rect):
                                     fat_guy.life-=2
                                     player.score+=750
-                                    rock_instance.kill()#make it reflect later?
+                                    rock_instance.life=0#make it reflect later?
                                     if fat_guy.life<=0:
                                         fat_guy.image_frame=0
                                         if fat_guy.direction=='left':
@@ -1064,7 +1065,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                                 elif rock_instance.rect.colliderect(fat_guy.body_rect):
                                     fat_guy.life-=1
                                     player.score+=450
-                                    rock_instance.kill()#make it reflect later?
+                                    rock_instance.life=0#make it reflect later?
                                     if fat_guy.life<=0:
                                         fat_guy.image_frame=0
                                         if fat_guy.direction=='left':
@@ -1084,6 +1085,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                             fat_guy.image_frame=0
                             game.earthquake=True
                             fat_guy.whack_hit=False
+                            fat_guy.state='idle'
                         if fat_guy.bat=='left':
                             if fat_guy.image_frame==0:
                                 fat_guy.image_frame=11
@@ -2211,7 +2213,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(106054,560))#2067,560,30111,75984,960,boss-109968,ostrich start-64375
+player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
@@ -2477,14 +2479,19 @@ while True:
                 white_screen.fill((255,255,255))
                 white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
                 game_window=white_screen
+                for fat_guy in big_fat_guy_sprite_group:
+                    text('big fat guy',(255,255,255),50,(display_size[0]//2,100),output_screen=game_window,mid_alline=True)
+                    pygame.draw.rect(game_window,(255,255,255),(display_size[0]//2-(((fat_guy.life/50)*(display_size[0]-200))//2),150,(fat_guy.life/50)*(display_size[0]-200),12))#fat guy life?
+                    pygame.draw.circle(game_window,(255,255,255),(display_size[0]//2-(((fat_guy.life/50)*(display_size[0]-200))//2),156),6)
+                    pygame.draw.circle(game_window,(255,255,255),(display_size[0]//2+(((fat_guy.life/50)*(display_size[0]-200))//2),156),6)
             else:
                 if player.prev_flower_count!=player.flower_count:
                     player.prev_flower_count=player.flower_count
                     player.flower_timer=4
-                #text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30))
+                text(str(player.flower_count),(0,0,0),30+player.flower_timer*10,(display_size[0]-100,30),output_screen=game_window)
                 #font=pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))
                 #text_data=(pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))).render(str(player.flower_count),False,(0,0,0))
-                game_window.blit((pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))).render(str(player.flower_count),False,(0,0,0)),(display_size[0]-100,30))
+                #game_window.blit((pygame.font.Font('Data/font/font.ttf',int(30+player.flower_timer*10))).render(str(player.flower_count),False,(0,0,0)),(display_size[0]-100,30))
                 if player.flower_timer>2:
                     player.flower_timer-=2*delta_time
                     game_window.blit(pygame.transform.scale_by(flower.image,player.flower_timer),(display_size[0]-150-player.flower_timer*24,10))
@@ -2874,12 +2881,12 @@ while True:
                 elif cookie_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     cookie_image_frame+=1
     game_window.blit(high_score_image,(10,10))
-    #text(str(save_data['high_score']),(0,0,0),40,(156,5))
-    game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(save_data['high_score']),False,(0,0,0)),(156,5))
+    text(str(save_data['high_score']),(0,0,0),40,(156,5),output_screen=game_window)
+    #game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(save_data['high_score']),False,(0,0,0)),(156,5))
     game_window.blit(score_image,(10,50))
     if player.score<0:player.score=0
-    #text(str(player.score),(0,0,0),40,(92,45))
-    game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(player.score),False,(0,0,0)),(92,45))
+    text(str(player.score),(0,0,0),40,(92,45),output_screen=game_window)
+    #game_window.blit((pygame.font.Font('Data/font/font.ttf',40)).render(str(player.score),False,(0,0,0)),(92,45))
     if game_settings['fullscreen']:
         display_window.blit(game_window,(0,0))
     else:
