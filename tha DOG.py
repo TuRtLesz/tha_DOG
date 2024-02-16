@@ -662,40 +662,40 @@ class dog(pygame.sprite.Sprite):
             dog_instance.max_velocity.x=150
         else:
             dog_instance.max_velocity.x=250
-        for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
-            if type(reactive_block)==little_rock:
-                dog_instance.stun_timer=5
-                dog_instance.life-=1
-                dog_instance.image_frame=0
-                reactive_block.velocity.x=0
-                reactive_block.life-=1
-                player.score+=200
-        if dog_instance.life<=0:
-            dog_instance.state='dead'
-        if dog_instance.state!='dead':
-            if dog_instance.bite_timer<=0:
-                if dog_instance.stun_timer<=0:
-                    dog_instance.state='run'
-                    for water_rect in water_blocks_instance_rect_list:
-                        if dog_instance.state!='swim':
-                            if dog_instance.rect.colliderect(water_rect):
-                                for bomb_rect in bomb_rect_list:
-                                    if bomb_rect.x<dog_instance.rect.centerx<bomb_rect.right:
-                                        for reactive_block in reactive_block_sprite_instance_group:
-                                            if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
-                                                dog_instance.life=0
-                                                dog_instance.image_frame=0
-                                dog_instance.state='swim'
-                        else:
-                            break
-                    if dog_instance.state=='swim' or dog_instance.state=='run':
-                        if dog_instance.prev_direction!=dog_instance.direction:#reducing drag while switching dirtections
-                            if dog_instance.prev_direction=='right':
-                                dog_instance.velocity.x=100
-                            elif dog_instance.prev_direction=='left':
-                                dog_instance.velocity.x=-100
-                            dog_instance.prev_direction=dog_instance.direction
-                    for player in player_sprite_group:
+        for player in player_sprite_group:
+            for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
+                if type(reactive_block)==little_rock:
+                    dog_instance.stun_timer=5
+                    dog_instance.life-=1
+                    dog_instance.image_frame=0
+                    reactive_block.velocity.x=0
+                    reactive_block.life-=1
+                    player.score+=200
+            if dog_instance.life<=0:
+                dog_instance.state='dead'
+            if dog_instance.state!='dead':
+                if dog_instance.bite_timer<=0:
+                    if dog_instance.stun_timer<=0:
+                        dog_instance.state='run'
+                        for water_rect in water_blocks_instance_rect_list:
+                            if dog_instance.state!='swim':
+                                if dog_instance.rect.colliderect(water_rect):
+                                    for bomb_rect in bomb_rect_list:
+                                        if bomb_rect.x<dog_instance.rect.centerx<bomb_rect.right:
+                                            for reactive_block in reactive_block_sprite_instance_group:
+                                                if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
+                                                    dog_instance.life=0
+                                                    dog_instance.image_frame=0
+                                    dog_instance.state='swim'
+                            else:
+                                break
+                        if dog_instance.state=='swim' or dog_instance.state=='run':
+                            if dog_instance.prev_direction!=dog_instance.direction:#reducing drag while switching dirtections
+                                if dog_instance.prev_direction=='right':
+                                    dog_instance.velocity.x=100
+                                elif dog_instance.prev_direction=='left':
+                                    dog_instance.velocity.x=-100
+                                dog_instance.prev_direction=dog_instance.direction
                         if player.state!='grass':
                             if dog_instance.state!='stomp_rat' and dog_instance.state!='chase_rat' and dog_instance.state!='swim' and dog_instance.bite_timer<=0:
                                 dog_instance.state='run'
@@ -704,121 +704,121 @@ class dog(pygame.sprite.Sprite):
                                 dog_instance.direction='left'
                             elif player.rect.x-dog_instance.rect.centerx>0:
                                 dog_instance.direction='right'
-                    for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
-                        dog_instance.state='chase_rat'
-                        if rat.rect.centerx-dog_instance.rect.centerx>0:
-                            dog_instance.direction='right'
-                        elif rat.rect.centerx-dog_instance.rect.centerx<0:
-                            dog_instance.direction='left'
-                        if rat.rect.colliderect(dog_instance.rect):
-                            if not rat.dead:
-                                rat.frame=0
-                                rat.dead=True
-                                player.play_sound_dir(rat.death_sound,rat.rect.centerx)
-                                dog_instance.stun_timer=6
-                            elif rat.dead:
-                                dog_instance.stun_timer=6
-                    if dog_instance.state=='run':
-                        dog_instance.max_velocity.y=100
-                        dog_instance.image_frame+=10*delta_time
-                        if dog_instance.image_frame>=len(dog_instance.dog_run_image_list_left)-1:
-                            dog_instance.image_frame=12
-                        if dog_instance.direction=='right':
-                            dog_instance.acceleration.x=numpy.random.randint(50,150)
-                            dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
-                        elif dog_instance.direction=='left':
-                            dog_instance.acceleration.x=numpy.random.randint(-150,-50)
-                            dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
-                    elif dog_instance.state=='swim': #or dog_instance.state=='chase_rat':
-                        dog_instance.velocity.y=0
-                        dog_instance.image_frame+=15*delta_time
-                        if dog_instance.image_frame>=11:
-                            dog_instance.image_frame=0
-                        if dog_instance.direction=='right':
-                            dog_instance.acceleration.x=numpy.random.randint(50,100)
-                            dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
-                        elif dog_instance.direction=='left':
-                            dog_instance.acceleration.x=numpy.random.randint(-100,-50)
-                            dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
-                        for bomb_rect in bomb_rect_list:
-                            if bomb_rect.x<dog_instance.rect.centerx<bomb_rect.right:
-                                for reactive_block in reactive_block_sprite_instance_group:
-                                    if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
-                                        dog_instance.life=0
-                                        dog_instance.image_frame=0
-                        for water_line in water_hitlines:#optimize later
-                            if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
-                                for water_spring_obj in water_spring_instance_list:
-                                    if dog_instance.rect.centerx-2<water_spring_obj.x<dog_instance.rect.centerx+2:
-                                        if abs(water_spring_obj.speed)==0:
-                                            water_spring_obj.speed=25
-                    elif dog_instance.state=='stop_rat':
-                        dog_instance.state='idle'#edit later
-                    dog_instance.velocity+=dog_instance.acceleration*delta_time
-                    if dog_instance.velocity.x>=dog_instance.max_velocity.x:
-                        dog_instance.velocity.x=dog_instance.max_velocity.x
-                    if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
-                        dog_instance.velocity.x=-(dog_instance.max_velocity.x)
-                    if dog_instance.velocity.y>=dog_instance.max_velocity.y:
-                        dog_instance.velocity.y=dog_instance.max_velocity.y
-                    dog_instance.rect.center+=dog_instance.velocity*delta_time
-                    for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False):
-                        if block.id == '0' or block.id == '1' or block.id == '2':
-                            dog_instance.rect.bottom=block.rect.top
-                        elif block.id == '10':
-                            dog_instance.rect.bottom=block.rect.top+4
-                        elif block.id == '12' or block.id=='13':
-                            dog_instance.rect.bottom=block.rect.top+30
-                        elif block.id == '40':
-                            dog_instance.rect.bottom=block.rect.top
-                        elif block.id == '3':#ramps
-                            dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-52#ramp_up
-                        elif block.id == '4':
-                            dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-37
-                        elif block.id == '5':
-                            dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-22
-                        elif block.id == '47':
-                            dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
-                        elif block.id == '48':
-                            dog_instance.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
-                        elif block.id == '49':
-                            dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
-                        elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
-                            if dog_instance.state=='swim':
+                        for rat in pygame.sprite.spritecollide(dog_instance,rat_sprite_group,dokill=False,collided=pygame.sprite.collide_circle):
+                            dog_instance.state='chase_rat'
+                            if rat.rect.centerx-dog_instance.rect.centerx>0:
+                                dog_instance.direction='right'
+                            elif rat.rect.centerx-dog_instance.rect.centerx<0:
+                                dog_instance.direction='left'
+                            if rat.rect.colliderect(dog_instance.rect):
+                                if not rat.dead:
+                                    rat.frame=0
+                                    rat.dead=True
+                                    player.play_sound_dir(rat.death_sound,rat.rect.centerx)
+                                    dog_instance.stun_timer=6
+                                elif rat.dead:
+                                    dog_instance.stun_timer=6
+                        if dog_instance.state=='run':
+                            dog_instance.max_velocity.y=100
+                            dog_instance.image_frame+=10*delta_time
+                            if dog_instance.image_frame>=len(dog_instance.dog_run_image_list_left)-1:
+                                dog_instance.image_frame=12
+                            if dog_instance.direction=='right':
+                                dog_instance.acceleration.x=numpy.random.randint(50,150)
+                                dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
+                            elif dog_instance.direction=='left':
+                                dog_instance.acceleration.x=numpy.random.randint(-150,-50)
+                                dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
+                        elif dog_instance.state=='swim': #or dog_instance.state=='chase_rat':
+                            dog_instance.velocity.y=0
+                            dog_instance.image_frame+=15*delta_time
+                            if dog_instance.image_frame>=11:
+                                dog_instance.image_frame=0
+                            if dog_instance.direction=='right':
+                                dog_instance.acceleration.x=numpy.random.randint(50,100)
+                                dog_instance.image=dog_instance.dog_run_image_list_right[round(dog_instance.image_frame)]
+                            elif dog_instance.direction=='left':
+                                dog_instance.acceleration.x=numpy.random.randint(-100,-50)
+                                dog_instance.image=dog_instance.dog_run_image_list_left[round(dog_instance.image_frame)]
+                            for bomb_rect in bomb_rect_list:
+                                if bomb_rect.x<dog_instance.rect.centerx<bomb_rect.right:
+                                    for reactive_block in reactive_block_sprite_instance_group:
+                                        if bomb_rect.colliderect(reactive_block) and type(reactive_block)==bomb and reactive_block.explode:
+                                            dog_instance.life=0
+                                            dog_instance.image_frame=0
+                            for water_line in water_hitlines:#optimize later
+                                if dog_instance.rect.clipline(water_line)==() and game.draw_rect.collidepoint(dog_instance.rect.center):
+                                    for water_spring_obj in water_spring_instance_list:
+                                        if dog_instance.rect.centerx-2<water_spring_obj.x<dog_instance.rect.centerx+2:
+                                            if abs(water_spring_obj.speed)==0:
+                                                water_spring_obj.speed=25
+                        elif dog_instance.state=='stop_rat':
+                            dog_instance.state='idle'#edit later
+                        dog_instance.velocity+=dog_instance.acceleration*delta_time
+                        if dog_instance.velocity.x>=dog_instance.max_velocity.x:
+                            dog_instance.velocity.x=dog_instance.max_velocity.x
+                        if dog_instance.velocity.x<=(-dog_instance.max_velocity.x):
+                            dog_instance.velocity.x=-(dog_instance.max_velocity.x)
+                        if dog_instance.velocity.y>=dog_instance.max_velocity.y:
+                            dog_instance.velocity.y=dog_instance.max_velocity.y
+                        dog_instance.rect.center+=dog_instance.velocity*delta_time
+                        for block in pygame.sprite.spritecollide(dog_instance,block_sprite_instance_group,dokill=False):
+                            if block.id == '0' or block.id == '1' or block.id == '2':
                                 dog_instance.rect.bottom=block.rect.top
-                            else:
-                                if dog_instance.velocity.x<0:
-                                    dog_instance.rect.left=block.rect.right
-                        elif block.id=='75' or block.id=='89' or block.id=='103' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='91' or block.id=='79' or block.id=='93' or block.id=='107' or block.id=='106' or block.id=='105':
-                            if dog_instance.state=='swim':
+                            elif block.id == '10':
+                                dog_instance.rect.bottom=block.rect.top+4
+                            elif block.id == '12' or block.id=='13':
+                                dog_instance.rect.bottom=block.rect.top+30
+                            elif block.id == '40':
                                 dog_instance.rect.bottom=block.rect.top
-                            else:
-                                if dog_instance.velocity.x>0:
-                                    dog_instance.rect.right=block.rect.left
-                else:
-                    if dog_instance.stun_timer<=0:
-                        dog_instance.state='idle'
-                        dog_instance.stun_timer=0
+                            elif block.id == '3':#ramps
+                                dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-52#ramp_up
+                            elif block.id == '4':
+                                dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-37
+                            elif block.id == '5':
+                                dog_instance.rect.bottom=round(0.3488603*(block.rect.x-dog_instance.pos.x))+block.rect.bottom-22
+                            elif block.id == '47':
+                                dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-52#ramp_down
+                            elif block.id == '48':
+                                dog_instance.rect.bottom=16-(round(0.3488603*abs(player.pos.x-block.rect.x)))+block.rect.bottom-37
+                            elif block.id == '49':
+                                dog_instance.rect.bottom=16-(round(0.3488603*abs(dog_instance.pos.x-block.rect.x)))+block.rect.bottom-22
+                            elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
+                                if dog_instance.state=='swim':
+                                    dog_instance.rect.bottom=block.rect.top
+                                else:
+                                    if dog_instance.velocity.x<0:
+                                        dog_instance.rect.left=block.rect.right
+                            elif block.id=='75' or block.id=='89' or block.id=='103' or block.id=='104' or block.id=='90' or block.id=='77' or block.id=='91' or block.id=='79' or block.id=='93' or block.id=='107' or block.id=='106' or block.id=='105':
+                                if dog_instance.state=='swim':
+                                    dog_instance.rect.bottom=block.rect.top
+                                else:
+                                    if dog_instance.velocity.x>0:
+                                        dog_instance.rect.right=block.rect.left
                     else:
-                        dog_instance.stun_timer-=delta_time
-            else:
-                dog_instance.bite_timer-=delta_time
-                if int(dog_instance.image_frame)>=len(dog.dog_bite_image_list_left)-1:
-                    dog_instance.image_frame=len(dog.dog_bite_image_list_left)-1
-                else:dog_instance.image_frame+=5*delta_time
-                if dog_instance.direction=='left':
-                    dog_instance.image=dog.dog_bite_image_list_left[int(dog_instance.image_frame)]
+                        if dog_instance.stun_timer<=0:
+                            dog_instance.state='idle'
+                            dog_instance.stun_timer=0
+                        else:
+                            dog_instance.stun_timer-=delta_time
                 else:
-                    dog_instance.image=dog.dog_bite_image_list_right[int(dog_instance.image_frame)]
-        else:
-            if int(dog_instance.image_frame)>=len(dog.dog_death_image_list_left):
-                dog_instance.kill()
+                    dog_instance.bite_timer-=delta_time
+                    if int(dog_instance.image_frame)>=len(dog.dog_bite_image_list_left)-1:
+                        dog_instance.image_frame=len(dog.dog_bite_image_list_left)-1
+                    else:dog_instance.image_frame+=5*delta_time
+                    if dog_instance.direction=='left':
+                        dog_instance.image=dog.dog_bite_image_list_left[int(dog_instance.image_frame)]
+                    else:
+                        dog_instance.image=dog.dog_bite_image_list_right[int(dog_instance.image_frame)]
             else:
-                if dog_instance.direction=='left':
-                    dog_instance.image=dog.dog_death_image_list_left[int(dog_instance.image_frame)]
+                if int(dog_instance.image_frame)>=len(dog.dog_death_image_list_left):
+                    dog_instance.kill()
                 else:
-                    dog_instance.image=dog.dog_death_image_list_right[int(dog_instance.image_frame)]
-                dog_instance.image_frame+=10*delta_time
+                    if dog_instance.direction=='left':
+                        dog_instance.image=dog.dog_death_image_list_left[int(dog_instance.image_frame)]
+                    else:
+                        dog_instance.image=dog.dog_death_image_list_right[int(dog_instance.image_frame)]
+                    dog_instance.image_frame+=10*delta_time
 
         #for dog in dog_sprite_group:
         #    print(dog.pos,dog.velocity,dog.state,'\033c',end='')
