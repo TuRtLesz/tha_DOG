@@ -2770,19 +2770,19 @@ while True:
         game_window.blit(edit_keybinds_image,((display_size[0]//2-edit_keybinds_image.get_width()//2,10)))
         game_window.blit(back_image,(back_rect.topleft))
         game_window.blit(play_list[int(menu_image_frame)],(play_rect_edit_keybind.topleft))
-        text('MOUSE MODE',(0,0,0),35,(200,150))
+        text('MOUSE MODE',(0,0,0),35,(200,150),output_screen=game_window)
         for index,function in enumerate(mouse_mode_keybinds):
             try:
-                text(function+'                '+input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[function])],(0,0,0),30,(150,200+60*index))
-            except:text(function+'                '+pygame.key.name(mouse_mode_keybinds[function]),(0,0,0),30,(150,200+60*index))
+                text(function+'                '+input_tutorial_block.key_names[pygame.key.name(mouse_mode_keybinds[function])],(0,0,0),30,(150,200+60*index),output_screen=game_window)
+            except:text(function+'                '+pygame.key.name(mouse_mode_keybinds[function]),(0,0,0),30,(150,200+60*index),output_screen=game_window)
             if key_edit_input and key_edit_mode=='mouse' and key_edit_index==index:
                 key_edit_function=function
         pygame.draw.line(game_window,(0,0,0),(display_size[0]//2,150),(display_size[0]//2,display_size[1]-200))
-        text('KEYBOARD MODE',(0,0,0),35,(display_size[0]//2+200,150))
+        text('KEYBOARD MODE',(0,0,0),35,(display_size[0]//2+200,150),output_screen=game_window)
         for index,function in enumerate(keyboard_mode_keybinds):
             try:
-                text(function+'             '+input_tutorial_block.key_names[pygame.key.name(keyboard_mode_keybinds[function])],(0,0,0),30,(display_size[0]//2+150,200+60*index))
-            except:text(function+'             '+pygame.key.name(keyboard_mode_keybinds[function]),(0,0,0),30,(display_size[0]//2+150,200+60*index))
+                text(function+'             '+input_tutorial_block.key_names[pygame.key.name(keyboard_mode_keybinds[function])],(0,0,0),30,(display_size[0]//2+150,200+60*index),output_screen=game_window)
+            except:text(function+'             '+pygame.key.name(keyboard_mode_keybinds[function]),(0,0,0),30,(display_size[0]//2+150,200+60*index),output_screen=game_window)
             if key_edit_input and key_edit_mode=='keyboard' and key_edit_index==index:
                 key_edit_function=function
         if game_settings['negative_screen']:#when hit fat_guy
@@ -2824,7 +2824,7 @@ while True:
                         key_edit_input=True
         if key_edit_input:
             pygame.draw.rect(game_window,(255,255,255),(display_size[0]//2-300,display_size[1]//2-200,600,400))
-            text('press the key to assigin!',(0,0,0),35,(display_size[0]//2-250,display_size[1]//2))
+            text('press the key to assigin!',(0,0,0),35,(display_size[0]//2-250,display_size[1]//2),output_screen=game_window)
             pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2-200),(display_size[0]//2+300,display_size[1]//2-200),width=4)
             pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2+200),(display_size[0]//2+300,display_size[1]//2+200),width=4)
             pygame.draw.line(game_window,(0,0,0),(display_size[0]//2-300,display_size[1]//2-200),(display_size[0]//2-300,display_size[1]//2+200),width=4)
