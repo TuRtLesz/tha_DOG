@@ -777,17 +777,17 @@ class dog(pygame.sprite.Sprite):
                             elif block.id == '40':
                                 dog_instance.rect.bottom=block.rect.top
                             elif block.id == '3':#ramps
-                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.right))+block.rect.bottom-52#ramp_up
+                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.centerx))+block.rect.bottom-52#ramp_up
                             elif block.id == '4':
-                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.right))+block.rect.bottom-37
+                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.centerx))+block.rect.bottom-37
                             elif block.id == '5':
-                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.right))+block.rect.bottom-22
+                                dog_instance.rect.bottom=round(0.35*(block.rect.x-dog_instance.rect.centerx))+block.rect.bottom-22
                             elif block.id == '47':
-                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.x-block.rect.x)))+block.rect.bottom-52#ramp_down
+                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.centerx-block.rect.x)))+block.rect.bottom-52#ramp_down
                             elif block.id == '48':
-                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.x-block.rect.x)))+block.rect.bottom-37
+                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.centerx-block.rect.x)))+block.rect.bottom-37
                             elif block.id == '49':
-                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.x-block.rect.x)))+block.rect.bottom-22
+                                dog_instance.rect.bottom=16-(round(0.35*abs(dog_instance.rect.centerx-block.rect.x)))+block.rect.bottom-22
                             elif block.id=='70' or block.id=='84' or block.id=='99' or block.id=='98' or block.id=='72' or block.id=='87' or block.id=='86' or block.id=='101' or block.id=='100' or block.id=='74' or block.id=='88' or block.id=='102':
                                 if dog_instance.state=='swim':
                                     dog_instance.rect.bottom=block.rect.top
@@ -1313,9 +1313,9 @@ class fish(pygame.sprite.Sprite):#fishes are not the bad guys
                         fish_instance.velocity.xy=0,0
                         if player.state=='swim' or player.state=='swim_fast':
                             if player.direction=='right':
-                                fish_instance.pos.xy=player.rect.left,player.rect.bottom-19
+                                fish_instance.pos.xy=player.rect.centerx,player.rect.bottom#player.rect.left,player.rect.bottom-19
                             else:
-                                fish_instance.pos.xy=player.rect.right,player.rect.bottom-19
+                                fish_instance.pos.xy=player.rect.centerx,player.rect.bottom#player.rect.right,player.rect.bottom-19
                         else:
                             fish_instance.pos.xy=player.rect.centerx,player.rect.bottom-19
                         if fish_instance.direction=='left':
