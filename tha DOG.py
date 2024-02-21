@@ -1113,13 +1113,13 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     fat_guy.whack_rect.topleft=fat_guy.rect.x+21,fat_guy.rect.y+274
                             else:
                                 if int(fat_guy.image_frame)==26:#330
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+294,fat_guy.rect.y+79
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-36-fat_guy.whack_rect.w,fat_guy.rect.y+79
                                 elif int(fat_guy.image_frame)==27:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+307,fat_guy.rect.y+169
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-23-fat_guy.whack_rect.w,fat_guy.rect.y+169
                                 elif int(fat_guy.image_frame)==28:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+304,fat_guy.rect.y+232
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-26-fat_guy.whack_rect.w,fat_guy.rect.y+232
                                 elif int(fat_guy.image_frame)==29 or int(fat_guy.image_frame)==30 or int(fat_guy.image_frame)==31:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+309,fat_guy.rect.y+274
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-21-fat_guy.whack_rect.w,fat_guy.rect.y+274
                             if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge' and player.no_damage_timer<=0:
                                 player.life-=2
                                 player.no_damage_timer=9
@@ -1142,42 +1142,45 @@ class big_fat_guy(pygame.sprite.Sprite):
                                 fat_guy.whack_hit=False
                         if fat_guy.bat=='left':
                             if fat_guy.image_frame==0:
-                                fat_guy.image_frame=11
-                            elif fat_guy.image_frame>=26:
+                                fat_guy.image_frame=8
+                            elif fat_guy.image_frame>=7:
                                 fat_guy.bat='right'
-                        if 8<=int(fat_guy.image_frame)<=10 or int(fat_guy.image_frame)==13 and not fat_guy.whack_hit:#fatguy impact rect
-                            if fat_guy.direction=='left':
-                                if int(fat_guy.image_frame)==8:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+36,fat_guy.rect.y+79
+                        if (7<=int(fat_guy.image_frame)<=8 or int(fat_guy.image_frame)==12 or int(fat_guy.image_frame)==13) and not fat_guy.whack_hit:#fatguy impact rect
+                            if fat_guy.direction=='left':#302 285
+                                if int(fat_guy.image_frame)==7:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+162,fat_guy.rect.y+228
+                                elif int(fat_guy.image_frame)==8:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+200,fat_guy.rect.y+204
                                 elif int(fat_guy.image_frame)==9:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+23,fat_guy.rect.y+169
-                                elif int(fat_guy.image_frame)==10:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+26,fat_guy.rect.y+232
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+168,fat_guy.rect.y+203
+                                elif int(fat_guy.image_frame)==12:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x,fat_guy.rect.y+205
                                 elif int(fat_guy.image_frame)==13:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+21,fat_guy.rect.y+274
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+91,fat_guy.rect.y+238
                             else:
-                                
-                                if int(fat_guy.image_frame)==8:#330
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+294,fat_guy.rect.y+79
+                                if int(fat_guy.image_frame)==7:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-fat_guy.whack_rect.w-162,fat_guy.rect.y+228
+                                elif int(fat_guy.image_frame)==8:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-fat_guy.whack_rect.w-200,fat_guy.rect.y+204
                                 elif int(fat_guy.image_frame)==9:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+307,fat_guy.rect.y+169
-                                elif int(fat_guy.image_frame)==10:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+304,fat_guy.rect.y+232
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-fat_guy.whack_rect.w-168,fat_guy.rect.y+203
+                                elif int(fat_guy.image_frame)==12:
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-fat_guy.whack_rect.w,fat_guy.rect.y+205
                                 elif int(fat_guy.image_frame)==13:
-                                    fat_guy.whack_rect.topleft=fat_guy.rect.x+309,fat_guy.rect.y+274
+                                    fat_guy.whack_rect.topleft=fat_guy.rect.right-fat_guy.whack_rect.w-91,fat_guy.rect.y+238
                             if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge' and player.no_damage_timer<=0:
                                 player.life-=4
                                 player.no_damage_timer=9
                                 fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
-                            fat_guy.body_rect.centerx-=100*delta_time
+                            #fat_guy.body_rect.centerx-=100*delta_time
                             fat_guy.image=big_fat_guy.spin_image_list_left[int(fat_guy.image_frame)]
                             fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-108,fat_guy.body_rect.top-81))
                         elif fat_guy.direction=='right':
-                            fat_guy.body_rect.centerx+=100*delta_time
+                            #fat_guy.body_rect.centerx+=100*delta_time
                             fat_guy.image=big_fat_guy.spin_image_list_right[int(fat_guy.image_frame)]
                             fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.right-193,fat_guy.body_rect.top-81))
-                        fat_guy.image_frame+=10*delta_time
+                        fat_guy.image_frame+=0.1*delta_time
                     elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
                         if fat_guy.image_frame>=len(big_fat_guy.run_image_list_left)-1:
                             fat_guy.image_frame=9
@@ -2732,10 +2735,10 @@ while True:
 
 
 
-        #for fat_guy in big_fat_guy_sprite_group:#fat guy hitboxes
-        #    pygame.draw.rect(game_window,(255,0,0),(fat_guy.body_rect.x-game.offset.x,fat_guy.body_rect.y-game.offset.y,94,160))
-        #    pygame.draw.rect(game_window,(255,255,0),(fat_guy.head_rect.x-game.offset.x,fat_guy.head_rect.y-game.offset.y,49,32))
-        #    pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
+        for fat_guy in big_fat_guy_sprite_group:#fat guy hitboxes
+            pygame.draw.rect(game_window,(255,0,0),(fat_guy.body_rect.x-game.offset.x,fat_guy.body_rect.y-game.offset.y,94,160))
+            pygame.draw.rect(game_window,(255,255,0),(fat_guy.head_rect.x-game.offset.x,fat_guy.head_rect.y-game.offset.y,49,32))
+            pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
 
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
         print(str(clock.get_fps()))
