@@ -1056,9 +1056,9 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     else:fat_guy.state='run'
                             else:
                                     fat_guy.state='whack'
-                        if player.pos.x>fat_guy.body_rect.centerx:
+                        if player.pos.x>fat_guy.body_rect.right:
                             fat_guy.direction='right'
-                        else:
+                        elif player.pos.x<fat_guy.body_rect.left:
                             fat_guy.direction='left'
                         for rock_instance in reactive_block_sprite_update_group:
                             if type(rock_instance)==little_rock and rock_instance.life>0:
@@ -1173,14 +1173,14 @@ class big_fat_guy(pygame.sprite.Sprite):
                                 player.no_damage_timer=9
                                 fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
-                            #fat_guy.body_rect.centerx-=100*delta_time
+                            fat_guy.body_rect.centerx-=100*delta_time
                             fat_guy.image=big_fat_guy.spin_image_list_left[int(fat_guy.image_frame)]
                             fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.left-108,fat_guy.body_rect.top-81))
                         elif fat_guy.direction=='right':
-                            #fat_guy.body_rect.centerx+=100*delta_time
+                            fat_guy.body_rect.centerx+=100*delta_time
                             fat_guy.image=big_fat_guy.spin_image_list_right[int(fat_guy.image_frame)]
                             fat_guy.rect=fat_guy.image.get_rect(topleft=(fat_guy.body_rect.right-193,fat_guy.body_rect.top-81))
-                        fat_guy.image_frame+=0.1*delta_time
+                        fat_guy.image_frame+=10*delta_time
                     elif fat_guy.state=='run':#50 37 offset-left 29,37?-right
                         if fat_guy.image_frame>=len(big_fat_guy.run_image_list_left)-1:
                             fat_guy.image_frame=9
