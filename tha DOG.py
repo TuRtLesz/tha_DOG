@@ -1050,7 +1050,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                             fat_guy.state='rope'
                         if fat_guy.state!='rope' and fat_guy.state!='spin':
                             if abs(player.pos.x-fat_guy.body_rect.centerx)>142 and fat_guy.state!='whack':
-                                    if abs(player.pos.x-fat_guy.body_rect.centerx)>400:# and fat_guy.life<25:
+                                    if abs(player.pos.x-fat_guy.body_rect.centerx)>400 and fat_guy.life<25:
                                         fat_guy.state='spin'
                                         fat_guy.spin_timer=30
                                     else:fat_guy.state='run'
@@ -1093,9 +1093,11 @@ class big_fat_guy(pygame.sprite.Sprite):
                     if fat_guy.state=='whack':
                         if int(fat_guy.image_frame)>=len(big_fat_guy.whack_image_list_left):
                             fat_guy.image_frame=0
-                            game.earthquake=True
                             fat_guy.whack_hit=False
                             fat_guy.state='idle'
+                        if int(fat_guy.image_frame)>=29:
+                            game.earthquake=True
+                            if int(fat_guy.image_frame)==29:game.earthquake_timer=0
                         if fat_guy.bat=='left':
                             if fat_guy.image_frame==0:
                                 fat_guy.image_frame=11
@@ -1145,7 +1147,8 @@ class big_fat_guy(pygame.sprite.Sprite):
                                 fat_guy.image_frame=8
                             elif fat_guy.image_frame>=7:
                                 fat_guy.bat='right'
-                        if (7<=int(fat_guy.image_frame)<=8 or int(fat_guy.image_frame)==12 or int(fat_guy.image_frame)==13) and not fat_guy.whack_hit:#fatguy impact rect
+                        if int(fat_guy.image_frame)>=7:game.earthquake=True
+                        if (7<=int(fat_guy.image_frame)<=9 or int(fat_guy.image_frame)==12 or int(fat_guy.image_frame)==13) and not fat_guy.whack_hit:#fatguy impact rect
                             if fat_guy.direction=='left':#302 285
                                 if int(fat_guy.image_frame)==7:
                                     fat_guy.whack_rect.topleft=fat_guy.rect.x+162,fat_guy.rect.y+228
@@ -1234,11 +1237,11 @@ class big_fat_guy(pygame.sprite.Sprite):
                                     fat_guy.hook_throw=True
                                 fat_guy.image_frame=12
                                 if fat_guy.direction=='left':
-                                    game_window.blit(fat_guy.hook_image,(fat_guy.hook_rect.x-game.offset.x-game.screen_shake.x,fat_guy.hook_rect.y-game.offset.y-game.screen_shake.y))
-                                    pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.right-game.offset.x-game.screen_shake.x,fat_guy.hook_rect.midright[1]-game.offset.y-game.screen_shake.y),(fat_guy.rect.left-game.offset.x-game.screen_shake.x,fat_guy.rect.top+41-game.offset.y-game.screen_shake.y))
+                                    game_window.blit(fat_guy.hook_image,(fat_guy.hook_rect.x-game.offset.x+game.screen_shake.x,fat_guy.hook_rect.y-game.offset.y+game.screen_shake.y))
+                                    pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.right-game.offset.x-game.screen_shake.x,fat_guy.hook_rect.midright[1]-game.offset.y+game.screen_shake.y),(fat_guy.rect.left-game.offset.x+game.screen_shake.x,fat_guy.rect.top+41-game.offset.y+game.screen_shake.y))
                                 else:
-                                    game_window.blit(fat_guy.hook_image_right,(fat_guy.hook_rect.x-game.offset.x-game.screen_shake.x,fat_guy.hook_rect.y-game.offset.y-game.screen_shake.y))
-                                    pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.left-game.offset.x-game.screen_shake.x,fat_guy.hook_rect.midright[1]-game.offset.y-game.screen_shake.y),(fat_guy.rect.right-game.offset.x-game.screen_shake.x,fat_guy.rect.top+41-game.offset.y-game.screen_shake.y))
+                                    game_window.blit(fat_guy.hook_image_right,(fat_guy.hook_rect.x-game.offset.x+game.screen_shake.x,fat_guy.hook_rect.y-game.offset.y+game.screen_shake.y))
+                                    pygame.draw.line(game_window,(0,0,0),(fat_guy.hook_rect.left-game.offset.x+game.screen_shake.x,fat_guy.hook_rect.midright[1]-game.offset.y+game.screen_shake.y),(fat_guy.rect.right-game.offset.x+game.screen_shake.x,fat_guy.rect.top+41-game.offset.y+game.screen_shake.y))
                             else:
                                 fat_guy.player_caught=False
                                 if fat_guy.image_frame>=len(fat_guy.rope_image_list_left)-1:
@@ -2100,8 +2103,8 @@ class game():
             if player.state=='explode':
                 cam.screen_shake.xy=(numpy.random.randint(-10,10),numpy.random.randint(-10,10))
             else:
-                cam.screen_shake.xy=(0,0)
-                if cam.spike_shake_timer>0:
+                if not cam.earthquake:cam.screen_shake.xy=(0,0)
+                if cam.spike_shake_timer>0: 
                     cam.spike_shake_timer-=delta_time
                     cam.screen_shake.x=numpy.random.randint(-15,15)
             if cam.earthquake:
@@ -2111,9 +2114,12 @@ class game():
                     cam.screen_shake.xy=(0,0)
                 else:
                     if cam.earthquake_timer==0:
-                        cam.screen_shake.y=20
+                        cam.screen_shake.y=-100#cahnge later?
                     else:
-                        cam.screen_shake.y=numpy.random.randint(-15,15)
+                        if cam.screen_shake.y<-15:
+                            cam.screen_shake.y+=200*delta_time
+                        else:
+                            cam.screen_shake.y=numpy.random.randint(-15,15)
                     cam.earthquake_timer+=delta_time
             if not cam.fat_guy_hit and player_sprite.pos.x>player.fat_guy_pan:#fat_guy pan loc
                 cam.player_offset.x-=200*delta_time
@@ -2288,7 +2294,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
@@ -2735,10 +2741,10 @@ while True:
 
 
 
-        for fat_guy in big_fat_guy_sprite_group:#fat guy hitboxes
-            pygame.draw.rect(game_window,(255,0,0),(fat_guy.body_rect.x-game.offset.x,fat_guy.body_rect.y-game.offset.y,94,160))
-            pygame.draw.rect(game_window,(255,255,0),(fat_guy.head_rect.x-game.offset.x,fat_guy.head_rect.y-game.offset.y,49,32))
-            pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
+        #for fat_guy in big_fat_guy_sprite_group:#fat guy hitboxes
+        #    pygame.draw.rect(game_window,(255,0,0),(fat_guy.body_rect.x-game.offset.x,fat_guy.body_rect.y-game.offset.y,94,160))
+        #    pygame.draw.rect(game_window,(255,255,0),(fat_guy.head_rect.x-game.offset.x,fat_guy.head_rect.y-game.offset.y,49,32))
+        #    pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
 
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
         print(str(clock.get_fps()))
