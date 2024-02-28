@@ -496,36 +496,35 @@ class player(pygame.sprite.Sprite):
                 player.rect.center=player.pos
                 player.jump=False
             else:
-                player.pos.y+=400*delta_time
+                player.pos.y+=600*delta_time#tweak
                 player.rect.center=player.pos
                 player.jump=False
-        if player.jump:
-            if abs(player.pos.y-player.jump_height)<150:
-                if player.jump_counter<=0:
-                    player.image_frame+=5*delta_time
-                    if round(player.image_frame)>=len(player.jump_image_list_right)-1:
-                        player.image_frame=len(player.jump_image_list_right)-1
-                    if player.direction=='right':  
-                        player.image=player.jump_image_list_right[round(player.image_frame)]
-                    elif player.direction=='left':  
-                        player.image=player.jump_image_list_left[round(player.image_frame)] 
-                    player.stamina-=50*delta_time
-                    player.pos.y-=300*delta_time
-                    if player.velocity.x<150 and player.direction=='right':
-                        player.pos.x+=150*delta_time
-                    elif player.velocity.x<-150 and player.direction=='left':
-                        player.pos.x-=150*delta_time
-                    player.rect.center=player.pos
-                else:
-                    player.jump=False
-        if player.state=='jump':
-            player.pos.x+=player.velocity.x*delta_time
-            player.rect=player.image.get_rect(center=player.pos.xy)
-            player.mask=pygame.mask.from_surface(player.image)
+        if player.jump and abs(player.pos.y-player.jump_height)<150:#max 280
+            if player.jump_counter<=0:
+                player.image_frame+=5*delta_time
+                if round(player.image_frame)>=len(player.jump_image_list_right)-1:
+                    player.image_frame=len(player.jump_image_list_right)-1
+                if player.direction=='right':  
+                    player.image=player.jump_image_list_right[round(player.image_frame)]
+                elif player.direction=='left':  
+                    player.image=player.jump_image_list_left[round(player.image_frame)] 
+                player.stamina-=50*delta_time
+                player.pos.y-=450*delta_time#tweak
+                #if player.velocity.x<150 and player.direction=='right':
+                #    player.pos.x+=150*delta_time
+                #elif player.velocity.x<-150 and player.direction=='left':
+                #    player.pos.x-=150*delta_time
+                if player.direction=='right':
+                    player.pos.x+=320*delta_time
+                else:player.pos.x-=320*delta_time
+                player.rect=player.image.get_rect(center=player.pos.xy)
+                player.mask=pygame.mask.from_surface(player.image)
+            else:
+                player.jump=False
         for block in pygame.sprite.spritecollide(player,block_sprite_instance_group,dokill=False):
             player.jump_height=player.pos.y
             player.jump_counter=0
-            game.draw_rect.centery=player.jump_height-300#? wot thus
+            game.draw_rect.centery=player.pos.y-300#? wot thus
             if block.id=='0' or block.id=='1' or block.id=='2' or block.id=='34' or block.id=='35' or block.id == '36' or block.id == '56' or block.id == '57' or block.id == '58':
                 player.rect.bottom=block.rect.top
             elif block.id=='38':
@@ -649,8 +648,8 @@ class dog(pygame.sprite.Sprite):
     def __init__(dog_instance,x,y):
         super().__init__()
         dog_instance.velocity=pygame.math.Vector2(0,0)
-        dog_instance.acceleration=pygame.math.Vector2(0,1000)
-        dog_instance.max_velocity=pygame.math.Vector2(250,1000)
+        dog_instance.acceleration=pygame.math.Vector2(0,800)
+        dog_instance.max_velocity=pygame.math.Vector2(250,800)
         dog_instance.life=3
         dog_instance.state='idle'
         dog_instance.direction='right'
@@ -724,7 +723,7 @@ class dog(pygame.sprite.Sprite):
                                 elif rat.dead:
                                     dog_instance.stun_timer=6
                         if dog_instance.state=='run':
-                            dog_instance.max_velocity.y=1000
+                            dog_instance.max_velocity.y=800
                             dog_instance.image_frame+=10*delta_time
                             if dog_instance.image_frame>=len(dog_instance.dog_run_image_list_left)-1:
                                 dog_instance.image_frame=12
@@ -2294,7 +2293,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(22791,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
@@ -2495,6 +2494,13 @@ while True:
                             player.jump=True
                             player.image_frame=0
                             player.state='jump'
+            elif event.type==pygame.KEYUP:
+                if game_settings['mouse_mode']:
+                    if event.key==mouse_mode_keybinds['up']:
+                        player.jump=False
+                else:
+                    if event.key==keyboard_mode_keybinds['up']:
+                        player.jump=False
             if game_settings['mouse_mode']:
                 if event.type==pygame.MOUSEWHEEL:
                     if event.y==-1:
