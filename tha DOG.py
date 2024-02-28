@@ -100,7 +100,7 @@ class player(pygame.sprite.Sprite):
         player.velocity=pygame.math.Vector2(0,0)
         player.acceleration=pygame.math.Vector2(0,0)
         player.max_velocity=pygame.math.Vector2(200,5000)
-        player.life=40#change later
+        player.life=3#change later
         player.life_image_frame=0
         player.prev_life=player.life
         player.no_damage_timer=0
@@ -667,17 +667,21 @@ class dog(pygame.sprite.Sprite):
         else:
             dog_instance.max_velocity.x=250
         for player in player_sprite_group:
-            for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
-                if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
-                    dog_instance.stun_timer=5
-                    dog_instance.life-=1
-                    dog_instance.image_frame=0
-                    reactive_block.velocity.x=0
-                    reactive_block.life-=1
-                    player.score+=200
             if dog_instance.life<=0:
                 dog_instance.state='dead'
             if dog_instance.state!='dead':
+                for reactive_block in pygame.sprite.spritecollide(dog_instance,reactive_block_sprite_update_group,dokill=False):
+                    if type(reactive_block)==little_rock and reactive_block.velocity.x!=0:
+                        dog_instance.stun_timer=5
+                        dog_instance.life-=1
+                        dog_instance.image_frame=0
+                        reactive_block.velocity.x=0
+                        reactive_block.life-=1
+                        player.score+=200
+                    elif type(reactive_block)==rock:
+                        dog_instance.life=0
+                        dog_instance.image_frame=0
+                        player.score+=50
                 if dog_instance.bite_timer<=0:
                     if dog_instance.stun_timer<=0:
                         dog_instance.state='run'
@@ -1753,9 +1757,8 @@ class nest(pygame.sprite.Sprite):#reactive_block
             else:
                 nest_instance.rect.y+=600*delta_time
                 for dog in pygame.sprite.spritecollide(nest_instance,dog_sprite_group,dokill=False):
-                    if dog.stun_timer<=0:
-                        dog.velocity.x=0
-                        dog.stun_timer=2
+                    dog.velocity.x=0
+                    dog.stun_timer+=2
 
 class tree(pygame.sprite.Sprite):
     tree_image=pygame.image.load('Data/tree.png').convert_alpha()
@@ -2293,7 +2296,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(22791,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
