@@ -499,7 +499,7 @@ class player(pygame.sprite.Sprite):
                 player.pos.y+=600*delta_time#tweak
                 player.rect.center=player.pos
                 player.jump=False
-        if player.jump and abs(player.pos.y-player.jump_height)<150:#max 280
+        if player.jump and abs(player.pos.y-player.jump_height)<150:#max 280 min 40 or 50 add later?
             if player.jump_counter<=0:
                 player.image_frame+=5*delta_time
                 if round(player.image_frame)>=len(player.jump_image_list_right)-1:
@@ -678,7 +678,7 @@ class dog(pygame.sprite.Sprite):
                         reactive_block.velocity.x=0
                         reactive_block.life-=1
                         player.score+=200
-                    elif type(reactive_block)==rock:
+                    elif type(reactive_block)==rock and reactive_block.roll:
                         dog_instance.life=0
                         dog_instance.image_frame=0
                         player.score+=50
@@ -2296,7 +2296,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
