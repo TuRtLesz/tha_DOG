@@ -2296,7 +2296,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
@@ -2566,7 +2566,7 @@ while True:
                         pygame.draw.line(game_window,(0,0,0),((display_size[0]//2)-50-game.player_offset.x-x,player.rect.top+28-26-player.arc_eq_a*x+player.arc_eq_b*x**2-game.player_offset.y),((display_size[0]//2)-50-game.player_offset.x-x-5,player.rect.top+28-26-player.arc_eq_a*x+player.arc_eq_b*((x+5)**2)-game.player_offset.y))
             if game_settings['negative_screen']:#when hit fat_guy
                 white_screen=pygame.Surface(game_window.get_size())
-                white_screen.fill((255,255,255))
+                white_screen.fill((200,200,200))#lighter on eyes
                 white_screen.blit(game_window,(0,0),special_flags=pygame.BLEND_SUB)
                 game_window=white_screen
                 for fat_guy in big_fat_guy_sprite_group:
