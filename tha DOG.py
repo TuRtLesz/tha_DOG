@@ -1608,6 +1608,7 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/little_rock.png').convert_alpha(),image_list,3)
     water_resistance=pygame.math.Vector2(0,100)
     water_jump_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/little_rock_water.wav')
+    bomb_hit_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/little_rock_bomb.wav')
     def __init__(rock_instance,x,y):
         super().__init__()
         rock_instance.life=3
@@ -1626,6 +1627,7 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                             if reactive_block.bomb_rect.colliderect(rock_instance.rect):
                                 reactive_block.explode=True
                                 rock_instance.life-=1
+                                player.play_sound_dir(little_rock.bomb_hit_sound,rock_instance.pos.x)
                                 reactive_block_sprite_update_group.add(reactive_block)
                         elif type(reactive_block)==spike:
                             reactive_block.rect.y+=33
