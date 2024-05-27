@@ -249,6 +249,7 @@ class player(pygame.sprite.Sprite):
                             player.image_frame=0
                             player.state='explode'
                             reactive_block.explode=True
+                            bomb_land.bomb_land_sound.play()
                             reactive_block_sprite_update_group.add(reactive_block)
         for dog in pygame.sprite.spritecollide(player,dog_sprite_group,dokill=False):#6,23
             if dog.direction=='left':
@@ -1515,6 +1516,7 @@ class bomb(pygame.sprite.Sprite):#reactive_block
 class bomb_land(pygame.sprite.Sprite):#reactive_block
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb_land.png').convert_alpha(),image_list,frames=8)
+    bomb_land_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/bomb_land.wav')
     def __init__(bomb_instance,x,y):
         super().__init__()
         bomb_instance.image=bomb_land.image_list[0]
@@ -1537,6 +1539,7 @@ class bomb_land(pygame.sprite.Sprite):#reactive_block
         for reactive_block in pygame.sprite.spritecollide(bomb,reactive_block_sprite_instance_group,dokill=False,collided=pygame.sprite.collide_circle):
             if type(reactive_block)==bomb_land:
                 reactive_block.explode=True
+                #player.play_sound_dir(bomb_land.bomb_land_sound,reactive_block.rect.x)
                 reactive_block_sprite_update_group.add(reactive_block)
 class chain(pygame.sprite.Sprite):#reactive_block
     image=pygame.image.load('Data/blocks/reactive_blocks/chain.png').convert_alpha()
@@ -1637,6 +1640,8 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                                 rock_instance.life-=1
                                 player.play_sound_dir(little_rock.bomb_hit_sound,rock_instance.pos.x)
                                 reactive_block_sprite_update_group.add(reactive_block)
+                                if type(reactive_block)==bomb_land:
+                                    player.play_sound_dir(bomb_land.bomb_land_sound,reactive_block.rect.x)
                         elif type(reactive_block)==spike:
                             reactive_block.rect.y+=33
                             reactive_block_sprite_update_group.add(reactive_block)
@@ -2306,7 +2311,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
