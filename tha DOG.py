@@ -1003,6 +1003,8 @@ class big_fat_guy(pygame.sprite.Sprite):
     load_spritesheet_2dir(pygame.image.load('Data/big_fat_guy/big_fat_guy_spin.png').convert(),spin_image_list_left,spin_image_list_right,frames=15,alpha_sur=False)
     hook_image=pygame.image.load('Data/big_fat_guy/hook.png').convert_alpha()
     hook_image_right=pygame.transform.flip(hook_image,True,False)
+    bat_ground_hit_sound=pygame.mixer.Sound('Data/big_fat_guy/bat_ground_hit.wav')
+    bat_player_hit_sound=pygame.mixer.Sound('Data/big_fat_guy/bat_player_hit.wav')
     def __init__(fat_guy,x,y):
         super().__init__()
         fat_guy.right_rope_limit=0
@@ -1027,6 +1029,7 @@ class big_fat_guy(pygame.sprite.Sprite):
         fat_guy.head_rect=pygame.Rect(fat_guy.rect.centerx,fat_guy.rect.centery,49,32)
         fat_guy.hook_rect=big_fat_guy.hook_image.get_rect(midright=(fat_guy.rect.left,fat_guy.rect.top+35))
         fat_guy.whack_rect=pygame.Rect(fat_guy.rect.left,fat_guy.rect.top,102,48)#whack impact rect
+        fat_guy.ground_hit_sound=True
     def update(fat_guy,delta_time):
         if fat_guy.state!='dead':
             if fat_guy.life<=0:
@@ -1100,7 +1103,11 @@ class big_fat_guy(pygame.sprite.Sprite):
                             fat_guy.state='idle'
                         if int(fat_guy.image_frame)>=29:
                             game.earthquake=True
-                            if int(fat_guy.image_frame)==29:game.earthquake_timer=0
+                            if int(fat_guy.image_frame)==29 and fat_guy.ground_hit_sound:
+                                game.earthquake_timer=0
+                                player.play_sound_dir(big_fat_guy.bat_ground_hit_sound,fat_guy.body_rect.centerx)
+                                fat_guy.ground_hit_sound=False
+                        elif int(fat_guy.image_frame)==28:fat_guy.ground_hit_sound=True
                         if fat_guy.bat=='left':
                             if fat_guy.image_frame==0:
                                 fat_guy.image_frame=11
@@ -1128,6 +1135,7 @@ class big_fat_guy(pygame.sprite.Sprite):
                             if player.rect.colliderect(fat_guy.whack_rect) and player.state!='dodge' and player.no_damage_timer<=0:
                                 player.life-=2
                                 player.no_damage_timer=9
+                                fat_guy.bat_player_hit_sound.play()
                                 fat_guy.whack_hit=True
                         if fat_guy.direction=='left':
                             fat_guy.image=big_fat_guy.whack_image_list_left[int(fat_guy.image_frame)]
@@ -2298,7 +2306,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
 
 game=game()
 
-player_sprite_group.add(player(2067,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
+player_sprite_group.add(player(117248,560))#2067,560,30111,75984,960,boss-117248,ostrich start-64375
 
 def tut_blocks_load():
     global tut_end
