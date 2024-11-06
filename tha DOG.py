@@ -615,7 +615,7 @@ class player(pygame.sprite.Sprite):
         else:
             player.sound_channel=pygame.mixer.find_channel()
             if player.sound_channel==None:
-                player.sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels+1)#getting free channel
+                player.sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels()+1)#getting free channel
             if game.draw_rect.x-100<=sound_distance<=game.draw_rect.right+100:
                 if player.pos.x>sound_distance:#left speaker
                     if abs(player.pos.x-sound_distance)>display_size[0]//2:
