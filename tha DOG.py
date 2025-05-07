@@ -615,7 +615,7 @@ class player(pygame.sprite.Sprite):
         else:
             player.sound_channel=pygame.mixer.find_channel()
             if player.sound_channel==None:
-                player.sound_channel=pygame.mixer.Channel()#pygame.mixer.get_num_channels()+1)#getting free channel
+                player.sound_channel=pygame.mixer.Channel(pygame.mixer.get_num_channels()+1)#getting free channel
             if game.draw_rect.x-100<=sound_distance<=game.draw_rect.right+100:
                 if player.pos.x>sound_distance:#left speaker
                     if abs(player.pos.x-sound_distance)>display_size[0]//2:
@@ -2384,6 +2384,12 @@ tut_blocks_load()
 def map_load(water_hitlines,water_spring_list):
     reactive_block_sprite_group.empty()
     nest_sprite_group.empty()
+    rat_sprite_group.empty()
+    fish_sprite_group.empty()
+    big_fat_guy_sprite_group.empty()
+    dog_sprite_group.empty()
+    fish_sprite_group.empty()
+    ostrich_sprite_group.empty()
     with open('Data/worlds/0/0_reactive_blocks.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
         for row_number,row in enumerate(world_reader):
@@ -2419,11 +2425,6 @@ def map_load(water_hitlines,water_spring_list):
                     reactive_block_sprite_group.add(spike(block_number,row_number,2))
                 elif block_id=='14':
                     nest_sprite_group.add(nest(block_number,row_number))
-    rat_sprite_group.empty()
-    fish_sprite_group.empty()
-    big_fat_guy_sprite_group.empty()
-    dog_sprite_group.empty()
-    fish_sprite_group.empty()
     with open('Data/worlds/0/0_mobs.csv') as map:
         world_reader=csv.reader(map,delimiter=',')
         for mob_y,row in enumerate(world_reader):
@@ -2801,6 +2802,9 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
+                    water_spring_instance_list=[]
+                    water_spring_list=[]
+                    water_hitlines=[]
                     map_load(water_hitlines,water_spring_list)
                 elif exit_rect.collidepoint(mouse_pos):
                     pygame.mixer.quit()
@@ -2822,6 +2826,14 @@ while True:
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
+                    bomb_rect_list=[]
+                    water_blocks_rect_list=[]
+                    water_blocks_instance_rect_list=[]
+                    water_hitlines=[]
+                    bomb_rect_load_list=[]
+                    mouse_mode_tuts=[]
+                    bomb_rect_topright=[]
+                    keyboard_mode_tuts=[]
                     map_load(water_hitlines,water_spring_list)
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
