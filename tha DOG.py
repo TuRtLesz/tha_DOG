@@ -196,6 +196,10 @@ class player(pygame.sprite.Sprite):
                                     for reactive_block_obj in reactive_block_sprite_instance_group:
                                         if type(reactive_block_obj)==bomb or type(reactive_block_obj)==bomb_land:
                                             if bomb_rect.collidepoint(reactive_block_obj.rect.center):
+                                                if type(reactive_block_obj)==bomb:
+                                                    player.play_sound_dir(bomb.bomb_sound,reactive_block_obj.rect.x)
+                                                elif type(reactive_block_obj)==bomb_land:
+                                                    player.play_sound_dir(bomb_land.bomb_land_sound,reactive_block_obj.rect.x)
                                                 reactive_block.connected=True
                                                 reactive_block_obj.explode=True
                                                 reactive_block_obj.add(reactive_block_sprite_update_group)
@@ -1492,6 +1496,7 @@ class spike(pygame.sprite.Sprite):#reactive_block
 class bomb(pygame.sprite.Sprite):#reactive_block
     image_list=[]
     load_spritesheet(pygame.image.load('Data/blocks/reactive_blocks/bomb.png').convert_alpha(),image_list,frames=8)
+    bomb_sound=pygame.mixer.Sound('Data/blocks/reactive_blocks/bomb_underwater.wav')
     def __init__(bomb_instance,x,y):
         super().__init__()
         bomb_instance.bomb_image_list=bomb.image_list
@@ -1575,11 +1580,15 @@ class rock(pygame.sprite.Sprite):#reactive_block
                         switch_instance.clicked=True
                     for bomb_rect in bomb_rect_list:
                             if bomb_rect.colliderect(switch_instance.rect):
-                                for reative_block in reactive_block_sprite_instance_group:
+                                for reative_block in reactive_block_sprite_instance_group:#reacttive wihtout a c
                                     if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                         if bomb_rect.collidepoint(reative_block.rect.center):
                                             switch_instance.connected=True
                                             reative_block.explode=True
+                                            if type(reative_block)==bomb:
+                                                    player.play_sound_dir(bomb.bomb_sound,reative_block.rect.x)
+                                            elif type(reative_block)==bomb_land:
+                                                player.play_sound_dir(bomb_land.bomb_land_sound,reative_block.rect.x)
                                             reactive_block_sprite_update_group.add(reative_block)
                                     elif type(reative_block)==chain:
                                         if reative_block.rect.colliderect(bomb_rect):
@@ -1658,9 +1667,13 @@ class little_rock(pygame.sprite.Sprite):#reactive_block
                                 reactive_block.clicked=True
                             for bomb_rect in bomb_rect_list:
                                     if bomb_rect.colliderect(reactive_block.rect):
-                                        for reative_block in reactive_block_sprite_instance_group:
+                                        for reative_block in reactive_block_sprite_instance_group:#reactive without a c
                                             if type(reative_block)==bomb or type(reative_block)==bomb_land:
                                                 if bomb_rect.collidepoint(reative_block.rect.center):
+                                                    if type(reative_block)==bomb:
+                                                        player.play_sound_dir(bomb.bomb_sound,reative_block.rect.x)
+                                                    elif type(reative_block)==bomb_land:
+                                                        player.play_sound_dir(bomb_land.bomb_land_sound,reative_block.rect.x)
                                                     reactive_block.connected=True
                                                     reative_block.explode=True
                                                     reactive_block_sprite_update_group.add(reative_block)
@@ -2561,8 +2574,8 @@ while True:
                     [big_fat_guy_sprite_group,tree_sprite_group,nest_sprite_group,block_sprite_instance_group,tutorial_block_sprite_group]
                     ,mouse_mode_tuts,keyboard_mode_tuts)
         
-        for player in player_sprite_group:
-            print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
+        #for player in player_sprite_group:
+        #    print(str(player.pos),str(player.stamina)+player.state+'\033c',end='')
 
         keys_pressed=pygame.key.get_pressed()
             #elif event.type==pygame.KEYUP:
@@ -2775,7 +2788,7 @@ while True:
         #    pygame.draw.rect(game_window,(0,0,255),(fat_guy.whack_rect.x-game.offset.x,fat_guy.whack_rect.y-game.offset.y,102,48))
 
         #game_window.blit(pygame.image.load('rough.png').convert(),(0,225))#testin
-        print(str(clock.get_fps()))
+        #print(str(clock.get_fps()))
 
         clock.tick()
     else:pygame.mouse.set_visible(True)
