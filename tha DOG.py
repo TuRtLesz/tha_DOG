@@ -350,12 +350,14 @@ class player(pygame.sprite.Sprite):
                     player.rect.x+=12
                 player.pos.xy=player.rect.center
             if player.direction=='left':
+                player.max_velocity.x=550
                 player.velocity.x=-550
                 player.image=player.dodge_image_list_left[int(player.image_frame)]
             elif player.direction=='right':
+                player.max_velocity.x=550
                 player.velocity.x=550
                 player.image=player.dodge_image_list_right[int(player.image_frame)]
-            player.image_frame+=10*delta_time
+            player.image_frame+=15*delta_time
         if player.state=='pant':
             player.idle_timer+=delta_time
             if player.stamina<=1000:player.stamina+=200*delta_time
