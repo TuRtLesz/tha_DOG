@@ -1808,6 +1808,9 @@ class tree(pygame.sprite.Sprite):
         tree_instance.rect=tree_instance.image.get_rect(bottomleft=((x+1)*48,(y+1)*48))
 class bubble(pygame.sprite.Sprite):
     bubble_image=pygame.image.load('Data/bubble.png').convert_alpha()
+    bubble_sound_1=pygame.mixer.Sound('Data/bubble_1.wav')
+    bubble_sound_2=pygame.mixer.Sound('Data/bubble_2.wav')
+    bubble_sound_3=pygame.mixer.Sound('Data/bubble_3.wav')
     def __init__(bubble_instance,x,y,bubble_size):
         super().__init__()
         bubble_instance.size=bubble_size
@@ -1823,6 +1826,12 @@ class bubble(pygame.sprite.Sprite):
                     if bubble_instance.rect.centerx-2<water_spring_obj.x<bubble_instance.rect.centerx+2:
                         if abs(water_spring_obj.speed)<10:
                             water_spring_obj.speed=bubble_instance.size*100
+                if bubble_instance.size>=1.5:
+                    player.play_sound_dir(bubble.bubble_sound_1,bubble_instance.rect.x)
+                elif 1.5>bubble_instance.size>1:
+                    player.play_sound_dir(bubble.bubble_sound_2,bubble_instance.rect.x)
+                elif 1>bubble_instance.size>=0.1:
+                    player.play_sound_dir(bubble.bubble_sound_3,bubble_instance.rect.x)
                 bubble_instance.kill()
 class tutorial_block(pygame.sprite.Sprite):
     def __init__(tut_block,x_image_len,name,x,y):
