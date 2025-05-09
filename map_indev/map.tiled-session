@@ -21,7 +21,7 @@
         },
         "blocks.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 0.33,
+            "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "bomb-rects.tsx": {
@@ -35,6 +35,14 @@
                 "x": 2404.858299595142,
                 "y": 2400.8097165991903
             }
+        },
+        "check_point.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "fat_guy_effects.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
         },
         "lvl_0.tmx": {
             "scale": 0.33,
@@ -64,21 +72,24 @@
             "scaleInDock": 2,
             "scaleInEditor": 1
         },
+        "tut_blocks.tsx": {
+            "scaleInDock": 1
+        },
         "water_block.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "world_0.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "scale": 0.33,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 1262,
-                "y": 522
+                "x": 108121.21212121213,
+                "y": 1580.3030303030303
             }
         }
     },
-    "last.exportedFilePath": "F:/g/turtle_games/tha_DOG/Data/worlds/0",
+    "last.exportedFilePath": "D:/g/turtle_games/tha_DOG/Data/worlds/0",
     "last.imagePath": "F:/g/turtle_games/tha_DOG/map_indev",
     "map.height": 100,
     "map.lastUsedExportFilter": "CSV files (*.csv)",
