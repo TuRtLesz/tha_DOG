@@ -2823,7 +2823,7 @@ while True:
                         except:
                             player.rect.center=(2067,560)
                         player.pos.xy=player.rect.center
-                        player.life=3
+                        player.life=4
                         player.score=0
                         player.hand=''
                         player.state='idle'
@@ -2847,20 +2847,15 @@ while True:
                         except:
                             player.rect.center=(2067,560)
                         player.pos.xy=player.rect.center
-                        player.life=3
+                        player.life=4
                         player.score=0
                         player.hand=''
                         player.state='idle'
                         player.flower_count=0
                         player.stamina=1000
-                    bomb_rect_list=[]
-                    water_blocks_rect_list=[]
-                    water_blocks_instance_rect_list=[]
+                    water_spring_instance_list=[]
+                    water_spring_list=[]
                     water_hitlines=[]
-                    bomb_rect_load_list=[]
-                    mouse_mode_tuts=[]
-                    bomb_rect_topright=[]
-                    keyboard_mode_tuts=[]
                     map_load(water_hitlines,water_spring_list)
                 elif exit_rect.collidepoint(mouse_pos[0]*2,mouse_pos[1]*2):
                     pygame.mixer.quit()
