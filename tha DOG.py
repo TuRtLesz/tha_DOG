@@ -153,7 +153,7 @@ class player(pygame.sprite.Sprite):
         if player.stamina>=2500:player.stamina=2500#max_stamina
         if player.pos.x>player.game_end_pos:game_settings['mode']='game_complete'
         for check_point in check_point_list:
-            if player.pos.x>=check_point.right:
+            if player.pos.x>=check_point.x:
                 player.last_check_point=check_point
         player.water=False
         for water_rect in water_blocks_instance_rect_list:
@@ -369,7 +369,7 @@ class player(pygame.sprite.Sprite):
                 player.image=player.pant_image_list_left[round(player.image_frame)]
             player.image_frame+=10*delta_time
         elif player.state=='aim':
-            print(player.throw_angle,player.throw_power)
+            #print(player.throw_angle,player.throw_power)
             player.idle_timer+=delta_time
             if player.image_frame>=3:
                 player.image_frame=3
@@ -421,7 +421,7 @@ class player(pygame.sprite.Sprite):
                     player.rock_obj.velocity.x=-player.rock_obj.velocity.x
                 player.rock_obj.acceleration.y=300
                 player.rock_obj.initial_velocity=player.rock_obj.velocity
-                print(player.rock_obj.velocity)
+                #print(player.rock_obj.velocity)
                 reactive_block_sprite_update_group.add(player.rock_obj)
                 player.state='idle'
                 player.rock_throw_sound.play()
