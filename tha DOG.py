@@ -1816,10 +1816,11 @@ class bubble(pygame.sprite.Sprite):
         bubble_instance.size=bubble_size
         bubble_instance.image=pygame.transform.scale_by(bubble.bubble_image,bubble_size)
         bubble_instance.rect=bubble_instance.image.get_rect(center=(x,y))
+        bubble_instance.speed=numpy.random.randint(20,35)
     def update(bubble_instance,delta_time):
         for block in pygame.sprite.spritecollide(bubble_instance,block_sprite_instance_group,dokill=False):bubble_instance.kill()
         game_window.blit(bubble_instance.image,bubble_instance.rect)
-        bubble_instance.rect.centery=bubble_instance.rect.centery-20*delta_time
+        bubble_instance.rect.centery-=bubble_instance.speed*delta_time
         for water_line in water_hitlines:
             if bubble_instance.rect.clipline(water_line)!=():
                 for water_spring_obj in water_spring_instance_list:
