@@ -2336,7 +2336,7 @@ with open('Data/worlds/0/0_checkpoints.csv') as map:
     for row_number,row in enumerate(world_reader):
         for number,id in enumerate(row):    
             if id!='-1': 
-                check_point_list.append(pygame.Rect(number*48,row_number*48,48,48))
+                check_point_list.append(pygame.Rect(number*48,(row_number-1)*48,48,48))
 
 game=game()
 
