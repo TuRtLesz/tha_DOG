@@ -82,11 +82,11 @@
             "scaleInEditor": 1
         },
         "world_0.tmx": {
-            "scale": 0.33,
+            "scale": 1,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 103996.9696969697,
-                "y": 692.4242424242425
+                "x": 115982,
+                "y": 1222.5
             }
         }
     },
