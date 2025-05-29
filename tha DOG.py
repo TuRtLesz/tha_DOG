@@ -149,11 +149,12 @@ class player(pygame.sprite.Sprite):
         player.pos=pygame.math.Vector2(player.rect.center)
         player.rock_throw_sound=pygame.mixer.Sound('Data/player/rock_throw.wav')
         player.game_end_pos=0
+        player.last_check_point=pygame.math.Vector2(0,0)
     def update(player,delta_time):#player states- explode run sprint swim swim_fast pick interact aim throw 
         if player.stamina>=2500:player.stamina=2500#max_stamina
         if player.pos.x>player.game_end_pos:game_settings['mode']='game_complete'
         for check_point in check_point_list:
-            if player.pos.x>=check_point.x:
+            if check_point.x>player.last_check_point.x and player.pos.x>=check_point.x:
                 player.last_check_point=check_point
         player.water=False
         for water_rect in water_blocks_instance_rect_list:
